@@ -17,7 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RolePermissionSeeder::class,
-            PipelineStageSeeder::class,
+            JobPostingsTableSeeder::class,
+            PipelineStagesTableSeeder::class,
+            CandidatesTableSeeder::class,
+            ApplicationsTableSeeder::class,
+            ApplicationNotesTableSeeder::class,
+            ApplicationStageHistoriesTableSeeder::class,
+            MediaTableSeeder::class
         ]);
+        $this->call(ApplicationsTableSeeder::class);
+        $this->call(ApplicationNotesTableSeeder::class);
+        $this->call(ApplicationStageHistoriesTableSeeder::class);
     }
 }
