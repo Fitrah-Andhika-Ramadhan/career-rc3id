@@ -66,7 +66,7 @@ class extends Component
     </div>
 
     <!-- Stats Grid (Minimalist Cards) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         
         <!-- Stat: Active Jobs -->
         <div class="bg-surface-bg rounded-2xl border border-surface-border p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -124,7 +124,7 @@ class extends Component
         </div>
         
         <!-- Stat: Realtime Visitors -->
-        <div class="bg-surface-bg rounded-2xl border border-surface-border p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+        <div class="bg-surface-bg rounded-2xl border border-surface-border p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden sm:col-span-2 lg:col-span-2 xl:col-span-1">
             <div class="absolute top-0 right-0 w-2.5 h-2.5 mt-4 mr-4 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
             <div class="flex items-center justify-between mb-4">
                 <span class="text-xs font-semibold text-secondary uppercase tracking-wider">Online Now</span>
