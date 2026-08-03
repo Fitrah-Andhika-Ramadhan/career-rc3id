@@ -295,8 +295,12 @@ class extends Component
         } catch (\Exception $e) {
             \Log::error('[NOTIFICATION] Failed to send database notification: ' . $e->getMessage());
         }
+        $this->isSubmitted = true;
+    }
+};
+?>
 
-       <div class="bg-surface-container-lowest min-h-screen w-full font-sans relative pb-20">
+<div class="bg-surface-container-lowest min-h-screen w-full font-sans relative pb-20">
     {{-- Elegant background gradient --}}
     <div class="absolute top-0 left-0 w-full h-[320px] bg-primary/5 z-0 pointer-events-none"></div>
     <div class="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-b from-primary/10 to-surface-container-lowest z-0 pointer-events-none"></div>
