@@ -609,8 +609,3 @@ class extends Component
     @endif
     </div>
 </div>
-iv>
-        </div>
-    @endif
-</div>
-</div>
