@@ -569,8 +569,8 @@ class extends Component
         </div>
 
         {{-- Loading Overlay Popup --}}
-        <div wire:loading wire:target="submit"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div wire:loading.flex wire:target="submit"
+             class="fixed inset-0 z-[9999] items-center justify-center bg-black/60 backdrop-blur-sm">
             <div class="bg-surface-bg rounded-2xl shadow-2xl p-10 flex flex-col items-center gap-5 max-w-sm w-full mx-4 border border-surface-border">
                 <div class="relative w-24 h-24">
                     <svg class="animate-spin w-24 h-24 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
