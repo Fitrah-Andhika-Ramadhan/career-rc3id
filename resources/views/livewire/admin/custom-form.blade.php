@@ -248,16 +248,32 @@ class extends Component
     public function generateAITemplate()
     {
         $this->fields = [
-            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'IDENTITAS DIRI', 'description' => 'Informasi dasar pelamar'],
+            // Section 1: IDENTITAS DIRI
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'IDENTITAS DIRI', 'description' => ''],
             ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nama Lengkap', 'required' => true],
             ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Email', 'required' => true],
             ['id' => uniqid('field_'), 'type' => 'date', 'label' => 'Tanggal lahir', 'required' => false],
             ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nomor telepon', 'required' => true],
             
+            // Section 2: PENDIDIKAN DAN REGISTRASI
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENDIDIKAN DAN REGISTRASI', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'radio', 'label' => 'Pendidikan Terakhir', 'required' => true, 'options' => ['D3', 'D4', 'S1', 'S2']],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Jurusan', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Universitas', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Tahun Lulus', 'required' => true],
+
+            // Section 3: PENGALAMAN KERJA
             ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENGALAMAN KERJA', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'radio', 'label' => 'Riwayat Pekerjaan', 'required' => true, 'options' => ['Administrasi Sumber Daya Manusia', 'HR Generalist', 'Fresh Graduate']],
+            ['id' => uniqid('field_'), 'type' => 'checkbox', 'label' => 'Riwayat Pekerjaan', 'required' => true, 'options' => ['Administrasi Sumber Daya Manusia', 'HR Generalist', 'Fresh Graduate']],
             ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Deskripsi singkat pengalaman kerja', 'required' => false],
             
+            // Section 4: DOKUMEN PENDUKUNG
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'DOKUMEN PENDUKUNG', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload CV dan Surat lamaran', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload Ijazah dan Transkrip nilai', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan upload berkas pendukung lainnya (Motivation letter, Pelatihan, dll)', 'required' => false],
+
+            // Section 5: LAINNYA
             ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'LAINNYA', 'description' => ''],
             ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Apakah Anda pernah terlibat dalam penyusunan Struktur dan Skala Upah (SSU) di perusahaan sebelumnya? Bagaimana prosesnya?', 'required' => true],
             ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Ceritakan pengalaman Anda saat harus menangani konflik interpersonal antara karyawan dan atasannya. Bagaimana cara Anda menengahi konflik tersebut?', 'required' => true],
