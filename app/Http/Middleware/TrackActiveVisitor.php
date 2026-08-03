@@ -65,6 +65,11 @@ class TrackActiveVisitor
                 );
 
                 Session::put('last_activity_update', now());
+
+                // Garbage Collection: Delete visitors inactive for more than 2 hours (5% chance)
+                if (rand(1, 100) <= 5) {
+                    ActiveVisitor::where('last_activity', '<', now()->subHours(2))->delete();
+                }
             }
         } catch (\Exception $e) {
             // Fail gracefully if table doesn't exist or DB error occurs
