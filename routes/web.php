@@ -44,9 +44,9 @@ Route::get('/{filename}', function ($filename) {
     abort(404);
 })->where('filename', 'logo\.svg|logo\.png|logo\.jpg|logo\.jpeg|logo\.webp|favicon\.svg|favicon\.ico');
 
-Volt::route('/{job}', 'public.application-form')->name('jobs.apply');
-
 Route::get('/migrate-db', function() {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
     return 'Migrasi Database Sukses 100%!';
 });
+
+Volt::route('/{job}', 'public.application-form')->name('jobs.apply');
