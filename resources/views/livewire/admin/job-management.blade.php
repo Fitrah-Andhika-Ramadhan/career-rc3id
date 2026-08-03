@@ -319,6 +319,12 @@ class extends Component
                         <p class="text-xs text-secondary mt-1">Leave empty for no deadline.</p>
                         @error('deadline_date') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
+                    
+                    <div class="space-y-2 col-span-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Job Description / Requirements</label>
+                        <textarea wire:model="description" rows="5" placeholder="Tuliskan deskripsi pekerjaan atau kualifikasi di sini..." class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary"></textarea>
+                        @error('description') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                    </div>
 
                 </div>
                 <div class="flex justify-between items-center mt-6 pt-6 border-t border-surface-border">
