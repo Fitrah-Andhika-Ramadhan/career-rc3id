@@ -475,7 +475,7 @@ class extends Component
                 <button wire:click="redo" @if($historyIndex >= count($historyFields) - 1) disabled @endif class="p-2 text-secondary hover:bg-surface-container hover:text-on-surface rounded-full transition-colors flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed" title="Redo">
                     <span class="material-symbols-outlined text-[20px]">redo</span>
                 </button>
-                <button @click="navigator.clipboard.writeText('{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}'); $dispatch('notify', 'Link form disalin ke clipboard!')" 
+                <button @click="Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'})" 
                    class="p-2 text-secondary hover:bg-surface-container hover:text-on-surface rounded-full transition-colors flex items-center justify-center" title="Get link">
                     <span class="material-symbols-outlined text-[20px]">link</span>
                 </button>
@@ -534,7 +534,7 @@ class extends Component
                             <button @click="publishModalOpen = false" class="px-4 py-2 text-primary hover:bg-surface-container rounded-md font-medium text-sm transition-colors">
                                 Dismiss
                             </button>
-                            <button @click="navigator.clipboard.writeText('{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}'); $dispatch('notify', 'Link form berhasil disalin ke clipboard!'); publishModalOpen = false;" class="px-6 py-2 bg-[#007b5e] hover:bg-[#00664d] text-white rounded-md font-medium text-sm transition-colors">
+                            <button @click="Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'}); publishModalOpen = false;" class="px-6 py-2 bg-[#007b5e] hover:bg-[#00664d] text-white rounded-md font-medium text-sm transition-colors">
                                 Publish
                             </button>
                         </div>

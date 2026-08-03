@@ -439,8 +439,8 @@ class extends Component
                                         </div>
                                     @else
                                         {{-- Modern Input Group --}}
-                                        <div class="group">
-                                            <label class="font-label-md text-label-md text-on-surface block mb-2 font-semibold">
+                                        <div class="group mb-8">
+                                            <label class="font-label-md text-label-md text-on-surface block mb-3 font-semibold">
                                                 {{ $field['label'] }} @if($field['required']) <span class="text-error">*</span> @endif
                                             </label>
 
