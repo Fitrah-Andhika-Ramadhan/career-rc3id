@@ -2,8 +2,18 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 use Livewire\Volt\Volt;
+
+Route::get('/run-migrations', function () {
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        return "Migrasi berhasil dijalankan! Output: <br><pre>" . Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
 
 Volt::route('/', 'public.job-list')->name('home');
 
