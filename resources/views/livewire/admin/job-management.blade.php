@@ -171,10 +171,12 @@ class extends Component
             <p class="text-on-surface-variant font-body-lg text-body-lg max-w-2xl">Manage your open roles and candidate pipelines. You have <span class="font-bold text-primary">{{ $jobs->where('status', 'published')->count() }} active jobs</span>.</p>
         </div>
         <div class="md:col-span-4 flex justify-end gap-stack-sm">
+            @if(auth()->check() && auth()->user()->hasRole('Super Admin'))
             <button wire:click="generateDummyData" class="px-margin py-stack-md bg-secondary-container text-on-secondary-container rounded-lg font-semibold flex items-center gap-stack-sm hover:opacity-90 transition-all">
                 <span class="material-symbols-outlined" data-icon="science">science</span>
                 Generate Dummy
             </button>
+            @endif
         </div>
     </div>
     
@@ -258,14 +260,14 @@ class extends Component
                             <a href="{{ route('jobs.apply', $job) }}" target="_blank" @click="open = false" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">visibility</span> Preview
                             </a>
-                            <button type="button" @click="navigator.clipboard.writeText('{{ route('jobs.apply', $job) }}'); open = false; alert('Link copied!')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <button type="button" @click="open = false; Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ route('jobs.apply', $job) }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'})" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">link</span> Get link
                             </button>
-                            <a href="{{ route('admin.custom-form') }}" wire:navigate class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <a href="{{ route('admin.custom-form') }}?selectedJobId={{ $job->id }}" wire:navigate class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">dynamic_form</span> Form Builder
                             </a>
                             <hr class="my-1 border-gray-100">
-                            <button type="button" wire:click="delete({{ $job->id }})" x-on:click="open = false" onclick="return confirm('Hapus lowongan ini?')" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                            <button type="button" @click="open = false; confirmDelete('Hapus lowongan ini?', () => $wire.delete({{ $job->id }}))" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">delete</span> Delete
                             </button>
                         </div>
