@@ -269,7 +269,7 @@ class extends Component
 
         // ── Send emails AFTER transaction committed ──────────────────
         try {
-            Mail::to($candidate->email)->queue(new ApplicationSubmitted($candidate, $this->job));
+            Mail::to($candidate->email)->send(new ApplicationSubmitted($candidate, $this->job));
         } catch (\Exception $e) {
             \Log::warning('[EMAIL] Failed to queue applicant confirmation: ' . $e->getMessage());
         }
@@ -283,7 +283,7 @@ class extends Component
                 if ($cnlEmail && filter_var($cnlEmail, FILTER_VALIDATE_EMAIL) && $cnlEmail !== $hrEmail) {
                     $mail->cc($cnlEmail);
                 }
-                $mail->queue(new NewApplicationNotification($candidate, $this->job, $application));
+                $mail->send(new NewApplicationNotification($candidate, $this->job, $application));
             } catch (\Exception $e) {
                 \Log::error('[EMAIL] Failed to send HR notification: ' . $e->getMessage());
             }
