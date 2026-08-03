@@ -264,8 +264,7 @@ class extends Component
         ];
         
         $this->pushHistory();
-        $this->saveForm();
-        $this->dispatch('notify', '✨ Template AI HR berhasil di-generate!');
+        $this->dispatch('notify', '✨ Template AI HR berhasil di-generate! Silakan edit dan klik "Simpan Form" jika sudah sesuai.');
     }
 
     public function openImportModal()
@@ -641,7 +640,7 @@ class extends Component
             {{-- Floating Toolbar (Desktop) --}}
             <div class="absolute -right-20 top-0 bottom-0 hidden xl:block z-20">
                 <div class="bg-surface-bg border border-surface-border shadow-md rounded-xl p-2 flex flex-col gap-1 sticky top-[140px]">
-                    <button wire:click="generateAITemplate" class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center relative group" title="Build with AI">
+                    <button wire:click="generateAITemplate" wire:confirm="Apakah Anda yakin ingin menggunakan Template AI? PERHATIAN: Ini akan menimpa seluruh pertanyaan Anda saat ini!" class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center relative group" title="Build with AI">
                         <span class="material-symbols-outlined text-[24px]" style="color: #6366f1;">auto_awesome</span>
                         <!-- Tooltip -->
                         <div class="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
