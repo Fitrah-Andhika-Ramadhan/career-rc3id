@@ -5,6 +5,7 @@ use Livewire\Volt\Component;
 use App\Models\Job;
 use App\Models\Application;
 use App\Models\PipelineStage;
+use App\Models\ActiveVisitor;
 use Carbon\Carbon;
 
 new
@@ -18,6 +19,12 @@ class extends Component
         
         // New apps this week
         $appsThisWeek = Application::where('created_at', '>=', Carbon::now()->startOfWeek())->count();
+        
+        $activeVisitorsCount = ActiveVisitor::where('last_activity', '>=', Carbon::now()->subMinutes(5))->count();
+        $activeVisitors = ActiveVisitor::where('last_activity', '>=', Carbon::now()->subMinutes(5))
+                            ->orderBy('last_activity', 'desc')
+                            ->take(10)
+                            ->get();
         
         $recentApps = Application::with(['candidate', 'job', 'stage'])
                         ->orderBy('created_at', 'desc')
@@ -33,12 +40,14 @@ class extends Component
             'appsThisWeek' => $appsThisWeek,
             'hiredCount' => $hiredCount,
             'recentApps' => $recentApps,
+            'activeVisitorsCount' => $activeVisitorsCount,
+            'activeVisitors' => $activeVisitors,
         ];
     }
 };
 ?>
 
-<div class="flex-1 overflow-y-auto px-6 py-8 md:px-10 md:py-10 h-[calc(100vh-64px)] space-y-10 bg-surface">
+<div wire:poll.10s class="flex-1 overflow-y-auto px-6 py-8 md:px-10 md:py-10 h-[calc(100vh-64px)] space-y-10 bg-surface">
     
     <!-- Header Section (Sleek, Clean) -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
@@ -57,7 +66,7 @@ class extends Component
     </div>
 
     <!-- Stats Grid (Minimalist Cards) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         
         <!-- Stat: Active Jobs -->
         <div class="bg-surface-bg rounded-2xl border border-surface-border p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -111,6 +120,20 @@ class extends Component
             </div>
             <div class="flex items-baseline gap-2">
                 <h3 class="text-4xl font-semibold tracking-tight text-on-surface">{{ $hiredCount }}</h3>
+            </div>
+        </div>
+        
+        <!-- Stat: Realtime Visitors -->
+        <div class="bg-surface-bg rounded-2xl border border-surface-border p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-2.5 h-2.5 mt-4 mr-4 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-secondary uppercase tracking-wider">Online Now</span>
+                <div class="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-600">
+                    <span class="material-symbols-outlined text-[16px]">sensors</span>
+                </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+                <h3 class="text-4xl font-semibold tracking-tight text-on-surface">{{ $activeVisitorsCount }}</h3>
             </div>
         </div>
         
@@ -199,7 +222,47 @@ class extends Component
                 </div>
             </div>
             
-            <div class="bg-primary/5 rounded-2xl border border-primary/10 p-6 flex items-start gap-4">
+            <!-- Active Visitors Table -->
+            <div class="bg-surface-bg rounded-2xl border border-surface-border shadow-sm overflow-hidden mt-6">
+                <div class="px-6 py-5 border-b border-surface-border flex justify-between items-center">
+                    <h2 class="text-base font-semibold text-on-surface flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span> Live Traffic
+                    </h2>
+                </div>
+                <div class="p-0 max-h-[300px] overflow-y-auto">
+                    @if($activeVisitors->count() > 0)
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead class="bg-surface-container-lowest border-b border-surface-border sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-2 font-medium text-secondary text-xs">Lokasi</th>
+                                    <th class="px-4 py-2 font-medium text-secondary text-xs text-right">Aktivitas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($activeVisitors as $visitor)
+                                <tr class="border-b border-surface-border last:border-0 hover:bg-surface-container-lowest transition-colors">
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-on-surface">{{ $visitor->city ?? 'Unknown' }}, {{ $visitor->country ?? 'Unknown' }}</span>
+                                            <span class="text-[10px] text-secondary font-mono">{{ $visitor->ip_address }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <span class="text-xs text-secondary">{{ $visitor->last_activity->diffForHumans() }}</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="p-6 text-center text-secondary text-sm">
+                            Belum ada pengunjung aktif.
+                        </div>
+                    @endif
+                </div>
+            </div>
+            
+            <div class="bg-primary/5 rounded-2xl border border-primary/10 p-6 flex items-start gap-4 mt-6">
                 <span class="material-symbols-outlined text-primary mt-1">auto_awesome</span>
                 <div>
                     <h3 class="text-sm font-semibold text-on-surface mb-1">Tip of the day</h3>

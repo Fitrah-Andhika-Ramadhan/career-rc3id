@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use App\Models\ActiveVisitor;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Session;
+
+class TrackActiveVisitor
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        // Don't track admin routes or API routes
+        if ($request->is('admin*') || $request->is('livewire*') || $request->is('api*')) {
+            return $next($request);
+        }
+
+        $sessionId = Session::getId();
+        $lastUpdate = Session::get('last_activity_update');
+
+        // Debounce: Only update DB once every minute per session
+        if (!$lastUpdate || now()->diffInSeconds($lastUpdate) > 60) {
+            $ip = $request->ip();
+            
+            // Exclude localhost
+            if ($ip === '127.0.0.1' || $ip === '::1') {
+                $ip = '8.8.8.8'; // Mock IP for local testing
+            }
+
+            // Get location (Cached for 24 hours per IP)
+            $location = Cache::remember('ip_location_' . $ip, 86400, function () use ($ip) {
+                try {
+                    $response = Http::timeout(2)->get("http://ip-api.com/json/{$ip}?fields=city,country,status");
+                    if ($response->successful() && $response->json('status') === 'success') {
+                        return [
+                            'city' => $response->json('city'),
+                            'country' => $response->json('country'),
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    // Ignore errors
+                }
+                return ['city' => 'Unknown', 'country' => 'Unknown'];
+            });
+
+            ActiveVisitor::updateOrCreate(
+                ['session_id' => $sessionId],
+                [
+                    'ip_address' => $ip,
+                    'city' => $location['city'],
+                    'country' => $location['country'],
+                    'url' => $request->fullUrl(),
+                    'last_activity' => now(),
+                ]
+            );
+
+            Session::put('last_activity_update', now());
+        }
+
+        return $next($request);
+    }
+}

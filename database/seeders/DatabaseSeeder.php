@@ -28,5 +28,6 @@ class DatabaseSeeder extends Seeder
         $this->call(ApplicationsTableSeeder::class);
         $this->call(ApplicationNotesTableSeeder::class);
         $this->call(ApplicationStageHistoriesTableSeeder::class);
+        $this->call(MediaTableSeeder::class);
     }
 }
