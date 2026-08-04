@@ -302,11 +302,7 @@ class extends Component
             
             if (count($validEmails) > 0) {
                 try {
-                    $mail = Mail::to($validEmails[0]);
-                    if (count($validEmails) > 1) {
-                        $mail->cc(array_slice($validEmails, 1));
-                    }
-                    $mail->send(new NewApplicationNotification($candidate, $this->job, $application));
+                    Mail::to($validEmails)->send(new NewApplicationNotification($candidate, $this->job, $application));
                 } catch (\Exception $e) {
                     \Log::error('[EMAIL] Failed to send HR notification: ' . $e->getMessage());
                 }
