@@ -53,36 +53,58 @@ class extends Component
 
 <div>
     <!-- Hero Section -->
-    @php
-        $opacity = env('HERO_OVERLAY_OPACITY', '0.8');
-        $opacityGradient = min(1, floatval($opacity) + 0.1); // slightly darker at bottom
-    @endphp
-    <section class="hero-pattern py-24 text-on-primary-container relative overflow-hidden" style="background-image: linear-gradient(rgba(var(--color-primary-rgb) / {{ $opacity }}), rgba(var(--color-primary-rgb) / {{ $opacityGradient }})), url('{{ asset('hero_background.png') }}'); background-size: cover; background-position: center;">
-        <div class="max-w-container-max mx-auto px-margin relative z-10 flex flex-col md:flex-row items-center gap-stack-lg">
+    <section class="relative py-28 lg:py-36 overflow-hidden bg-gradient-to-br from-primary via-primary-container to-info bg-animated-gradient">
+        <!-- Floating Ambient Shapes -->
+        <div class="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-black/10 rounded-full blur-3xl animate-float-delayed"></div>
+        
+        <div class="max-w-container-max mx-auto px-margin relative z-10 flex flex-col items-center">
+            
+            <!-- Floating Badges -->
+            <div class="flex gap-4 mb-6 animate-fade-in-up stagger-1">
+                <span class="bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">public</span> Global Team
+                </span>
+                <span class="bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">rocket_launch</span> Innovators
+                </span>
+            </div>
+
             <div class="w-full text-center flex flex-col items-center">
-                <h1 class="font-headline-xl text-headline-xl mb-stack-md text-white">{{ config('app.hero_title', 'Find Your Next Career at CareerRC3ID') }}</h1>
-                <p class="font-body-lg text-body-lg text-primary-fixed mb-stack-lg opacity-90 max-w-2xl">
+                <h1 class="font-headline-xl text-5xl lg:text-7xl mb-stack-md text-white font-extrabold tracking-tight animate-fade-in-up stagger-2 drop-shadow-sm">
+                    {{ config('app.hero_title', 'Find Your Next Career') }}
+                </h1>
+                <p class="font-body-lg text-lg lg:text-xl text-white/90 mb-12 max-w-3xl animate-fade-in-up stagger-3 font-medium">
                     {{ config('app.hero_subtitle', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.') }}
                 </p>
-                <!-- Search/Filter Bar -->
-                <div class="bg-white/95 backdrop-blur-md p-2 md:p-3 rounded-2xl shadow-2xl border border-white/20 flex flex-col md:flex-row gap-2 max-w-3xl ring-1 ring-black/5 mx-auto transform transition-all hover:scale-[1.01] duration-300">
-                    <div class="flex-1 flex items-center px-4 border-r border-surface-border/50">
-                        <span class="material-symbols-outlined text-outline mr-2">search</span>
-                        <input wire:model="searchQuery" wire:keydown.enter="searchJobs" class="w-full border-none focus:ring-0 text-body-md font-body-md bg-transparent text-on-surface" placeholder="Job title or keywords" type="text"/>
+                
+                <!-- Modern Search/Filter Bar -->
+                <div class="bg-white/80 backdrop-blur-xl p-3 md:p-4 rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-white/50 flex flex-col md:flex-row gap-3 max-w-4xl w-full mx-auto transform transition-all focus-within:scale-[1.02] focus-within:bg-white/95 focus-within:shadow-[0_25px_50px_-12px_rgba(var(--color-primary-rgb),0.25)] duration-500 animate-fade-in-up stagger-4">
+                    <div class="flex-1 flex items-center px-4 md:border-r border-surface-border/50 transition-colors">
+                        <span class="material-symbols-outlined text-primary mr-3 text-[28px]">search</span>
+                        <input wire:model="searchQuery" wire:keydown.enter="searchJobs" class="w-full border-none focus:ring-0 text-body-lg font-body-lg bg-transparent text-on-surface placeholder:text-on-surface-variant/70" placeholder="Job title or keywords..." type="text"/>
                     </div>
-                    <div class="flex-1 flex items-center px-stack-md border-r border-surface-border hidden md:flex">
-                        <span class="material-symbols-outlined text-outline mr-2">business_center</span>
-                        <select wire:model="searchDepartment" wire:change="searchJobs" class="w-full border-none focus:ring-0 text-body-md font-body-md bg-transparent text-on-surface appearance-none">
-                            <option value="All Departments">All Departments</option>
-                            @foreach($departments as $dept)
-                                <option value="{{ $dept }}">{{ $dept }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button wire:click="searchJobs" class="bg-primary text-white px-8 py-3 rounded-xl font-label-md text-label-md hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95">
-                        Search Jobs
+                    
+                    <button wire:click="searchJobs" class="bg-primary text-white px-10 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                        <span>Search Jobs</span>
+                        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
                     </button>
                 </div>
+
+                <!-- Dynamic Category Pills -->
+                <div class="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up stagger-5 max-w-4xl mx-auto">
+                    <button wire:click="$set('searchDepartment', 'All Departments'); searchJobs()" 
+                            class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === 'All Departments' ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
+                        All Departments
+                    </button>
+                    @foreach($departments as $dept)
+                        <button wire:click="$set('searchDepartment', '{{ $dept }}'); searchJobs()" 
+                                class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === $dept ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
+                            {{ $dept }}
+                        </button>
+                    @endforeach
+                </div>
+
             </div>
         </div>
     </section>
@@ -110,20 +132,25 @@ class extends Component
                                     $isExpired = $job->deadline_date && now()->startOfDay()->gt($job->deadline_date);
                                 @endphp
                                 <!-- Job Card -->
-                                <a href="{{ $isExpired ? 'javascript:void(0)' : route('jobs.apply', $job) }}" class="bg-surface-bg border border-surface-border rounded-2xl p-stack-md {{ $isExpired ? 'opacity-70 cursor-not-allowed' : 'kanban-shadow hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/40 group cursor-pointer' }} transition-all duration-300 block relative overflow-hidden">
-                                    <!-- Animated Top Border -->
-                                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-info opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <a href="{{ $isExpired ? 'javascript:void(0)' : route('jobs.apply', $job) }}" 
+                                   x-data="{ shown: false }" 
+                                   x-intersect.once="shown = true"
+                                   :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
+                                   class="bg-white border border-surface-border rounded-[1.5rem] p-6 lg:p-8 {{ $isExpired ? 'opacity-70 cursor-not-allowed' : 'shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(var(--color-primary-rgb),0.12)] hover:border-primary/30 group cursor-pointer' }} transition-all duration-500 block relative overflow-hidden">
                                     
-                                    <div class="flex justify-between items-start mb-stack-md">
-                                        <div class="flex items-center gap-3">
-                                            <div class="bg-primary/5 p-3 rounded-xl border border-primary/10 group-hover:bg-primary/10 transition-colors">
-                                                <span class="material-symbols-outlined text-primary">work</span>
+                                    <!-- Animated Top Border Glow -->
+                                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-info to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] animate-gradientMove"></div>
+                                    
+                                    <div class="flex justify-between items-start mb-6">
+                                        <div class="flex items-center gap-4">
+                                            <div class="bg-primary/5 p-3.5 rounded-2xl border border-primary/10 group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-300">
+                                                <span class="material-symbols-outlined text-primary text-[24px]">work</span>
                                             </div>
                                             <div class="relative" x-data="{ shareOpen: false }" @click.outside="shareOpen = false">
                                                 <button 
                                                     type="button"
                                                     @click.prevent="shareOpen = !shareOpen"
-                                                    class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors"
+                                                    class="p-2 rounded-full text-secondary hover:bg-surface-variant hover:text-primary transition-colors"
                                                     title="Bagikan Tautan"
                                                 >
                                                     <span class="material-symbols-outlined text-[20px]">share</span>
@@ -132,7 +159,7 @@ class extends Component
                                                 <!-- Dropdown Menu -->
                                                 <div x-show="shareOpen" 
                                                      x-transition.opacity.duration.200ms
-                                                     class="absolute left-0 top-full mt-2 w-44 bg-surface-bg border border-surface-border rounded-lg kanban-shadow py-2 z-20"
+                                                     class="absolute left-0 top-full mt-2 w-44 bg-surface-bg border border-surface-border rounded-xl shadow-xl py-2 z-20"
                                                      style="display: none;"
                                                 >
                                                     <button type="button"
@@ -174,12 +201,12 @@ class extends Component
                                             </div>
                                         </div>
                                         @if($isExpired)
-                                            <span class="bg-surface-variant text-secondary border border-surface-border text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">Ditutup</span>
+                                            <span class="bg-surface-variant text-secondary border border-surface-border text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Ditutup</span>
                                         @else
-                                            <span class="bg-success/10 text-success text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">Active</span>
+                                            <span class="bg-success/10 text-success text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Active</span>
                                         @endif
                                     </div>
-                                    <h3 class="font-headline-md text-headline-md mb-2 group-hover:text-primary transition-colors">{{ $job->title }}</h3>
+                                    <h3 class="font-headline-md text-xl lg:text-2xl mb-3 group-hover:text-primary font-bold transition-colors">{{ $job->title }}</h3>
                                     <div class="flex flex-wrap gap-2 mb-stack-md">
                                         <span class="inline-flex items-center text-body-sm text-on-surface-variant">
                                             <span class="material-symbols-outlined text-[16px] mr-1">location_on</span> {{ $job->location }}
@@ -188,18 +215,18 @@ class extends Component
                                             <span class="material-symbols-outlined text-[16px] mr-1">schedule</span> {{ $job->work_type }}
                                         </span>
                                     </div>
-                                    <p class="font-body-md text-body-md text-on-surface-variant mb-stack-lg line-clamp-2">
+                                    <p class="font-body-md text-body-md text-secondary mb-8 line-clamp-2 leading-relaxed">
                                         {{ strip_tags($job->description) ?: 'Join our team in the ' . $job->department . ' department.' }}
                                     </p>
-                                    <div class="flex items-center justify-between pt-stack-md border-t border-surface-border">
-                                        <span class="font-label-md text-label-md text-on-surface-variant">{{ $job->department }}</span>
+                                    <div class="flex items-center justify-between pt-6 border-t border-surface-border/60">
+                                        <span class="font-semibold text-sm text-secondary bg-surface px-3 py-1.5 rounded-lg">{{ $job->department }}</span>
                                         @if($isExpired)
                                             <span class="text-error font-label-md text-label-md flex items-center">
                                                 Telah ditutup pada {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
                                             </span>
                                         @else
-                                            <span class="text-primary font-label-md text-label-md group-hover:translate-x-1 transition-transform flex items-center">
-                                                Apply <span class="material-symbols-outlined text-[16px] ml-1">chevron_right</span>
+                                            <span class="font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300">
+                                                Apply Now <span class="material-symbols-outlined text-[18px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">arrow_forward</span>
                                             </span>
                                         @endif
                                     </div>
