@@ -211,6 +211,9 @@
                 <!-- Optional Global Search can go here -->
             </div>
             <div class="flex items-center gap-stack-md ml-margin">
+                <a href="{{ route('home') }}" target="_blank" title="Lihat Website" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined" data-icon="public">public</span>
+                </a>
                 <livewire:admin.notifications-bell />
                 <div class="h-8 w-px bg-surface-border mx-2"></div>
                 <div class="flex items-center gap-stack-sm p-1 pr-3">
