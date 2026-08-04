@@ -187,8 +187,6 @@ class extends Component
             'mail_port' => 'required|numeric',
             'mail_encryption' => 'nullable|string',
             'mail_from_address' => 'required|email',
-            'mail_notification_addresses' => 'nullable|string',
-            'mail_include_full_data' => 'boolean',
         ]);
 
         $this->updateEnv([
@@ -199,12 +197,26 @@ class extends Component
             'MAIL_PASSWORD' => $this->mail_password,
             'MAIL_ENCRYPTION' => $this->mail_encryption,
             'MAIL_FROM_ADDRESS' => $this->mail_from_address,
+        ]);
+
+        Artisan::call('config:clear');
+        session()->flash('message', 'Email settings updated successfully!');
+    }
+
+    public function saveNotification()
+    {
+        $this->validate([
+            'mail_notification_addresses' => 'nullable|string',
+            'mail_include_full_data' => 'boolean',
+        ]);
+
+        $this->updateEnv([
             'MAIL_NOTIFICATION_ADDRESSES' => $this->mail_notification_addresses,
             'MAIL_INCLUDE_FULL_DATA' => $this->mail_include_full_data ? 'true' : 'false',
         ]);
 
         Artisan::call('config:clear');
-        session()->flash('message', 'Email settings updated successfully!');
+        session()->flash('message', 'Candidate Notification settings updated successfully!');
     }
     public function testEmail()
     {
@@ -320,6 +332,11 @@ class extends Component
                     :class="activeTab === 'email' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-on-surface hover:border-surface-border'"
                     class="px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">mail</span> Email Configuration
+            </button>
+            <button @click="activeTab = 'candidate_data'" 
+                    :class="activeTab === 'candidate_data' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-on-surface hover:border-surface-border'"
+                    class="px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">contact_mail</span> Data Candidate & HR
             </button>
         </div>
 
@@ -667,24 +684,6 @@ class extends Component
                     <input wire:model="mail_from_address" type="email" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="no-reply@careerrc3id.com">
                     @error('mail_from_address') <span class="text-error text-sm">{{ $message }}</span> @enderror
                 </div>
-                <div class="space-y-2 md:col-span-2 pt-4 border-t border-surface-border">
-                    <label class="font-label-md text-label-md text-on-surface-variant">Notification Emails (HR & CNL)</label>
-                    <input wire:model="mail_notification_addresses" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="hr@example.com, admin@example.com">
-                    <p class="text-xs text-secondary mt-1">Pisahkan dengan koma jika lebih dari satu. Email-email ini akan menerima notifikasi otomatis ketika ada lamaran baru yang masuk.</p>
-                    @error('mail_notification_addresses') <span class="text-error text-sm">{{ $message }}</span> @enderror
-                    
-                    <div class="mt-4 pt-4 border-t border-surface-border">
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <div class="relative">
-                                <input type="checkbox" wire:model="mail_include_full_data" class="sr-only peer">
-                                <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                            </div>
-                            <div>
-                                <span class="text-sm font-semibold text-on-surface block">Sertakan Seluruh Jawaban Form Pelamar di Email</span>
-                                <span class="text-xs text-secondary block">Jika aktif, email notifikasi HR akan mencakup semua data kustom yang diisi pelamar (seperti tanggal lahir, file lampiran, dan jawaban kustom lainnya).</span>
-                            </div>
-                        </label>
-                    </div>
                 </div>
             </div>
             <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-surface-border">
@@ -703,6 +702,51 @@ class extends Component
             </div>
         </form>
     </div>
+
+        {{-- CANDIDATE DATA & HR TAB --}}
+        <div x-show="activeTab === 'candidate_data'" x-cloak class="space-y-stack-lg" style="display: none;">
+            <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden">
+                <form wire:submit="saveNotification">
+                <div class="p-margin border-b border-surface-border">
+                    <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">contact_mail</span>
+                        Aturan Kelola Data & Notifikasi
+                    </h3>
+                </div>
+                <div class="p-margin space-y-stack-md">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="font-label-md text-label-md text-on-surface-variant">Notification Emails (HR & CNL)</label>
+                            <input wire:model="mail_notification_addresses" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="hr@example.com, admin@example.com">
+                            <p class="text-xs text-secondary mt-1">Pisahkan dengan koma jika lebih dari satu. Email-email ini akan menerima notifikasi otomatis ketika ada lamaran baru yang masuk.</p>
+                            @error('mail_notification_addresses') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                            
+                            <div class="mt-4 pt-4 border-t border-surface-border">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" wire:model="mail_include_full_data" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-semibold text-on-surface block">Sertakan Seluruh Jawaban Form Pelamar di Email</span>
+                                        <span class="text-xs text-secondary block">Jika aktif, email notifikasi HR akan mencakup semua data kustom yang diisi pelamar (seperti tanggal lahir, file lampiran, dan jawaban kustom lainnya).</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-surface-border bg-surface-container/50 px-margin pb-margin">
+                    <button type="submit" wire:loading.attr="disabled" wire:target="saveNotification" class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span wire:loading.remove wire:target="saveNotification" class="material-symbols-outlined text-[18px]">save</span>
+                        <span wire:loading wire:target="saveNotification" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                        <span wire:loading.remove wire:target="saveNotification">Simpan Aturan Data</span>
+                        <span wire:loading wire:target="saveNotification">Menyimpan...</span>
+                    </button>
+                </div>
+                </form>
+            </div>
+        </div>
 </div>
 </div>
 </div>
