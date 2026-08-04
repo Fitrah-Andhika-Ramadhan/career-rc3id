@@ -309,7 +309,7 @@ Example output format:
 ]";
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={$apiKey}", [
+            $response = \Illuminate\Support\Facades\Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent?key={$apiKey}", [
                 'system_instruction' => [
                     'parts' => [
                         ['text' => $systemInstruction]
