@@ -67,19 +67,19 @@ class extends Component
             <!-- Floating Badges -->
             <div class="flex gap-4 mb-6 animate-fade-in-up stagger-1">
                 <span class="bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[16px]">public</span> Global Team
+                    <span class="material-symbols-outlined text-[16px]">public</span> {{ __('Global Team') }}
                 </span>
                 <span class="bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[16px]">rocket_launch</span> Innovators
+                    <span class="material-symbols-outlined text-[16px]">rocket_launch</span> {{ __('Innovators') }}
                 </span>
             </div>
 
             <div class="w-full text-center flex flex-col items-center">
                 <h1 class="font-headline-xl text-5xl lg:text-7xl mb-stack-md text-white font-extrabold tracking-tight animate-fade-in-up stagger-2 drop-shadow-sm">
-                    {{ config('app.hero_title', 'Find Your Next Career') }}
+                    {{ __(config('app.hero_title', 'Find Your Next Career')) }}
                 </h1>
                 <p class="font-body-lg text-lg lg:text-xl text-white/90 mb-12 max-w-3xl animate-fade-in-up stagger-3 font-medium">
-                    {{ config('app.hero_subtitle', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.') }}
+                    {{ __(config('app.hero_subtitle', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.')) }}
                 </p>
                 
                 <!-- Modern Search/Filter Bar -->
@@ -106,7 +106,7 @@ class extends Component
                 <div class="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up stagger-5 max-w-4xl mx-auto">
                     <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="$set('searchDepartment', 'All Departments / Projects'); searchJobs()" 
                             class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === 'All Departments / Projects' ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
-                        All Departments / Projects
+                        {{ __('All Departments / Projects') }}
                     </button>
                     @foreach($departments as $dept)
                         <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="$set('searchDepartment', '{{ $dept }}'); searchJobs()" 
@@ -125,8 +125,8 @@ class extends Component
         <div class="max-w-container-max mx-auto px-margin">
             <div class="flex justify-between items-end mb-12">
                 <div>
-                    <h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-sm">Featured Opportunities</h2>
-                    <p class="font-body-md text-body-md text-on-surface-variant">Hand-picked roles for exceptional talent like you.</p>
+                    <h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-sm">{{ __('Featured Opportunities') }}</h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant">{{ __('Hand-picked roles for exceptional talent like you.') }}</p>
                 </div>
             </div>
             
@@ -212,9 +212,9 @@ class extends Component
                                             </div>
                                         </div>
                                         @if($isExpired)
-                                            <span class="bg-surface-variant text-secondary border border-surface-border text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Ditutup</span>
+                                            <span class="bg-surface-variant text-secondary border border-surface-border text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">{{ __('Ditutup') }}</span>
                                         @else
-                                            <span class="bg-success/10 text-success text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Active</span>
+                                            <span class="bg-success/10 text-success text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">{{ __('Active') }}</span>
                                         @endif
                                     </div>
                                     <h3 class="font-headline-md text-xl lg:text-2xl mb-3 group-hover:text-primary font-bold transition-colors">{{ $job->title }}</h3>
@@ -233,11 +233,11 @@ class extends Component
                                         <span class="font-semibold text-sm text-secondary bg-surface px-3 py-1.5 rounded-lg">{{ $job->department }}</span>
                                         @if($isExpired)
                                             <span class="text-error font-label-md text-label-md flex items-center">
-                                                Telah ditutup pada {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
+                                                {{ __('Telah ditutup pada') }} {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
                                             </span>
                                         @else
                                             <span class="font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300">
-                                                Apply Now <span class="material-symbols-outlined text-[18px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">arrow_forward</span>
+                                                {{ __('Apply Now') }} <span class="material-symbols-outlined text-[18px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">arrow_forward</span>
                                             </span>
                                         @endif
                                     </div>
@@ -248,7 +248,7 @@ class extends Component
                 @empty
                     <div class="col-span-full text-center py-10 bg-surface-bg border border-surface-border rounded-xl border-dashed">
                         <span class="material-symbols-outlined text-[48px] mb-2 text-secondary opacity-50" data-icon="inbox">inbox</span>
-                        <p class="font-body-lg text-secondary">No open positions at the moment. Check back later!</p>
+                        <p class="font-body-lg text-secondary">{{ __('No open positions at the moment. Check back later!') }}</p>
                     </div>
                 @endforelse
             </div>

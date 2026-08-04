@@ -335,7 +335,7 @@ class extends Component
         <div class="mb-8">
             <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-semibold text-sm bg-surface-bg/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-border shadow-sm">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-                Kembali ke Daftar Lowongan
+                {{ __('Kembali ke Daftar Lowongan') }}
             </a>
         </div>
         
@@ -344,12 +344,12 @@ class extends Component
             <div class="w-24 h-24 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="material-symbols-outlined text-[48px]" data-icon="block">block</span>
             </div>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-3">Pendaftaran Ditutup</h2>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-3">{{ __('Pendaftaran Ditutup') }}</h2>
             <p class="font-body-lg text-body-lg text-secondary mb-8 px-4">
-                {{ $job->closed_message ?: 'Mohon maaf, lowongan ini telah ditutup dan tidak lagi menerima lamaran baru.' }}
+                {{ $job->closed_message ?: __('Mohon maaf, lowongan ini telah ditutup dan tidak lagi menerima lamaran baru.') }}
             </p>
             <div class="flex justify-center">
-                <a href="{{ route('home') }}" wire:navigate class="px-8 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:bg-primary-container transition-all">Lihat Lowongan Lainnya</a>
+                <a href="{{ route('home') }}" wire:navigate class="px-8 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:bg-primary-container transition-all">{{ __('Lihat Lowongan Lainnya') }}</a>
             </div>
         </div>
     @elseif(!$isSubmitted)
@@ -357,7 +357,7 @@ class extends Component
         <div class="mb-8">
             <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-semibold text-sm bg-surface-bg/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-border shadow-sm">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-                Kembali ke Daftar Lowongan
+                {{ __('Kembali ke Daftar Lowongan') }}
             </a>
         </div>
         
@@ -382,7 +382,7 @@ class extends Component
                     @endif
                 </div>
                 <div class="prose prose-sm dark:prose-invert max-w-none text-secondary">
-                    {!! nl2br($job->description) ?? 'Silakan lengkapi form pendaftaran di bawah ini dengan data yang sebenarnya.' !!}
+                    {!! nl2br($job->description) ?? __('Silakan lengkapi form pendaftaran di bawah ini dengan data yang sebenarnya.') !!}
                 </div>
             </div>
         </section>
@@ -403,7 +403,7 @@ class extends Component
                                     @endif
                                 </div>
                                 <span class="absolute top-12 text-[11px] font-semibold whitespace-nowrap {{ $i <= $currentStep ? 'text-primary' : 'text-secondary' }} hidden sm:block">
-                                    {{ $i === 0 ? 'Mulai' : ($i === $totalPages - 1 ? 'Selesai' : 'Langkah ' . ($i + 1)) }}
+                                    {{ $i === 0 ? __('Mulai') : ($i === $totalPages - 1 ? __('Selesai') : __('Langkah') . ' ' . ($i + 1)) }}
                                 </span>
                             </div>
                             
@@ -423,13 +423,13 @@ class extends Component
                     @if(isset($pages[$currentStep]))
                         <div class="bg-surface-container-lowest border-b border-surface-border px-6 sm:px-10 py-8 text-center sm:text-left relative overflow-hidden">
                             <div class="absolute top-0 left-0 w-full h-1.5 bg-primary"></div>
-                            <h2 class="font-headline-md text-headline-md text-on-surface mb-2 font-bold">{{ $pages[$currentStep]['title'] ?: 'Lengkapi Data' }}</h2>
+                            <h2 class="font-headline-md text-headline-md text-on-surface mb-2 font-bold">{{ $pages[$currentStep]['title'] ?: __('Lengkapi Data') }}</h2>
                             @if(!empty($pages[$currentStep]['description']))
                                 <p class="text-sm text-secondary">{{ $pages[$currentStep]['description'] }}</p>
                             @endif
                             @if($currentStep === 0)
                                 <p class="text-error text-xs mt-4 font-medium flex items-center justify-center sm:justify-start gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">info</span> * Wajib diisi
+                                    <span class="material-symbols-outlined text-[14px]">info</span> {{ __('* Wajib diisi') }}
                                 </p>
                             @endif
                         </div>
@@ -470,12 +470,12 @@ class extends Component
 
                                             @if($field['type'] === 'text' || $field['type'] === 'number' || $field['type'] === 'date')
                                                 <div class="relative">
-                                                    <input wire:model.blur="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="Ketik jawaban Anda di sini..."
+                                                    <input wire:model.blur="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                         class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm" 
                                                         @if($field['required']) required @endif />
                                                 </div>
                                             @elseif($field['type'] === 'textarea')
-                                                <textarea wire:model.blur="customAnswers.{{ $field['id'] }}" rows="4" placeholder="Ketik jawaban Anda di sini..."
+                                                <textarea wire:model.blur="customAnswers.{{ $field['id'] }}" rows="4" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                     class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none resize-none text-on-surface shadow-sm" 
                                                     @if($field['required']) required @endif></textarea>
                                                     
@@ -483,7 +483,7 @@ class extends Component
                                                 <select wire:model.blur="customAnswers.{{ $field['id'] }}" 
                                                     class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]" 
                                                     @if($field['required']) required @endif>
-                                                    <option value="">— Pilih salah satu —</option>
+                                                    <option value="">{{ __('— Pilih salah satu —') }}</option>
                                                     @foreach($field['options'] as $opt)
                                                         <option value="{{ $opt }}">{{ $opt }}</option>
                                                     @endforeach
@@ -501,8 +501,8 @@ class extends Component
                                                     <div class="relative flex items-center p-4 border border-surface-border rounded-xl hover:bg-surface-container-lowest hover:border-primary transition-all {{ (isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] === '__other__') ? 'border-primary bg-primary/5 shadow-sm' : '' }}">
                                                         <label class="flex items-center cursor-pointer w-full">
                                                             <input wire:model.live="customAnswers.{{ $field['id'] }}" type="radio" value="__other__" class="w-5 h-5 text-primary focus:ring-primary border-outline-variant" @if($field['required']) required @endif />
-                                                            <span class="ml-3 text-sm font-medium text-on-surface whitespace-nowrap">Lainnya:</span>
-                                                            <input wire:model.blur="otherAnswers.{{ $field['id'] }}" type="text" class="ml-3 flex-1 bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-1 py-0.5 text-sm outline-none w-full" placeholder="Ketik di sini..." @if((isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] === '__other__') && $field['required']) required @endif />
+                                                            <span class="ml-3 text-sm font-medium text-on-surface whitespace-nowrap">{{ __('Lainnya:') }}</span>
+                                                            <input wire:model.blur="otherAnswers.{{ $field['id'] }}" type="text" class="ml-3 flex-1 bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-1 py-0.5 text-sm outline-none w-full" placeholder="{{ __('Ketik di sini...') }}" @if((isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] === '__other__') && $field['required']) required @endif />
                                                         </label>
                                                     </div>
                                                     @endif
@@ -520,8 +520,8 @@ class extends Component
                                                     <div class="relative flex items-center p-4 border border-surface-border rounded-xl hover:bg-surface-container-lowest hover:border-primary transition-all {{ (isset($customAnswers[$field['id']]) && is_array($customAnswers[$field['id']]) && in_array('__other__', $customAnswers[$field['id']])) ? 'border-primary bg-primary/5 shadow-sm' : '' }}">
                                                         <label class="flex items-center cursor-pointer w-full">
                                                             <input wire:model.live="customAnswers.{{ $field['id'] }}" type="checkbox" value="__other__" class="w-5 h-5 rounded text-primary focus:ring-primary border-outline-variant" />
-                                                            <span class="ml-3 text-sm font-medium text-on-surface whitespace-nowrap">Lainnya:</span>
-                                                            <input wire:model.blur="otherAnswers.{{ $field['id'] }}" type="text" class="ml-3 flex-1 bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-1 py-0.5 text-sm outline-none w-full" placeholder="Ketik di sini..." @if((isset($customAnswers[$field['id']]) && is_array($customAnswers[$field['id']]) && in_array('__other__', $customAnswers[$field['id']])) && $field['required']) required @endif />
+                                                            <span class="ml-3 text-sm font-medium text-on-surface whitespace-nowrap">{{ __('Lainnya:') }}</span>
+                                                            <input wire:model.blur="otherAnswers.{{ $field['id'] }}" type="text" class="ml-3 flex-1 bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-1 py-0.5 text-sm outline-none w-full" placeholder="{{ __('Ketik di sini...') }}" @if((isset($customAnswers[$field['id']]) && is_array($customAnswers[$field['id']]) && in_array('__other__', $customAnswers[$field['id']])) && $field['required']) required @endif />
                                                         </label>
                                                     </div>
                                                     @endif
@@ -533,12 +533,12 @@ class extends Component
                                                         <span class="material-symbols-outlined text-[40px] text-secondary group-hover:text-primary transition-colors">cloud_upload</span>
                                                         <div class="flex text-sm text-secondary justify-center">
                                                             <label class="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary-fixed focus-within:outline-none">
-                                                                <span>Pilih File</span>
+                                                                <span>{{ __('Pilih File') }}</span>
                                                                 <input wire:model="customAnswers.{{ $field['id'] }}" type="file" class="sr-only" @if($field['required']) required @endif>
                                                             </label>
-                                                            <p class="pl-1">atau seret ke sini</p>
+                                                            <p class="pl-1">{{ __('atau seret ke sini') }}</p>
                                                         </div>
-                                                        <p class="text-xs text-secondary">PDF, DOCX, JPG hingga 10MB</p>
+                                                        <p class="text-xs text-secondary">{{ __('PDF, DOCX, JPG hingga 10MB') }}</p>
                                                         
                                                         @if(isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
                                                             <div class="mt-4 px-4 py-2.5 bg-success/10 text-success rounded-lg text-sm font-medium flex items-center justify-center gap-2 border border-success/20 shadow-sm">
@@ -549,7 +549,7 @@ class extends Component
                                                     </div>
                                                 </div>
                                                 <div wire:loading wire:target="customAnswers.{{ $field['id'] }}" class="text-sm text-primary flex items-center gap-2 mt-3 bg-primary/10 px-4 py-2 rounded-lg font-medium inline-block">
-                                                    <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Mengunggah dokumen...
+                                                    <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> {{ __('Mengunggah dokumen...') }}
                                                 </div>
                                             @endif
 
@@ -569,8 +569,8 @@ class extends Component
                                             <input wire:model="terms" type="checkbox" class="w-5 h-5 rounded text-primary focus:ring-primary border-outline-variant" required/>
                                         </div>
                                         <div class="ml-3 text-sm">
-                                            <span class="font-semibold text-on-surface block mb-1">Persetujuan Data Pribadi</span>
-                                            <span class="text-secondary leading-relaxed">Saya menyatakan bahwa data yang saya berikan adalah benar, dan saya menyetujui pemrosesan data ini untuk keperluan rekrutmen perusahaan sesuai dengan kebijakan yang berlaku.</span>
+                                            <span class="font-semibold text-on-surface block mb-1">{{ __('Persetujuan Data Pribadi') }}</span>
+                                            <span class="text-secondary leading-relaxed">{{ __('Saya menyatakan bahwa data yang saya berikan adalah benar, dan saya menyetujui pemrosesan data ini untuk keperluan rekrutmen perusahaan sesuai dengan kebijakan yang berlaku.') }}</span>
                                         </div>
                                     </label>
                                 </div>
@@ -582,7 +582,7 @@ class extends Component
                             @if($currentStep > 0)
                                 <button type="button" wire:click="previousStep"
                                     class="w-full sm:w-auto px-6 py-3 rounded-xl border border-surface-border bg-surface-bg text-on-surface font-semibold text-sm hover:bg-surface-container transition-all">
-                                    Kembali
+                                    {{ __('Kembali') }}
                                 </button>
                             @else
                                 <div></div>
@@ -591,7 +591,7 @@ class extends Component
                             @if($currentStep < $totalPages - 1)
                                 <button type="button" wire:click="nextStep"
                                     class="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:bg-primary-container hover:shadow-lg transition-all flex items-center justify-center gap-2 group">
-                                    Lanjutkan <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                    {{ __('Lanjutkan') }} <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                 </button>
                             @else
                                 <button type="submit"
@@ -600,8 +600,8 @@ class extends Component
                                     class="w-full sm:w-auto px-8 py-3 rounded-xl bg-success text-white font-semibold text-sm shadow-md hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
                                     <span wire:loading.remove wire:target="submit" class="material-symbols-outlined text-[18px]">send</span>
                                     <span wire:loading wire:target="submit" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                                    <span wire:loading.remove wire:target="submit">Kirim Lamaran Sekarang</span>
-                                    <span wire:loading wire:target="submit">Sedang Memproses...</span>
+                                    <span wire:loading.remove wire:target="submit">{{ __('Kirim Lamaran Sekarang') }}</span>
+                                    <span wire:loading wire:target="submit">{{ __('Sedang Memproses...') }}</span>
                                 </button>
                             @endif
                         </div>
@@ -624,8 +624,8 @@ class extends Component
                     </span>
                 </div>
                 <div class="text-center">
-                    <h3 class="font-headline-md text-on-surface font-semibold mb-2">Mengirim Lamaran Anda...</h3>
-                    <p class="text-secondary text-sm">Mohon tunggu, kami sedang mengamankan data dan mengunggah dokumen Anda ke sistem.</p>
+                    <h3 class="font-headline-md text-on-surface font-semibold mb-2">{{ __('Mengirim Lamaran Anda...') }}</h3>
+                    <p class="text-secondary text-sm">{{ __('Mohon tunggu, kami sedang mengamankan data dan mengunggah dokumen Anda ke sistem.') }}</p>
                 </div>
                 <div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
                     <div class="h-full bg-primary rounded-full animate-pulse" style="width: 80%;"></div>
@@ -639,16 +639,16 @@ class extends Component
             <div class="w-24 h-24 bg-success/10 text-success rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="material-symbols-outlined text-[48px]" data-icon="check_circle">task_alt</span>
             </div>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-3 font-bold">Lamaran Berhasil Terkirim! 🎉</h2>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-3 font-bold">{{ __('Lamaran Berhasil Terkirim! 🎉') }}</h2>
             <p class="font-body-lg text-body-lg text-secondary mb-10 max-w-xl mx-auto leading-relaxed">
-                Terima kasih atas antusiasme Anda, <span class="font-semibold text-on-surface">{{ $full_name }}</span>. 
-                Tim HR kami akan segera meninjau berkas Anda untuk posisi <span class="font-semibold text-on-surface">{{ $job->title }}</span>. 
-                Pantau terus email Anda (<span class="text-primary">{{ $email }}</span>) untuk info selanjutnya.
+                {{ __('Terima kasih atas antusiasme Anda, ') }}<span class="font-semibold text-on-surface">{{ $full_name }}</span>. 
+                {{ __('Tim HR kami akan segera meninjau berkas Anda untuk posisi ') }}<span class="font-semibold text-on-surface">{{ $job->title }}</span>. 
+                {{ __('Pantau terus email Anda (') }}<span class="text-primary">{{ $email }}</span>{{ __(') untuk info selanjutnya.') }}
             </p>
             <div class="flex justify-center">
                 <a href="/" class="px-8 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:bg-primary-container hover:shadow-lg transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">home</span>
-                    Kembali ke Beranda
+                    {{ __('Kembali ke Beranda') }}
                 </a>
             </div>
         </div>
