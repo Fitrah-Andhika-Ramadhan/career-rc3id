@@ -291,18 +291,25 @@ class extends Component
             \Log::warning('[EMAIL] Failed to queue applicant confirmation: ' . $e->getMessage());
         }
 
-        $hrEmail = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', '');
-        $cnlEmail = env('MAIL_CNL_ADDRESS', 'cl.rc3id@unpad.ac.id');
+        $notificationEmailsStr = env('MAIL_NOTIFICATION_ADDRESSES', 'cl.rc3id@unpad.ac.id');
         
-        if ($hrEmail && filter_var($hrEmail, FILTER_VALIDATE_EMAIL)) {
-            try {
-                $mail = Mail::to($hrEmail);
-                if ($cnlEmail && filter_var($cnlEmail, FILTER_VALIDATE_EMAIL) && $cnlEmail !== $hrEmail) {
-                    $mail->cc($cnlEmail);
+        if ($notificationEmailsStr) {
+            $emails = array_filter(array_map('trim', explode(',', $notificationEmailsStr)), function($email) {
+                return filter_var($email, FILTER_VALIDATE_EMAIL);
+            });
+            
+            $validEmails = array_values($emails);
+            
+            if (count($validEmails) > 0) {
+                try {
+                    $mail = Mail::to($validEmails[0]);
+                    if (count($validEmails) > 1) {
+                        $mail->cc(array_slice($validEmails, 1));
+                    }
+                    $mail->send(new NewApplicationNotification($candidate, $this->job, $application));
+                } catch (\Exception $e) {
+                    \Log::error('[EMAIL] Failed to send HR notification: ' . $e->getMessage());
                 }
-                $mail->send(new NewApplicationNotification($candidate, $this->job, $application));
-            } catch (\Exception $e) {
-                \Log::error('[EMAIL] Failed to send HR notification: ' . $e->getMessage());
             }
         }
 

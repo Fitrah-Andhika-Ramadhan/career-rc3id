@@ -29,6 +29,7 @@ class extends Component
     public $mail_password = '';
     public $mail_encryption = '';
     public $mail_from_address = '';
+    public $mail_notification_addresses = '';
     public $logo; // temp upload
     public string $currentLogo = '';
     public $favicon; // temp upload
@@ -60,6 +61,7 @@ class extends Component
         $this->mail_password = env('MAIL_PASSWORD', '');
         $this->mail_encryption = env('MAIL_ENCRYPTION', 'tls');
         $this->mail_from_address = env('MAIL_FROM_ADDRESS', 'hello@example.com');
+        $this->mail_notification_addresses = env('MAIL_NOTIFICATION_ADDRESSES', 'cl.rc3id@unpad.ac.id');
         $this->hero_title = env('HERO_TITLE', 'Find Your Next Career at CareerRC3ID');
         $this->hero_subtitle = env('HERO_SUBTITLE', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.');
 
@@ -183,6 +185,7 @@ class extends Component
             'mail_port' => 'required|numeric',
             'mail_encryption' => 'nullable|string',
             'mail_from_address' => 'required|email',
+            'mail_notification_addresses' => 'nullable|string',
         ]);
 
         $this->updateEnv([
@@ -193,6 +196,7 @@ class extends Component
             'MAIL_PASSWORD' => $this->mail_password,
             'MAIL_ENCRYPTION' => $this->mail_encryption,
             'MAIL_FROM_ADDRESS' => $this->mail_from_address,
+            'MAIL_NOTIFICATION_ADDRESSES' => $this->mail_notification_addresses,
         ]);
 
         Artisan::call('config:clear');
@@ -647,6 +651,12 @@ class extends Component
                     <label class="font-label-md text-label-md text-on-surface-variant">From Address</label>
                     <input wire:model="mail_from_address" type="email" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="no-reply@careerrc3id.com">
                     @error('mail_from_address') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                </div>
+                <div class="space-y-2 md:col-span-2 pt-4 border-t border-surface-border">
+                    <label class="font-label-md text-label-md text-on-surface-variant">Notification Emails (HR & CNL)</label>
+                    <input wire:model="mail_notification_addresses" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="hr@example.com, admin@example.com">
+                    <p class="text-xs text-secondary mt-1">Pisahkan dengan koma jika lebih dari satu. Email-email ini akan menerima notifikasi otomatis ketika ada lamaran baru yang masuk.</p>
+                    @error('mail_notification_addresses') <span class="text-error text-sm">{{ $message }}</span> @enderror
                 </div>
             </div>
             <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-surface-border">
