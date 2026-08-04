@@ -337,7 +337,7 @@ class extends Component
                         @error('title') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
                     <div class="space-y-2">
-                        <label class="font-label-md text-label-md text-on-surface-variant">Department</label>
+                        <label class="font-label-md text-label-md text-on-surface-variant">Department / Project</label>
                         <input wire:model="department" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" required>
                     </div>
                     <div class="space-y-2">
