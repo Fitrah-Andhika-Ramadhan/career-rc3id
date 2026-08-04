@@ -13,8 +13,11 @@ class extends Component
 {
     public $jobs;
     public $showModal = false;
+    public $showBulkModal = false;
     public $isEdit = false;
     public $jobId = null;
+    
+    public $bulkJobsText = '';
 
     // Form fields
     public $title = '';
@@ -100,6 +103,36 @@ class extends Component
         $this->loadJobs();
         
         $this->dispatch('job-saved', ['jobId' => $savedJobId]);
+        $this->dispatch('notify', 'Berhasil menyimpan lowongan!');
+    }
+
+    public function saveBulk()
+    {
+        if (empty(trim($this->bulkJobsText))) {
+            return;
+        }
+        
+        $lines = explode("\n", str_replace("\r", "", $this->bulkJobsText));
+        $count = 0;
+        foreach ($lines as $line) {
+            $title = trim($line);
+            if (!empty($title)) {
+                Job::create([
+                    'title' => $title,
+                    'department' => 'Uncategorized',
+                    'work_type' => 'Full-time',
+                    'location' => 'Remote',
+                    'description' => 'Silakan edit deskripsi lowongan ini.',
+                    'status' => 'draft',
+                ]);
+                $count++;
+            }
+        }
+        
+        $this->showBulkModal = false;
+        $this->bulkJobsText = '';
+        $this->loadJobs();
+        $this->dispatch('notify', 'Berhasil menambahkan ' . $count . ' lowongan sekaligus!');
     }
 
     public function toggleHide($id)
@@ -196,6 +229,14 @@ class extends Component
                     <span class="material-symbols-outlined text-primary text-[48px] group-hover:scale-110 transition-transform">add</span>
                 </div>
                 <span class="font-label-md text-label-md text-on-surface-variant font-medium group-hover:text-primary transition-colors">Blank job</span>
+            </div>
+            
+            <!-- Bulk Add Card -->
+            <div wire:click="$set('showBulkModal', true)" class="cursor-pointer flex flex-col gap-2 group w-[150px] shrink-0">
+                <div class="h-[115px] bg-white border border-surface-border rounded-lg flex items-center justify-center hover:border-primary transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-primary text-[48px] group-hover:scale-110 transition-transform">list_alt_add</span>
+                </div>
+                <span class="font-label-md text-label-md text-on-surface-variant font-medium group-hover:text-primary transition-colors">Bulk Add Jobs</span>
             </div>
         </div>
     </div>
@@ -342,6 +383,39 @@ class extends Component
                         <button type="button" wire:click="$set('showModal', false)" class="px-6 py-2 rounded-lg font-label-md border hover:bg-surface-container transition-colors">Cancel</button>
                         <button type="submit" class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 transition-opacity">Save Job</button>
                     </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    <!-- Bulk Add Modal -->
+    @if($showBulkModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="p-margin border-b border-surface-border flex justify-between items-center bg-primary/5">
+                <h2 class="font-headline-md text-headline-md flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">list_alt_add</span>
+                    Bulk Add Jobs
+                </h2>
+                <button wire:click="$set('showBulkModal', false)" class="text-secondary hover:text-on-surface transition-colors">
+                    <span class="material-symbols-outlined" data-icon="close">close</span>
+                </button>
+            </div>
+            <form wire:submit="saveBulk" class="p-margin space-y-stack-md">
+                <div class="space-y-3">
+                    <p class="font-body-sm text-secondary">
+                        Ketikkan (atau *paste*) daftar nama lowongan yang ingin Anda tambahkan sekaligus. Setiap baris baru akan dihitung sebagai satu lowongan (draft).
+                    </p>
+                    <textarea wire:model="bulkJobsText" rows="10" placeholder="Contoh:&#10;Software Engineer&#10;Data Analyst&#10;Product Manager" class="w-full px-4 py-3 border rounded-lg focus:ring-primary focus:border-primary text-body-md" required></textarea>
+                </div>
+                
+                <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-surface-border">
+                    <button type="button" wire:click="$set('showBulkModal', false)" class="px-6 py-2 rounded-lg font-label-md border hover:bg-surface-container transition-colors">Batal</button>
+                    <button type="submit" class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 transition-opacity flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                        Simpan Semua
+                    </button>
                 </div>
             </form>
         </div>
