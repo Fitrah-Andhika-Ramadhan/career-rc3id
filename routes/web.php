@@ -31,8 +31,12 @@ Route::get('/clear-cache', function () {
 Volt::route('/', 'public.job-list')->name('home');
 
 Route::get('/magic-login', function() {
-    \Illuminate\Support\Facades\Auth::loginUsingId(4);
-    return redirect()->route('dashboard');
+    $user = \App\Models\User::role('Admin')->first();
+    if ($user) {
+        \Illuminate\Support\Facades\Auth::login($user);
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login')->with('status', 'Demo user not found.');
 });
 
 Volt::route('/dashboard', 'admin.dashboard')->middleware(['auth', 'verified'])->name('dashboard');
