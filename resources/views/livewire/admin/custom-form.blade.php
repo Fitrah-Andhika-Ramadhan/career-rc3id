@@ -1425,7 +1425,7 @@ Example output format:
                         <button wire:click="$set('aiModalOpen', false)" class="px-4 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
                             Batal
                         </button>
-                        <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="hidden px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
                             <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                             <span wire:loading.remove wire:target="generateAITemplate">Generate (AI)</span>
