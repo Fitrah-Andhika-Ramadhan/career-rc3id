@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\Job;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new
 #[Layout('layouts.admin')]
@@ -123,24 +124,17 @@ class extends Component
             
             $zip->addEmptyDir($basePath);
 
-            // Buat isi file TXT data form
-            $txtContent = "=========================================\n";
-            $txtContent .= "DATA KANDIDAT: " . strtoupper($app->candidate->name) . "\n";
-            $txtContent .= "=========================================\n\n";
-            $txtContent .= "Posisi Dilamar : " . $app->job->title . "\n";
-            $txtContent .= "Departemen     : " . $departmentName . "\n";
-            $txtContent .= "Tanggal Melamar: " . $app->created_at->format('d M Y, H:i') . "\n";
-            $txtContent .= "Email          : " . $app->candidate->email . "\n";
-            $txtContent .= "Nomor HP       : " . $app->candidate->phone . "\n\n";
-            
             $notes = $app->notes->pluck('note')->join("\n\n");
-            if (!empty($notes)) {
-                $txtContent .= "--- JAWABAN FORM & CATATAN ---\n\n";
-                $txtContent .= $notes . "\n";
-            }
             
-            $txtFileName = 'Data_Form_' . \Illuminate\Support\Str::slug($app->candidate->name) . '.txt';
-            $zip->addFromString($basePath . '/' . $txtFileName, $txtContent);
+            $pdf = Pdf::loadView('exports.candidate-form-pdf', [
+                'candidate' => $app->candidate,
+                'job' => $app->job,
+                'application' => $app,
+                'notes' => $notes,
+            ]);
+            
+            $pdfFileName = 'Data_Form_' . \Illuminate\Support\Str::slug($app->candidate->name) . '.pdf';
+            $zip->addFromString($basePath . '/' . $pdfFileName, $pdf->output());
 
             // Export all attached media
             foreach ($app->getMedia() as $media) {

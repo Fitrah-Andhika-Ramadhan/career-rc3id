@@ -8,6 +8,7 @@ use App\Models\Application;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 new
 #[Layout('layouts.admin')]
@@ -187,23 +188,17 @@ class extends Component
                 $candidateFolderName = $jobFolderName . '/' . $counter . '_' . Str::slug($candidate->name);
                 $zip->addEmptyDir($candidateFolderName);
                 
-                // Buat isi file TXT data form
-                $txtContent = "=========================================\n";
-                $txtContent .= "DATA KANDIDAT: " . strtoupper($candidate->name) . "\n";
-                $txtContent .= "=========================================\n\n";
-                $txtContent .= "Posisi Dilamar : " . $job->title . "\n";
-                $txtContent .= "Tanggal Melamar: " . $application->created_at->format('d M Y, H:i') . "\n";
-                $txtContent .= "Email          : " . $candidate->email . "\n";
-                $txtContent .= "Nomor HP       : " . $candidate->phone . "\n\n";
-                
                 $notes = $application->notes->pluck('note')->join("\n\n");
-                if (!empty($notes)) {
-                    $txtContent .= "--- JAWABAN FORM & CATATAN ---\n\n";
-                    $txtContent .= $notes . "\n";
-                }
                 
-                $txtFileName = 'Data_Form_' . Str::slug($candidate->name) . '.txt';
-                $zip->addFromString($candidateFolderName . '/' . $txtFileName, $txtContent);
+                $pdf = Pdf::loadView('exports.candidate-form-pdf', [
+                    'candidate' => $candidate,
+                    'job' => $job,
+                    'application' => $application,
+                    'notes' => $notes,
+                ]);
+                
+                $pdfFileName = 'Data_Form_' . Str::slug($candidate->name) . '.pdf';
+                $zip->addFromString($candidateFolderName . '/' . $pdfFileName, $pdf->output());
                 
                 // Copy media files (CV, Ijazah, dll)
                 foreach ($application->getMedia() as $media) {
