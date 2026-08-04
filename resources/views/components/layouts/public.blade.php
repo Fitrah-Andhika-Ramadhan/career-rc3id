@@ -98,7 +98,7 @@
 
             <div class="flex items-center gap-gutter">
                 <a href="{{ url('/magic-login') }}" class="px-4 py-2 bg-primary/10 text-primary rounded-lg font-label-md font-bold hover:bg-primary/20 transition-colors">Demo Login</a>
-                <a href="{{ route('login') }}" class="font-label-md text-label-md text-secondary hover:text-primary transition-colors">Admin Login</a>
+                <a href="{{ route('login') }}" class="hidden font-label-md text-label-md text-secondary hover:text-primary transition-colors">Admin Login</a>
             </div>
         </div>
     </header>
