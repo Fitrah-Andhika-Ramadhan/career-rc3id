@@ -34,7 +34,7 @@ Route::get('/magic-login', function() {
     $user = \App\Models\User::role('Admin')->first();
     if ($user) {
         \Illuminate\Support\Facades\Auth::login($user);
-        return redirect()->route('dashboard');
+        return redirect()->route('admin.jobs.index');
     }
     return redirect()->route('login')->with('status', 'Demo user not found.');
 });
