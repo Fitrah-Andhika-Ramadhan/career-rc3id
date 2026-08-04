@@ -106,7 +106,14 @@ class extends Component
                     <div class="flex-1">
                         <p class="font-semibold text-on-surface text-sm">Database & File Storage</p>
                         <p class="text-xs text-secondary">
-                            DB: {{ round(filesize(database_path('database.sqlite')) / 1024, 2) }} KB | 
+                            DB: @php
+                                $dbPath = database_path('database.sqlite');
+                                if (config('database.default') === 'sqlite' && File::exists($dbPath)) {
+                                    echo round(filesize($dbPath) / 1024, 2) . ' KB';
+                                } else {
+                                    echo config('database.default') === 'mysql' ? 'MySQL Database' : 'SQL Database';
+                                }
+                            @endphp | 
                             Candidate Files: @php
                                 $size = 0;
                                 $path = storage_path('app/public');
