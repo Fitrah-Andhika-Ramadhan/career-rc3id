@@ -86,7 +86,13 @@ class extends Component
                 <div class="bg-white/80 backdrop-blur-xl p-3 md:p-4 rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-white/50 flex flex-col md:flex-row gap-3 max-w-4xl w-full mx-auto transform transition-all focus-within:scale-[1.02] focus-within:bg-white/95 focus-within:shadow-[0_25px_50px_-12px_rgba(var(--color-primary-rgb),0.25)] duration-500 animate-fade-in-up stagger-4">
                     <div class="flex-1 flex items-center px-4 md:border-r border-surface-border/50 transition-colors">
                         <span class="material-symbols-outlined text-primary mr-3 text-[28px]">search</span>
-                        <input wire:model.live.debounce.300ms="searchQuery" class="w-full border-none focus:ring-0 text-body-lg font-body-lg bg-transparent text-on-surface placeholder:text-on-surface-variant/70" placeholder="Job title or keywords..." type="text"/>
+                        <input 
+                            wire:model.live.debounce.300ms="searchQuery" 
+                            wire:keydown.enter="searchJobs"
+                            onkeydown="if(event.key === 'Enter') document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })"
+                            class="w-full border-none focus:ring-0 text-body-lg font-body-lg bg-transparent text-on-surface placeholder:text-on-surface-variant/70" 
+                            placeholder="Job title or keywords..." 
+                            type="text"/>
                     </div>
                     
                     <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="searchJobs" class="bg-primary text-white px-10 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
