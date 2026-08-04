@@ -38,6 +38,8 @@ class extends Component
     public bool $importModalOpen = false;
     public $availableJobsForImport = [];
     public string $primaryColor = '#005bbf';
+    public bool $aiModalOpen = false;
+    public string $aiPrompt = '';
 
     // ── Persisted config per job (stored in DB as JSON in job column) ──
     
@@ -247,40 +249,72 @@ class extends Component
 
     public function generateAITemplate()
     {
-        $this->fields = [
-            // Section 1: IDENTITAS DIRI
-            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'IDENTITAS DIRI', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nama Lengkap', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Email', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'date', 'label' => 'Tanggal lahir', 'required' => false],
-            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nomor telepon', 'required' => true],
-            
-            // Section 2: PENDIDIKAN DAN REGISTRASI
-            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENDIDIKAN DAN REGISTRASI', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'radio', 'label' => 'Pendidikan Terakhir', 'required' => true, 'options' => ['D3', 'D4', 'S1', 'S2']],
-            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Jurusan', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Universitas', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Tahun Lulus', 'required' => true],
+        if (empty(trim($this->aiPrompt))) {
+            $this->addError('aiPrompt', 'Prompt instruksi tidak boleh kosong.');
+            return;
+        }
 
-            // Section 3: PENGALAMAN KERJA
-            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENGALAMAN KERJA', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'checkbox', 'label' => 'Riwayat Pekerjaan', 'required' => true, 'options' => ['Administrasi Sumber Daya Manusia', 'HR Generalist', 'Fresh Graduate']],
-            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Deskripsi singkat pengalaman kerja', 'required' => false],
-            
-            // Section 4: DOKUMEN PENDUKUNG
-            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'DOKUMEN PENDUKUNG', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload CV dan Surat lamaran', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload Ijazah dan Transkrip nilai', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan upload berkas pendukung lainnya (Motivation letter, Pelatihan, dll)', 'required' => false],
+        $apiKey = env('GEMINI_API_KEY');
+        if (empty($apiKey)) {
+            $this->dispatch('notify', 'Kunci API Gemini belum dikonfigurasi di server (.env).');
+            return;
+        }
 
-            // Section 5: LAINNYA
-            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'LAINNYA', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Apakah Anda pernah terlibat dalam penyusunan Struktur dan Skala Upah (SSU) di perusahaan sebelumnya? Bagaimana prosesnya?', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Ceritakan pengalaman Anda saat harus menangani konflik interpersonal antara karyawan dan atasannya. Bagaimana cara Anda menengahi konflik tersebut?', 'required' => true],
-        ];
-        
-        $this->pushHistory();
-        $this->dispatch('notify', '✨ Template AI HR berhasil di-generate! Silakan edit dan klik "Simpan Form" jika sudah sesuai.');
+        $systemInstruction = "You are an expert HR form builder. Your task is to generate a JSON array of form fields based on the user's prompt. 
+Each field is an object. Available types: 'section', 'title', 'text', 'textarea', 'date', 'file', 'radio', 'checkbox', 'select'.
+Fields like text, textarea, date, file can have 'label' (string) and 'required' (boolean).
+Fields like radio, checkbox, select must have 'label' (string), 'required' (boolean), and 'options' (array of strings).
+Fields like section and title must have 'label' (string) and optionally 'description' (string).
+Output MUST be a valid JSON array only, without markdown wrapping or backticks.
+Always include an 'id' for each field using a unique string (e.g. 'field_xxx').
+Start the form with standard 'Identitas Diri' fields if appropriate for the prompt.
+Example output format:
+[
+    {\"id\": \"field_1a\", \"type\": \"section\", \"label\": \"IDENTITAS DIRI\", \"description\": \"\"},
+    {\"id\": \"field_1b\", \"type\": \"text\", \"label\": \"Nama Lengkap\", \"required\": true}
+]";
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                'system_instruction' => [
+                    'parts' => [
+                        ['text' => $systemInstruction]
+                    ]
+                ],
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $this->aiPrompt]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'response_mime_type' => 'application/json',
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $content = $response->json('candidates.0.content.parts.0.text');
+                
+                if ($content) {
+                    $parsed = json_decode($content, true);
+                    if (is_array($parsed)) {
+                        $this->fields = $parsed;
+                        $this->pushHistory();
+                        $this->aiModalOpen = false;
+                        $this->aiPrompt = '';
+                        $this->dispatch('notify', '✨ Form berhasil dirancang oleh AI! Silakan periksa dan Simpan.');
+                        return;
+                    }
+                }
+            }
+            
+            \Log::error('Gemini API Error: ' . $response->body());
+            $this->dispatch('notify', 'AI gagal merespons dengan format yang benar. Silakan coba lagi.');
+        } catch (\Exception $e) {
+            \Log::error('Gemini API Exception: ' . $e->getMessage());
+            $this->dispatch('notify', 'Terjadi kesalahan sistem saat menghubungi server AI.');
+        }
     }
 
     public function openImportModal()
@@ -656,11 +690,11 @@ class extends Component
             {{-- Floating Toolbar (Desktop) --}}
             <div class="absolute -right-20 top-0 bottom-0 hidden xl:block z-20">
                 <div class="bg-surface-bg border border-surface-border shadow-md rounded-xl p-2 flex flex-col gap-1 sticky top-[140px]">
-                    <button wire:click="generateAITemplate" wire:confirm="Apakah Anda yakin ingin menggunakan Template AI? PERHATIAN: Ini akan menimpa seluruh pertanyaan Anda saat ini!" class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center relative group" title="Build with AI">
+                    <button @click="$wire.set('aiModalOpen', true)" class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center relative group" title="Build with AI">
                         <span class="material-symbols-outlined text-[24px]" style="color: #6366f1;">auto_awesome</span>
                         <!-- Tooltip -->
                         <div class="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                            AI Template
+                            AI Template Generator
                         </div>
                     </button>
                     <div class="h-px bg-surface-border my-1"></div>
@@ -1304,6 +1338,46 @@ class extends Component
     </div>
     @endif
     
+    {{-- AI Prompt Modal --}}
+    @if($aiModalOpen)
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-surface-bg rounded-xl max-w-lg w-full shadow-xl relative overflow-hidden" @click.outside="$wire.set('aiModalOpen', false)">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white flex justify-between items-center">
+                <h3 class="font-headline-sm text-lg font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined">auto_awesome</span> AI Form Generator
+                </h3>
+                <button wire:click="$set('aiModalOpen', false)" class="text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-sm text-secondary mb-4">
+                    Ketikkan instruksi Anda, dan biarkan AI merancang kuesioner form secara otomatis. <br/>
+                    <span class="text-error font-semibold text-xs mt-1 block">PERHATIAN: Membuat form via AI akan menggantikan/menimpa semua pertanyaan Anda saat ini!</span>
+                </p>
+                
+                <textarea wire:model="aiPrompt" rows="4" 
+                    placeholder="Contoh: Buatkan kuesioner untuk lowongan IT Support. Tambahkan pertanyaan tentang pemahaman jaringan dasar dan sistem operasi." 
+                    class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-on-surface resize-none mb-2"></textarea>
+                @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
+                
+                <div class="flex justify-end gap-3 mt-6">
+                    <button wire:click="$set('aiModalOpen', false)" class="px-5 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm">
+                        Batal
+                    </button>
+                    <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                        <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                        <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                        <span wire:loading.remove wire:target="generateAITemplate">Generate Sekarang</span>
+                        <span wire:loading wire:target="generateAITemplate">Sedang Memikirkan...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Import Modal --}}
     @if($importModalOpen)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
