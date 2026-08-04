@@ -381,7 +381,7 @@ class extends Component
                     <div class="flex flex-col md:flex-row items-start gap-6">
                         <div class="flex-shrink-0 w-full md:w-auto">
                             <p class="text-label-sm text-secondary mb-2 font-semibold">Favicon Saat Ini</p>
-                            <div class="w-48 h-32 rounded-xl border-2 border-dashed border-surface-border bg-surface-container flex items-center justify-center overflow-hidden p-2">
+                            <div class="w-32 h-32 rounded-xl border-2 border-dashed border-surface-border bg-surface-container flex items-center justify-center overflow-hidden p-2 mx-auto md:mx-0">
                                 @if($currentFavicon)
                                     <img src="{{ asset($currentFavicon) }}?v={{ time() }}" alt="Current Favicon" class="w-full h-full object-contain">
                                 @else

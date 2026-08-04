@@ -53,7 +53,11 @@ class extends Component
 
 <div>
     <!-- Hero Section -->
-    <section class="relative py-28 lg:py-36 overflow-hidden bg-gradient-to-br from-primary via-primary-container to-info bg-animated-gradient">
+    @php
+        $opacity = env('HERO_OVERLAY_OPACITY', '0.85');
+        $opacityGradient = min(1, floatval($opacity) + 0.1);
+    @endphp
+    <section class="relative py-28 lg:py-36 overflow-hidden bg-black" style="background-image: linear-gradient(rgba(0,0,0, {{ $opacity }}), rgba(0,0,0, {{ $opacityGradient }})), url('{{ asset('hero_background.png') }}'); background-size: cover; background-position: center;">
         <!-- Floating Ambient Shapes -->
         <div class="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-10 right-10 w-80 h-80 bg-black/10 rounded-full blur-3xl animate-float-delayed"></div>
