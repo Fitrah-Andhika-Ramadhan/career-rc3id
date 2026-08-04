@@ -247,6 +247,40 @@ class extends Component
         $this->pushHistory();
     }
 
+    public function generateStaticTemplate()
+    {
+        $this->fields = [
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'IDENTITAS DIRI', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nama Lengkap', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Email', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'date', 'label' => 'Tanggal lahir', 'required' => false],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nomor telepon', 'required' => true],
+            
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENDIDIKAN DAN REGISTRASI', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'radio', 'label' => 'Pendidikan Terakhir', 'required' => true, 'options' => ['D3', 'D4', 'S1', 'S2']],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Jurusan', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Universitas', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Tahun Lulus', 'required' => true],
+
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENGALAMAN KERJA', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'checkbox', 'label' => 'Riwayat Pekerjaan', 'required' => true, 'options' => ['Administrasi Sumber Daya Manusia', 'HR Generalist', 'Fresh Graduate']],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Deskripsi singkat pengalaman kerja', 'required' => false],
+            
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'DOKUMEN PENDUKUNG', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload CV dan Surat lamaran', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload Ijazah dan Transkrip nilai', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan upload berkas pendukung lainnya (Motivation letter, Pelatihan, dll)', 'required' => false],
+
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'LAINNYA', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Apakah Anda pernah terlibat dalam penyusunan Struktur dan Skala Upah (SSU) di perusahaan sebelumnya? Bagaimana prosesnya?', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Ceritakan pengalaman Anda saat harus menangani konflik interpersonal antara karyawan dan atasannya. Bagaimana cara Anda menengahi konflik tersebut?', 'required' => true],
+        ];
+        
+        $this->pushHistory();
+        $this->aiModalOpen = false;
+        $this->dispatch('notify', '✨ Template Standar HR berhasil di-generate! Silakan edit dan klik "Simpan Form".');
+    }
+
     public function generateAITemplate()
     {
         if (empty(trim($this->aiPrompt))) {
@@ -1364,16 +1398,21 @@ Example output format:
                     class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface resize-none mb-2"></textarea>
                 @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
                 
-                <div class="flex justify-end gap-3 mt-6">
-                    <button wire:click="$set('aiModalOpen', false)" class="px-5 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
-                        Batal
+                <div class="flex justify-between items-center mt-6">
+                    <button wire:click="generateStaticTemplate" class="px-4 py-2 rounded-lg font-semibold text-primary hover:bg-primary/10 transition-colors text-sm border border-primary">
+                        Template Standar
                     </button>
-                    <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
-                        <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                        <span wire:loading.remove wire:target="generateAITemplate">Generate Sekarang</span>
-                        <span wire:loading wire:target="generateAITemplate">Sedang Memikirkan...</span>
-                    </button>
+                    <div class="flex justify-end gap-2">
+                        <button wire:click="$set('aiModalOpen', false)" class="px-4 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
+                            Batal
+                        </button>
+                        <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                            <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                            <span wire:loading.remove wire:target="generateAITemplate">Generate (AI)</span>
+                            <span wire:loading wire:target="generateAITemplate">Berpikir...</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
