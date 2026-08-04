@@ -189,6 +189,7 @@ class extends Component
         ];
         $this->editingIndex = count($this->fields) - 1;
         $this->pushHistory();
+        $this->dispatch('notify', 'Pertanyaan baru ditambahkan');
     }
 
     public function addTitleField()
@@ -203,6 +204,7 @@ class extends Component
         ];
         $this->editingIndex = count($this->fields) - 1;
         $this->pushHistory();
+        $this->dispatch('notify', 'Judul / Teks ditambahkan');
     }
 
     public function addImageField()
@@ -217,6 +219,7 @@ class extends Component
         ];
         $this->editingIndex = count($this->fields) - 1;
         $this->pushHistory();
+        $this->dispatch('notify', 'Gambar ditambahkan');
     }
 
     public function addVideoField()
@@ -231,6 +234,7 @@ class extends Component
         ];
         $this->editingIndex = count($this->fields) - 1;
         $this->pushHistory();
+        $this->dispatch('notify', 'Video ditambahkan');
     }
 
     public function addSectionField()
@@ -245,6 +249,7 @@ class extends Component
         ];
         $this->editingIndex = count($this->fields) - 1;
         $this->pushHistory();
+        $this->dispatch('notify', 'Bagian (Section) baru ditambahkan');
     }
 
     public function generateStaticTemplate()
