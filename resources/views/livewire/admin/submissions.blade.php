@@ -85,7 +85,7 @@ class extends Component
 
     public function exportZip()
     {
-        $query = Application::with(['candidate', 'job', 'stage', 'media']);
+        $query = Application::with(['candidate', 'job', 'stage', 'media', 'notes']);
         if ($this->jobId) $query->where('job_id', $this->jobId);
         $applications = $query->get();
 
@@ -112,34 +112,55 @@ class extends Component
         }
         $zip->addFromString('rekap_pelamar.csv', $csvContent);
 
-        // Add CV/resumes per job folder → candidate subfolder
+        // Add CV/resumes per Department folder → candidate subfolder
+        $counter = 1;
         foreach ($applications as $app) {
-            // Clean folder names — allow spaces for readability
-            $jobFolder       = preg_replace('/[^\w\s\-]/', '', $app->job->title);
-            $candidateFolder = preg_replace('/[^\w\s\-]/', '', $app->candidate->name);
-            $basePath        = "{$jobFolder}/{$candidateFolder}";
+            $departmentName = !empty($app->job->department) ? $app->job->department : 'Uncategorized';
+            // Clean folder names
+            $deptFolder      = \Illuminate\Support\Str::slug($departmentName);
+            $candidateFolder = $counter . '_' . \Illuminate\Support\Str::slug($app->candidate->name);
+            $basePath        = "{$deptFolder}/{$candidateFolder}";
+            
+            $zip->addEmptyDir($basePath);
 
-            foreach ($app->getMedia('resumes') as $media) {
+            // Buat isi file TXT data form
+            $txtContent = "=========================================\n";
+            $txtContent .= "DATA KANDIDAT: " . strtoupper($app->candidate->name) . "\n";
+            $txtContent .= "=========================================\n\n";
+            $txtContent .= "Posisi Dilamar : " . $app->job->title . "\n";
+            $txtContent .= "Departemen     : " . $departmentName . "\n";
+            $txtContent .= "Tanggal Melamar: " . $app->created_at->format('d M Y, H:i') . "\n";
+            $txtContent .= "Email          : " . $app->candidate->email . "\n";
+            $txtContent .= "Nomor HP       : " . $app->candidate->phone . "\n\n";
+            
+            $notes = $app->notes->pluck('note')->join("\n\n");
+            if (!empty($notes)) {
+                $txtContent .= "--- JAWABAN FORM & CATATAN ---\n\n";
+                $txtContent .= $notes . "\n";
+            }
+            
+            $txtFileName = 'Data_Form_' . \Illuminate\Support\Str::slug($app->candidate->name) . '.txt';
+            $zip->addFromString($basePath . '/' . $txtFileName, $txtContent);
+
+            // Export all attached media
+            foreach ($app->getMedia() as $media) {
                 $filePath = $media->getPath();
                 if (file_exists($filePath)) {
-                    $ext = pathinfo($media->file_name, PATHINFO_EXTENSION);
-                    $zip->addFile($filePath, "{$basePath}/CV_{$candidateFolder}.{$ext}");
+                    $zip->addFile($filePath, "{$basePath}/{$media->file_name}");
                 }
             }
-            foreach ($app->getMedia('ijazah') as $media) {
-                $filePath = $media->getPath();
-                if (file_exists($filePath)) {
-                    $ext = pathinfo($media->file_name, PATHINFO_EXTENSION);
-                    $zip->addFile($filePath, "{$basePath}/Ijazah_{$candidateFolder}.{$ext}");
+            
+            // Export candidate profile media (if any)
+            if ($app->candidate) {
+                foreach ($app->candidate->getMedia() as $media) {
+                    $filePath = $media->getPath();
+                    if (file_exists($filePath)) {
+                        $zip->addFile($filePath, "{$basePath}/candidate_{$media->file_name}");
+                    }
                 }
             }
-            foreach ($app->getMedia('documents') as $media) {
-                $filePath = $media->getPath();
-                if (file_exists($filePath)) {
-                    $ext = pathinfo($media->file_name, PATHINFO_EXTENSION);
-                    $zip->addFile($filePath, "{$basePath}/Dokumen_{$candidateFolder}.{$ext}");
-                }
-            }
+            
+            $counter++;
         }
 
         $zip->close();
