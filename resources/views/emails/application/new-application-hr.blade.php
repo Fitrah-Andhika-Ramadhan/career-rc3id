@@ -1,9 +1,9 @@
 <x-mail::message>
 # 🔔 Lamaran Baru Diterima!
 
-Halo **Tim HR RC3ID**,
+Halo **Tim HR**,
 
-Ada lamaran baru yang baru saja masuk melalui portal karir. Berikut adalah ringkasan datanya:
+{{ env('MAIL_HR_GREETING') ?: 'Ada lamaran baru yang baru saja masuk melalui portal karir. Berikut adalah ringkasan datanya:' }}
 
 ---
 
