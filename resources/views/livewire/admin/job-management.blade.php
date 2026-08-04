@@ -8,7 +8,6 @@ use App\Models\Application;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
-use ZipArchive;
 
 new
 #[Layout('layouts.admin')]
@@ -175,8 +174,8 @@ class extends Component
             File::makeDirectory(storage_path('app/temp'), 0755, true);
         }
 
-        $zip = new ZipArchive;
-        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+        $zip = new \ZipArchive;
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
             $jobFolderName = Str::slug($job->title);
             $zip->addEmptyDir($jobFolderName);
             
