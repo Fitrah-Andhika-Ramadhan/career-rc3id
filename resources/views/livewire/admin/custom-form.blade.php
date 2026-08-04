@@ -1407,15 +1407,17 @@ Example output format:
             </div>
             
             <div class="p-6">
-                <p class="text-sm text-secondary mb-4">
-                    Ketikkan instruksi Anda, dan biarkan AI merancang kuesioner form secara otomatis. <br/>
-                    <span class="text-error font-semibold text-xs mt-1 block">PERHATIAN: Membuat form via AI akan menggantikan/menimpa semua pertanyaan Anda saat ini!</span>
-                </p>
-                
-                <textarea wire:model="aiPrompt" rows="4" 
-                    placeholder="Contoh: Buatkan kuesioner untuk lowongan IT Support. Tambahkan pertanyaan tentang pemahaman jaringan dasar dan sistem operasi." 
-                    class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface resize-none mb-2"></textarea>
-                @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
+                <div class="hidden">
+                    <p class="text-sm text-secondary mb-4">
+                        Ketikkan instruksi Anda, dan biarkan AI merancang kuesioner form secara otomatis. <br/>
+                        <span class="text-error font-semibold text-xs mt-1 block">PERHATIAN: Membuat form via AI akan menggantikan/menimpa semua pertanyaan Anda saat ini!</span>
+                    </p>
+                    
+                    <textarea wire:model="aiPrompt" rows="4" 
+                        placeholder="Contoh: Buatkan kuesioner untuk lowongan IT Support. Tambahkan pertanyaan tentang pemahaman jaringan dasar dan sistem operasi." 
+                        class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface resize-none mb-2"></textarea>
+                    @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
+                </div>
                 
                 <div class="flex justify-between items-center mt-6">
                     <button wire:click="generateStaticTemplate" class="px-4 py-2 rounded-lg font-semibold text-primary hover:bg-primary/10 transition-colors text-sm border border-primary">
