@@ -241,10 +241,7 @@ class extends Component
             $testEmails = array_unique($testEmails);
 
             foreach ($testEmails as $email) {
-                Mail::raw("This is a test email from CareerRC3ID System.\n\nIf you are reading this in {$email}, your email configuration is working perfectly!", function (Message $message) use ($email) {
-                    $message->to($email)
-                            ->subject('Test Email - CareerRC3ID Configuration');
-                });
+                Mail::to($email)->send(new \App\Mail\TestEmail($email));
             }
             
             $emailsStr = implode(', ', $testEmails);
