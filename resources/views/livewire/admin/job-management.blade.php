@@ -6,6 +6,9 @@ use App\Models\Job;
 use App\Models\Candidate;
 use App\Models\Application;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use ZipArchive;
 
 new
 #[Layout('layouts.admin')]
@@ -161,6 +164,73 @@ class extends Component
         $this->jobId = null;
     }
 
+    public function exportJobData($id)
+    {
+        $job = Job::with(['applications.candidate', 'applications.notes', 'applications.media'])->findOrFail($id);
+        
+        $zipFileName = 'Export_' . Str::slug($job->title) . '_' . date('Ymd_His') . '.zip';
+        $zipFilePath = storage_path('app/temp/' . $zipFileName);
+        
+        if (!File::exists(storage_path('app/temp'))) {
+            File::makeDirectory(storage_path('app/temp'), 0755, true);
+        }
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            $jobFolderName = Str::slug($job->title);
+            $zip->addEmptyDir($jobFolderName);
+            
+            $counter = 1;
+            foreach ($job->applications as $application) {
+                $candidate = $application->candidate;
+                if (!$candidate) continue;
+                
+                $candidateFolderName = $jobFolderName . '/' . $counter . '_' . Str::slug($candidate->name);
+                $zip->addEmptyDir($candidateFolderName);
+                
+                // Buat isi file TXT data form
+                $txtContent = "=========================================\n";
+                $txtContent .= "DATA KANDIDAT: " . strtoupper($candidate->name) . "\n";
+                $txtContent .= "=========================================\n\n";
+                $txtContent .= "Posisi Dilamar : " . $job->title . "\n";
+                $txtContent .= "Tanggal Melamar: " . $application->created_at->format('d M Y, H:i') . "\n";
+                $txtContent .= "Email          : " . $candidate->email . "\n";
+                $txtContent .= "Nomor HP       : " . $candidate->phone . "\n\n";
+                
+                $notes = $application->notes->pluck('note')->join("\n\n");
+                if (!empty($notes)) {
+                    $txtContent .= "--- JAWABAN FORM & CATATAN ---\n\n";
+                    $txtContent .= $notes . "\n";
+                }
+                
+                $txtFileName = 'Data_Form_' . Str::slug($candidate->name) . '.txt';
+                $zip->addFromString($candidateFolderName . '/' . $txtFileName, $txtContent);
+                
+                // Copy media files (CV, Ijazah, dll)
+                foreach ($application->getMedia() as $media) {
+                    if (File::exists($media->getPath())) {
+                        $zip->addFile($media->getPath(), $candidateFolderName . '/' . $media->file_name);
+                    }
+                }
+                
+                // Also check if candidate model has its own media (sometimes CV is stored there)
+                foreach ($candidate->getMedia() as $media) {
+                    if (File::exists($media->getPath())) {
+                        $zip->addFile($media->getPath(), $candidateFolderName . '/candidate_' . $media->file_name);
+                    }
+                }
+                
+                $counter++;
+            }
+            
+            $zip->close();
+            
+            return response()->download($zipFilePath)->deleteFileAfterSend(true);
+        } else {
+            $this->dispatch('notify', 'Gagal membuat file ZIP.');
+        }
+    }
+
     public function generateDummyData()
     {
         $jobs = Job::where('status', 'published')->get();
@@ -307,6 +377,11 @@ class extends Component
                             <a href="{{ route('admin.custom-form') }}?selectedJobId={{ $job->id }}" wire:navigate class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">dynamic_form</span> Form Builder
                             </a>
+                            <button type="button" @click="open = false" wire:click="exportJobData({{ $job->id }})" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <span wire:loading.remove wire:target="exportJobData({{ $job->id }})" class="material-symbols-outlined text-[16px]">folder_zip</span>
+                                <span wire:loading wire:target="exportJobData({{ $job->id }})" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                Export ZIP Data
+                            </button>
                             <hr class="my-1 border-gray-100">
                             <button type="button" @click="open = false; confirmDelete('Hapus lowongan ini?', () => $wire.delete({{ $job->id }}))" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">delete</span> Delete
