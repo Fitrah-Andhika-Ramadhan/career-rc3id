@@ -32,6 +32,7 @@ class extends Component
     public $mail_notification_addresses = '';
     public $mail_include_full_data = false;
     public $mail_hr_greeting = '';
+    public $curated_zip; // For Option 2 Zip Upload
     public $logo; // temp upload
     public string $currentLogo = '';
     public $favicon; // temp upload
@@ -264,6 +265,44 @@ class extends Component
             session()->flash('message', "Test Email sent successfully to: {$emailsStr}! (JANGAN LUPA KLIK 'SAVE SETTINGS' UNTUK MENYIMPAN)");
         } catch (\Exception $e) {
             session()->flash('error', 'Test Email failed: ' . $e->getMessage());
+        }
+    }
+
+    public function uploadAndSendZip()
+    {
+        $this->validate([
+            'curated_zip' => 'required|file|mimes:zip|max:25600', // 25MB max
+        ], [
+            'curated_zip.max' => 'Ukuran file ZIP tidak boleh lebih dari 25 MB karena batasan server email.'
+        ]);
+
+        if (empty($this->mail_notification_addresses)) {
+            session()->flash('error_zip', 'Email penerima (HR) belum diatur. Silakan simpan email penerima di Opsi 1 terlebih dahulu.');
+            return;
+        }
+
+        try {
+            $path = $this->curated_zip->getRealPath();
+            $filename = $this->curated_zip->getClientOriginalName();
+            $greeting = $this->mail_hr_greeting ?: 'Berikut adalah data kandidat terkurasi.';
+
+            $recipients = array_filter(array_map('trim', explode(',', $this->mail_notification_addresses)), function($e) {
+                return filter_var($e, FILTER_VALIDATE_EMAIL);
+            });
+
+            if (empty($recipients)) {
+                session()->flash('error_zip', 'Format email penerima tidak valid.');
+                return;
+            }
+
+            foreach ($recipients as $email) {
+                Mail::to($email)->send(new \App\Mail\CuratedZipMail($greeting, $path, $filename));
+            }
+
+            $this->curated_zip = null;
+            session()->flash('success_zip', 'File ZIP terkurasi berhasil dikirimkan ke tim HR!');
+        } catch (\Exception $e) {
+            session()->flash('error_zip', 'Gagal mengirim email: ' . $e->getMessage());
         }
     }
 
@@ -768,12 +807,89 @@ class extends Component
                 <button type="submit" wire:loading.attr="disabled" wire:target="saveNotification" class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
                     <span wire:loading.remove wire:target="saveNotification" class="material-symbols-outlined text-[20px]">save</span>
                     <span wire:loading wire:target="saveNotification" class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
-                    <span wire:loading.remove wire:target="saveNotification">Simpan Aturan Data</span>
+                    <span wire:loading.remove wire:target="saveNotification">Simpan Pengaturan (Opsi 1)</span>
                     <span wire:loading wire:target="saveNotification">Menyimpan...</span>
                 </button>
             </div>
             
             </form>
+            
+            <hr class="border-surface-border my-stack-lg">
+            
+            {{-- CARD OPSI 2: Upload & Kirim ZIP Terkurasi --}}
+            <form wire:submit="uploadAndSendZip">
+                <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden mb-stack-lg border-l-4 border-l-primary">
+                    <div class="p-margin border-b border-surface-border bg-surface-container-lowest">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">outbox</span>
+                                    Opsi 2: Upload & Kirim ZIP Terkurasi ke HR
+                                </h3>
+                                <p class="text-sm text-secondary mt-1 max-w-2xl">Sudah men-download ZIP kandidat dan menghapus folder yang tidak lolos seleksi awal? Unggah kembali ZIP terkurasi Anda ke sini untuk langsung dikirimkan ke email HR di atas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-margin space-y-6">
+                        @if (session()->has('success_zip'))
+                            <div class="p-stack-md bg-success/10 text-success border border-success/20 rounded-lg flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">check_circle</span>
+                                {{ session('success_zip') }}
+                            </div>
+                        @endif
+                        @if (session()->has('error_zip'))
+                            <div class="p-stack-md bg-error/10 text-error border border-error/20 rounded-lg flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1">error</span>
+                                {{ session('error_zip') }}
+                            </div>
+                        @endif
+                        
+                        <div>
+                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2">Upload File ZIP Terkurasi</label>
+                            <input wire:model="curated_zip" type="file" accept=".zip" class="w-full border border-surface-border p-2 rounded-lg bg-surface-container-low text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-on-primary file:text-sm file:font-semibold hover:file:opacity-90 transition-all">
+                            <p class="text-xs text-error mt-1 flex items-center gap-1 font-medium">
+                                <span class="material-symbols-outlined text-[14px]">warning</span> Maksimal ukuran file: 25 MB (Batasan Standar Layanan Email).
+                            </p>
+                            @error('curated_zip') <span class="text-error text-sm mt-1 block">{{ $message }}</span> @enderror
+                            <div wire:loading wire:target="curated_zip" class="mt-2 text-primary text-sm flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Memeriksa file...
+                            </div>
+                        </div>
+                        
+                        <div x-data>
+                            <button type="button" 
+                                @click="
+                                    if(!$wire.curated_zip) {
+                                        Swal.fire({icon: 'error', title: 'Oops...', text: 'Silakan pilih file ZIP terlebih dahulu!'});
+                                        return;
+                                    }
+                                    Swal.fire({
+                                        title: 'Kirim Data ke HR?',
+                                        text: 'Sistem akan mengirimkan email berisi lampiran file ZIP ini ke ' + ($wire.mail_notification_addresses || 'HR').toUpperCase(),
+                                        icon: 'question',
+                                        showCancelButton: true,
+                                        confirmButtonColor: 'var(--color-primary, #005bbf)',
+                                        cancelButtonColor: '#74777F',
+                                        confirmButtonText: '<span class=\"flex items-center gap-2\"><span class=\"material-symbols-outlined text-[18px]\">send</span> Ya, Kirim Sekarang!</span>',
+                                        cancelButtonText: 'Batal'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            $wire.uploadAndSendZip();
+                                        }
+                                    })
+                                "
+                                class="px-6 py-2 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 flex items-center gap-2 shadow-md disabled:opacity-50 transition-all">
+                                <span wire:loading.remove wire:target="uploadAndSendZip" class="material-symbols-outlined text-[20px]">send</span>
+                                <span wire:loading wire:target="uploadAndSendZip" class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+                                <span wire:loading.remove wire:target="uploadAndSendZip">Kirim Email beserta Lampiran ZIP</span>
+                                <span wire:loading wire:target="uploadAndSendZip">Sedang Mengirim... (Mungkin butuh waktu agak lama)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
         </div>
 </div>
 </div>
