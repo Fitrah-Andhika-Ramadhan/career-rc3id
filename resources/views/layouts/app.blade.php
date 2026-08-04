@@ -103,6 +103,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-stack-md ml-margin">
+                <a href="{{ route('home') }}" target="_blank" title="Lihat Website" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined" data-icon="public">public</span>
+                </a>
                 <button class="p-2 text-secondary hover:bg-surface-container rounded-full relative transition-colors">
                     <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
                 </button>
