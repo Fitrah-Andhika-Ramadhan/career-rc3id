@@ -942,7 +942,22 @@ Example output format:
                                             <input type="text" wire:model="newOptionText" placeholder="Add option" class="flex-1 bg-transparent border-b border-transparent focus:border-surface-border hover:border-surface-border focus:ring-0 px-0 py-1 text-sm text-secondary transition-colors outline-none">
                                             <button type="submit" class="hidden">Add</button>
                                         </form>
+                                        @if(!isset($fields[$i]['allow_other']) || !$fields[$i]['allow_other'])
+                                            <span class="text-secondary text-sm mx-1">atau</span>
+                                            <button wire:click="$set('fields.{{ $i }}.allow_other', true)" class="text-primary text-sm font-semibold hover:underline bg-primary/10 px-3 py-1 rounded-md">tambah "Lainnya"</button>
+                                        @endif
                                     </div>
+                                    @if(isset($fields[$i]['allow_other']) && $fields[$i]['allow_other'])
+                                        <div class="flex items-center gap-3 group mt-3">
+                                            <span class="material-symbols-outlined text-surface-border text-[20px]">
+                                                {{ ($fields[$i]['type'] ?? 'radio') === 'radio' ? 'radio_button_unchecked' : (($fields[$i]['type'] ?? 'checkbox') === 'checkbox' ? 'check_box_outline_blank' : 'format_list_numbered') }}
+                                            </span>
+                                            <span class="flex-1 px-0 py-1 text-sm text-secondary border-b border-surface-border">Lainnya... (pelamar akan mengetik sendiri)</span>
+                                            <button wire:click="$set('fields.{{ $i }}.allow_other', false)" class="text-secondary hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span class="material-symbols-outlined text-[20px]">close</span>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             @elseif(in_array(($fields[$i]['type'] ?? 'text'), ['title', 'image', 'video', 'section']))
                                 <div class="mb-2 ml-1 mt-6 hidden">

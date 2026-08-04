@@ -34,6 +34,7 @@ class extends Component
     // Custom Fields
     public array $customFields = [];
     public array $customAnswers = [];
+    public array $otherAnswers = [];
 
     // Multi-Step Logic
     public int $currentStep = 0;
@@ -157,6 +158,14 @@ class extends Component
                     $rule .= '|string';
                 }
                 $rules["customAnswers.{$field['id']}"] = $rule;
+                
+                // Validate 'Other' input
+                if (($field['type'] ?? 'text') === 'radio' && ($this->customAnswers[$field['id']] ?? '') === '__other__') {
+                    $rules["otherAnswers.{$field['id']}"] = 'required|string';
+                }
+                if (($field['type'] ?? 'text') === 'checkbox' && is_array($this->customAnswers[$field['id']] ?? null) && in_array('__other__', $this->customAnswers[$field['id']])) {
+                    $rules["otherAnswers.{$field['id']}"] = 'required|string';
+                }
             }
         }
 
@@ -246,7 +255,15 @@ class extends Component
                     
                     $answer = $this->customAnswers[$field['id']] ?? '-';
                     if (is_array($answer)) {
+                        if (in_array('__other__', $answer)) {
+                            $otherText = $this->otherAnswers[$field['id']] ?? '';
+                            $answer = array_map(function($a) use ($otherText) {
+                                return $a === '__other__' ? $otherText : $a;
+                            }, $answer);
+                        }
                         $answer = implode(', ', $answer);
+                    } elseif ($answer === '__other__') {
+                        $answer = $this->otherAnswers[$field['id']] ?? '';
                     } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
                         $application->addMedia($answer->getRealPath())
                                    ->usingName($answer->getClientOriginalName())
@@ -473,6 +490,15 @@ class extends Component
                                                         <span class="ml-3 text-sm font-medium text-on-surface">{{ $opt }}</span>
                                                     </label>
                                                     @endforeach
+                                                    @if(isset($field['allow_other']) && $field['allow_other'])
+                                                    <div class="relative flex items-center p-4 border border-surface-border rounded-xl hover:bg-surface-container-lowest hover:border-primary transition-all {{ (isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] === '__other__') ? 'border-primary bg-primary/5 shadow-sm' : '' }}">
+                                                        <label class="flex items-center cursor-pointer w-full">
+                                                            <input wire:model.live="customAnswers.{{ $field['id'] }}" type="radio" value="__other__" class="w-5 h-5 text-primary focus:ring-primary border-outline-variant" @if($field['required']) required @endif />
+                                                            <span class="ml-3 text-sm font-medium text-on-surface whitespace-nowrap">Lainnya:</span>
+                                                            <input wire:model.blur="otherAnswers.{{ $field['id'] }}" type="text" class="ml-3 flex-1 bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-1 py-0.5 text-sm outline-none w-full" placeholder="Ketik di sini..." @if((isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] === '__other__') && $field['required']) required @endif />
+                                                        </label>
+                                                    </div>
+                                                    @endif
                                                 </div>
                                                 
                                             @elseif($field['type'] === 'checkbox')
@@ -483,6 +509,15 @@ class extends Component
                                                         <span class="ml-3 text-sm font-medium text-on-surface">{{ $opt }}</span>
                                                     </label>
                                                     @endforeach
+                                                    @if(isset($field['allow_other']) && $field['allow_other'])
+                                                    <div class="relative flex items-center p-4 border border-surface-border rounded-xl hover:bg-surface-container-lowest hover:border-primary transition-all {{ (isset($customAnswers[$field['id']]) && is_array($customAnswers[$field['id']]) && in_array('__other__', $customAnswers[$field['id']])) ? 'border-primary bg-primary/5 shadow-sm' : '' }}">
+                                                        <label class="flex items-center cursor-pointer w-full">
+                                                            <input wire:model.live="customAnswers.{{ $field['id'] }}" type="checkbox" value="__other__" class="w-5 h-5 rounded text-primary focus:ring-primary border-outline-variant" />
+                                                            <span class="ml-3 text-sm font-medium text-on-surface whitespace-nowrap">Lainnya:</span>
+                                                            <input wire:model.blur="otherAnswers.{{ $field['id'] }}" type="text" class="ml-3 flex-1 bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-1 py-0.5 text-sm outline-none w-full" placeholder="Ketik di sini..." @if((isset($customAnswers[$field['id']]) && is_array($customAnswers[$field['id']]) && in_array('__other__', $customAnswers[$field['id']])) && $field['required']) required @endif />
+                                                        </label>
+                                                    </div>
+                                                    @endif
                                                 </div>
 
                                             @elseif($field['type'] === 'file')
