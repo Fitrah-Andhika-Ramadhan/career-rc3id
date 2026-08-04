@@ -24,6 +24,14 @@ Ada lamaran baru yang baru saja masuk melalui portal karir. Berikut adalah ringk
 - **Tanggal Lamaran:** {{ $application->created_at->format('d F Y, H:i') }} WIB
 </x-mail::panel>
 
+@if(filter_var(env('MAIL_INCLUDE_FULL_DATA', false), FILTER_VALIDATE_BOOLEAN) && $application->notes()->exists())
+<x-mail::panel>
+**📝 Jawaban Formulir Kustom**
+
+{!! nl2br(e($application->notes->first()->note)) !!}
+</x-mail::panel>
+@endif
+
 Silakan klik tombol di bawah ini untuk langsung meninjau lamaran dan dokumen pelamar di Dasbor Admin:
 
 <x-mail::button :url="config('app.url') . '/admin/submissions'" color="primary">

@@ -30,6 +30,7 @@ class extends Component
     public $mail_encryption = '';
     public $mail_from_address = '';
     public $mail_notification_addresses = '';
+    public $mail_include_full_data = false;
     public $logo; // temp upload
     public string $currentLogo = '';
     public $favicon; // temp upload
@@ -62,6 +63,7 @@ class extends Component
         $this->mail_encryption = env('MAIL_ENCRYPTION', 'tls');
         $this->mail_from_address = env('MAIL_FROM_ADDRESS', 'hello@example.com');
         $this->mail_notification_addresses = env('MAIL_NOTIFICATION_ADDRESSES', 'cl.rc3id@unpad.ac.id');
+        $this->mail_include_full_data = filter_var(env('MAIL_INCLUDE_FULL_DATA', false), FILTER_VALIDATE_BOOLEAN);
         $this->hero_title = env('HERO_TITLE', 'Find Your Next Career at CareerRC3ID');
         $this->hero_subtitle = env('HERO_SUBTITLE', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.');
 
@@ -186,6 +188,7 @@ class extends Component
             'mail_encryption' => 'nullable|string',
             'mail_from_address' => 'required|email',
             'mail_notification_addresses' => 'nullable|string',
+            'mail_include_full_data' => 'boolean',
         ]);
 
         $this->updateEnv([
@@ -197,6 +200,7 @@ class extends Component
             'MAIL_ENCRYPTION' => $this->mail_encryption,
             'MAIL_FROM_ADDRESS' => $this->mail_from_address,
             'MAIL_NOTIFICATION_ADDRESSES' => $this->mail_notification_addresses,
+            'MAIL_INCLUDE_FULL_DATA' => $this->mail_include_full_data ? 'true' : 'false',
         ]);
 
         Artisan::call('config:clear');
@@ -657,6 +661,19 @@ class extends Component
                     <input wire:model="mail_notification_addresses" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="hr@example.com, admin@example.com">
                     <p class="text-xs text-secondary mt-1">Pisahkan dengan koma jika lebih dari satu. Email-email ini akan menerima notifikasi otomatis ketika ada lamaran baru yang masuk.</p>
                     @error('mail_notification_addresses') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                    
+                    <div class="mt-4 pt-4 border-t border-surface-border">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <div class="relative">
+                                <input type="checkbox" wire:model="mail_include_full_data" class="sr-only peer">
+                                <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-on-surface block">Sertakan Seluruh Jawaban Form Pelamar di Email</span>
+                                <span class="text-xs text-secondary block">Jika aktif, email notifikasi HR akan mencakup semua data kustom yang diisi pelamar (seperti tanggal lahir, file lampiran, dan jawaban kustom lainnya).</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-surface-border">
