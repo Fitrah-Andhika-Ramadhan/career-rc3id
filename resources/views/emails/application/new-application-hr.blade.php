@@ -46,6 +46,16 @@ Ada lamaran baru yang baru saja masuk melalui portal karir. Berikut adalah ringk
 @endif
 @endforeach
 </x-mail::panel>
+
+@if($application->hasMedia('documents'))
+<x-mail::panel>
+**📁 File Lampiran**
+
+@foreach($application->getMedia('documents') as $media)
+- [{{ $media->file_name }}]({{ $media->getUrl() }})
+@endforeach
+</x-mail::panel>
+@endif
 @endif
 
 Silakan klik tombol di bawah ini untuk langsung meninjau lamaran dan dokumen pelamar di Dasbor Admin:

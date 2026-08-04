@@ -42,6 +42,18 @@ class NewApplicationNotification extends Mailable
 
     public function attachments(): array
     {
-        return [];
+        $attachments = [];
+        
+        // Only attach if MAIL_INCLUDE_FULL_DATA is true to avoid giant emails when not needed
+        if (filter_var(env('MAIL_INCLUDE_FULL_DATA', false), FILTER_VALIDATE_BOOLEAN)) {
+            $mediaItems = $this->application->getMedia('documents');
+            foreach ($mediaItems as $media) {
+                $attachments[] = \Illuminate\Mail\Mailables\Attachment::fromPath($media->getPath())
+                    ->as($media->file_name)
+                    ->withMime($media->mime_type);
+            }
+        }
+        
+        return $attachments;
     }
 }
