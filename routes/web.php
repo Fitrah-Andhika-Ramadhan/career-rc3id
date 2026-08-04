@@ -15,6 +15,19 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/clear-cache', function () {
+    try {
+        Artisan::call('view:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('route:clear');
+        Artisan::call('config:clear');
+        Artisan::call('optimize:clear');
+        return "Semua cache server berhasil dibersihkan secara paksa! ✅ <br><br> Silakan tekan tombol 'Kembali' (Back) di browser Anda dan muat ulang halamannya.";
+    } catch (\Exception $e) {
+        return "Error saat membersihkan cache: " . $e->getMessage();
+    }
+});
+
 Volt::route('/', 'public.job-list')->name('home');
 
 Route::get('/magic-login', function() {
