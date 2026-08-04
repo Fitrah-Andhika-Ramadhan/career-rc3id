@@ -869,9 +869,9 @@ class extends Component
                                         text: 'Sistem akan mengirimkan email berisi lampiran file ZIP ini ke ' + ($wire.mail_notification_addresses || 'HR').toUpperCase(),
                                         icon: 'question',
                                         showCancelButton: true,
-                                        confirmButtonColor: 'var(--color-primary, #005bbf)',
+                                        confirmButtonColor: '#005bbf',
                                         cancelButtonColor: '#74777F',
-                                        confirmButtonText: '<span class=\"flex items-center gap-2\"><span class=\"material-symbols-outlined text-[18px]\">send</span> Ya, Kirim Sekarang!</span>',
+                                        confirmButtonText: 'Ya, Kirim Sekarang!',
                                         cancelButtonText: 'Batal'
                                     }).then((result) => {
                                         if (result.isConfirmed) {
@@ -883,7 +883,7 @@ class extends Component
                                 <span wire:loading.remove wire:target="uploadAndSendZip" class="material-symbols-outlined text-[20px]">send</span>
                                 <span wire:loading wire:target="uploadAndSendZip" class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
                                 <span wire:loading.remove wire:target="uploadAndSendZip">Kirim Email beserta Lampiran ZIP</span>
-                                <span wire:loading wire:target="uploadAndSendZip">Sedang Mengirim... (Mungkin butuh waktu agak lama)</span>
+                                <span wire:loading wire:target="uploadAndSendZip">Sedang Mengirim...</span>
                             </button>
                         </div>
                     </div>
