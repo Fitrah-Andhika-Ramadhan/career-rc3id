@@ -309,19 +309,26 @@ Example output format:
 ]";
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->withToken($apiKey)
-                ->post("https://api.kie.ai/v1/chat/completions", [
-                    'model' => 'gpt-4o', // KIE AI supports OpenAI models
-                    'messages' => [
-                        ['role' => 'system', 'content' => $systemInstruction],
-                        ['role' => 'user', 'content' => $this->aiPrompt]
-                    ],
-                    'temperature' => 0.7,
-                ]);
+            $response = \Illuminate\Support\Facades\Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                'system_instruction' => [
+                    'parts' => [
+                        ['text' => $systemInstruction]
+                    ]
+                ],
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $this->aiPrompt]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'response_mime_type' => 'application/json',
+                ]
+            ]);
 
             if ($response->successful()) {
-                $content = $response->json('choices.0.message.content');
+                $content = $response->json('candidates.0.content.parts.0.text');
                 
                 if ($content) {
                     // Extract only the JSON array part from the response
@@ -341,11 +348,12 @@ Example output format:
                 }
             }
             
-            \Log::error('KIE AI Error: ' . $response->body());
-            $this->dispatch('notify', 'AI gagal merespons dengan format yang benar. Silakan coba lagi.');
+            $errorDetail = $response->json('error.message') ?? $response->body();
+            \Log::error('Gemini API Error: ' . $response->body());
+            $this->dispatch('notify', 'Error API: ' . substr($errorDetail, 0, 100));
         } catch (\Exception $e) {
-            \Log::error('KIE AI Exception: ' . $e->getMessage());
-            $this->dispatch('notify', 'Terjadi kesalahan sistem saat menghubungi server AI.');
+            \Log::error('Gemini API Exception: ' . $e->getMessage());
+            $this->dispatch('notify', 'Terjadi kesalahan sistem saat menghubungi server AI: ' . substr($e->getMessage(), 0, 100));
         }
     }
 
