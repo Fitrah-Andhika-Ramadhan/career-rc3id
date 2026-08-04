@@ -14,7 +14,7 @@ class extends Component
     use WithPagination;
 
     public $searchQuery = '';
-    public $searchDepartment = 'All Departments';
+    public $searchDepartment = 'All Departments / Projects';
 
     public function searchJobs()
     {
@@ -32,7 +32,7 @@ class extends Component
             });
         }
 
-        if ($this->searchDepartment !== 'All Departments') {
+        if ($this->searchDepartment !== 'All Departments / Projects') {
             $query->where('department', $this->searchDepartment);
         }
 
@@ -97,9 +97,9 @@ class extends Component
 
                 <!-- Dynamic Category Pills -->
                 <div class="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up stagger-5 max-w-4xl mx-auto">
-                    <button wire:click="$set('searchDepartment', 'All Departments'); searchJobs()" 
-                            class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === 'All Departments' ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
-                        All Departments
+                    <button wire:click="$set('searchDepartment', 'All Departments / Projects'); searchJobs()" 
+                            class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === 'All Departments / Projects' ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
+                        All Departments / Projects
                     </button>
                     @foreach($departments as $dept)
                         <button wire:click="$set('searchDepartment', '{{ $dept }}'); searchJobs()" 
