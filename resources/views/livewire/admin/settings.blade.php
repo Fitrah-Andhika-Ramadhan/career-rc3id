@@ -230,11 +230,25 @@ class extends Component
         ]);
 
         try {
-            Mail::raw('This is a test email from CareerRC3ID System. If you are reading this, your email configuration is working perfectly!', function (Message $message) {
-                $message->to($this->mail_from_address)
-                        ->subject('Test Email - CareerRC3ID Configuration');
-            });
-            session()->flash('message', 'Test Email sent successfully to ' . $this->mail_from_address . '! (JANGAN LUPA KLIK "SAVE SETTINGS" UNTUK MENYIMPAN)');
+            // Collect all emails to test
+            $testEmails = [$this->mail_from_address];
+            if (!empty($this->mail_notification_addresses)) {
+                $additional = array_filter(array_map('trim', explode(',', $this->mail_notification_addresses)), function($e) {
+                    return filter_var($e, FILTER_VALIDATE_EMAIL);
+                });
+                $testEmails = array_merge($testEmails, $additional);
+            }
+            $testEmails = array_unique($testEmails);
+
+            foreach ($testEmails as $email) {
+                Mail::raw("This is a test email from CareerRC3ID System.\n\nIf you are reading this in {$email}, your email configuration is working perfectly!", function (Message $message) use ($email) {
+                    $message->to($email)
+                            ->subject('Test Email - CareerRC3ID Configuration');
+                });
+            }
+            
+            $emailsStr = implode(', ', $testEmails);
+            session()->flash('message', "Test Email sent successfully to: {$emailsStr}! (JANGAN LUPA KLIK 'SAVE SETTINGS' UNTUK MENYIMPAN)");
         } catch (\Exception $e) {
             session()->flash('error', 'Test Email failed: ' . $e->getMessage());
         }

@@ -301,10 +301,12 @@ class extends Component
             $validEmails = array_values($emails);
             
             if (count($validEmails) > 0) {
-                try {
-                    Mail::to($validEmails)->send(new NewApplicationNotification($candidate, $this->job, $application));
-                } catch (\Exception $e) {
-                    \Log::error('[EMAIL] Failed to send HR notification: ' . $e->getMessage());
+                foreach ($validEmails as $email) {
+                    try {
+                        Mail::to($email)->send(new NewApplicationNotification($candidate, $this->job, $application));
+                    } catch (\Exception $e) {
+                        \Log::error("[EMAIL] Failed to send HR notification to {$email}: " . $e->getMessage());
+                    }
                 }
             }
         }
