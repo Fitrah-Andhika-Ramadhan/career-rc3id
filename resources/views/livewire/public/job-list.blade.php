@@ -90,6 +90,7 @@ class extends Component
                             wire:model.live.debounce.300ms="searchQuery" 
                             wire:keydown.enter="searchJobs"
                             onkeydown="if(event.key === 'Enter') document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })"
+                            x-on:input.debounce.800ms="if($event.target.value.trim() !== '') document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })"
                             class="w-full border-none focus:ring-0 text-body-lg font-body-lg bg-transparent text-on-surface placeholder:text-on-surface-variant/70" 
                             placeholder="Job title or keywords..." 
                             type="text"/>
