@@ -281,15 +281,6 @@ class extends Component
             <label class="block text-label-sm text-on-surface-variant mb-1">Search Candidate</label>
             <input wire:model.live="search" class="w-full bg-surface-container-low border-surface-border rounded-lg text-body-sm focus:ring-1 focus:ring-primary" placeholder="Search by name or email" type="text"/>
         </div>
-        <div class="min-w-[180px]">
-            <label class="block text-label-sm text-on-surface-variant mb-1">Filter by Stage</label>
-            <select wire:model.live="stageFilter" class="w-full bg-surface-container-low border-surface-border rounded-lg text-body-sm focus:ring-1 focus:ring-primary">
-                <option value="">All Stages</option>
-                @foreach(\App\Models\PipelineStage::orderBy('order')->get() as $stage)
-                    <option value="{{ $stage->id }}">{{ $stage->name }}</option>
-                @endforeach
-            </select>
-        </div>
     </div>
 
     {{-- Active filter label --}}
