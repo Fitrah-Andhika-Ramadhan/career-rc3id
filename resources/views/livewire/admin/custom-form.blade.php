@@ -297,7 +297,9 @@ Example output format:
                 $content = $response->json('candidates.0.content.parts.0.text');
                 
                 if ($content) {
-                    $parsed = json_decode($content, true);
+                    $content = preg_replace('/```json\s*/i', '', $content);
+                    $content = preg_replace('/```\s*/', '', $content);
+                    $parsed = json_decode(trim($content), true);
                     if (is_array($parsed)) {
                         $this->fields = $parsed;
                         $this->pushHistory();
@@ -1342,11 +1344,11 @@ Example output format:
     @if($aiModalOpen)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-surface-bg rounded-xl max-w-lg w-full shadow-xl relative overflow-hidden" @click.outside="$wire.set('aiModalOpen', false)">
-            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white flex justify-between items-center">
+            <div class="bg-primary p-6 text-on-primary flex justify-between items-center">
                 <h3 class="font-headline-sm text-lg font-bold flex items-center gap-2">
                     <span class="material-symbols-outlined">auto_awesome</span> AI Form Generator
                 </h3>
-                <button wire:click="$set('aiModalOpen', false)" class="text-white/80 hover:text-white">
+                <button wire:click="$set('aiModalOpen', false)" class="text-on-primary opacity-80 hover:opacity-100">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
@@ -1359,14 +1361,14 @@ Example output format:
                 
                 <textarea wire:model="aiPrompt" rows="4" 
                     placeholder="Contoh: Buatkan kuesioner untuk lowongan IT Support. Tambahkan pertanyaan tentang pemahaman jaringan dasar dan sistem operasi." 
-                    class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-on-surface resize-none mb-2"></textarea>
+                    class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface resize-none mb-2"></textarea>
                 @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
                 
                 <div class="flex justify-end gap-3 mt-6">
-                    <button wire:click="$set('aiModalOpen', false)" class="px-5 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm">
+                    <button wire:click="$set('aiModalOpen', false)" class="px-5 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
                         Batal
                     </button>
-                    <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
                         <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                         <span wire:loading.remove wire:target="generateAITemplate">Generate Sekarang</span>
