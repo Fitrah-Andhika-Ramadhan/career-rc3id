@@ -212,13 +212,6 @@ class extends Component
                     }
                 }
                 
-                // Also check if candidate model has its own media (sometimes CV is stored there)
-                foreach ($candidate->getMedia() as $media) {
-                    if (File::exists($media->getPath())) {
-                        $zip->addFile($media->getPath(), $candidateFolderName . '/candidate_' . $media->file_name);
-                    }
-                }
-                
                 $counter++;
             }
             

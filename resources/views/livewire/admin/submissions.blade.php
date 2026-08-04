@@ -150,16 +150,6 @@ class extends Component
                 }
             }
             
-            // Export candidate profile media (if any)
-            if ($app->candidate) {
-                foreach ($app->candidate->getMedia() as $media) {
-                    $filePath = $media->getPath();
-                    if (file_exists($filePath)) {
-                        $zip->addFile($filePath, "{$basePath}/candidate_{$media->file_name}");
-                    }
-                }
-            }
-            
             $counter++;
         }
 
