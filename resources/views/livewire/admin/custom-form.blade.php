@@ -277,8 +277,10 @@ class extends Component
             ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan upload berkas pendukung lainnya (Motivation letter, Pelatihan, dll)', 'required' => false],
 
             ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'LAINNYA', 'description' => ''],
-            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Apakah Anda pernah terlibat dalam penyusunan Struktur dan Skala Upah (SSU) di perusahaan sebelumnya? Bagaimana prosesnya?', 'required' => true],
-            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Ceritakan pengalaman Anda saat harus menangani konflik interpersonal antara karyawan dan atasannya. Bagaimana cara Anda menengahi konflik tersebut?', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Boleh ceritakan pengalaman Anda selama ini? Hal apa yang paling berat / dirasa paling memuaskan dalam pekerjaan Anda?', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Seberapa teliti Anda mengenai masalah kebersihan? Apakah pengalaman sebelumnya di fasilitas kesehatan?', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Masalah apa yang paling sering Anda temui? Misalnya, bagian apa dari kantor yang biasanya paling kotor / paling sering terlewat untuk dibersihkan?', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Apakah Anda bisa mengendarai motor? Punya motor? Apakah Anda bersedia untuk terkadang membantu pengiriman logistik/sampel/belanja jika sewaktu-waktu dibutuhkan?', 'required' => true],
         ];
         
         $this->pushHistory();
