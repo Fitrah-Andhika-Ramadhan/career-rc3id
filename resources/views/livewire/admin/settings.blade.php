@@ -31,6 +31,7 @@ class extends Component
     public $mail_from_address = '';
     public $mail_notification_addresses = '';
     public $mail_include_full_data = false;
+    public $mail_hr_greeting = '';
     public $logo; // temp upload
     public string $currentLogo = '';
     public $favicon; // temp upload
@@ -64,6 +65,7 @@ class extends Component
         $this->mail_from_address = env('MAIL_FROM_ADDRESS', 'hello@example.com');
         $this->mail_notification_addresses = env('MAIL_NOTIFICATION_ADDRESSES', 'cl.rc3id@unpad.ac.id');
         $this->mail_include_full_data = filter_var(env('MAIL_INCLUDE_FULL_DATA', false), FILTER_VALIDATE_BOOLEAN);
+        $this->mail_hr_greeting = env('MAIL_HR_GREETING', '');
         $this->hero_title = env('HERO_TITLE', 'Find Your Next Career at CareerRC3ID');
         $this->hero_subtitle = env('HERO_SUBTITLE', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.');
 
@@ -208,15 +210,17 @@ class extends Component
         $this->validate([
             'mail_notification_addresses' => 'nullable|string',
             'mail_include_full_data' => 'boolean',
+            'mail_hr_greeting' => 'nullable|string',
         ]);
 
         $this->updateEnv([
             'MAIL_NOTIFICATION_ADDRESSES' => $this->mail_notification_addresses,
             'MAIL_INCLUDE_FULL_DATA' => $this->mail_include_full_data ? 'true' : 'false',
+            'MAIL_HR_GREETING' => $this->mail_hr_greeting,
         ]);
 
         Artisan::call('config:clear');
-        session()->flash('message', 'Candidate Notification settings updated successfully!');
+        session()->flash('message', 'Aturan kelola data kandidat berhasil disimpan!');
     }
     public function testEmail()
     {
@@ -702,50 +706,74 @@ class extends Component
             </div>
         </form>
     </div>
+    </div> {{-- Close EMAIL TAB --}}
 
         {{-- CANDIDATE DATA & HR TAB --}}
         <div x-show="activeTab === 'candidate_data'" x-cloak class="space-y-stack-lg" style="display: none;">
-            <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden">
-                <form wire:submit="saveNotification">
+            <form wire:submit="saveNotification">
+            
+            {{-- CARD 1: Email Penerima Notifikasi --}}
+            <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden mb-stack-lg">
                 <div class="p-margin border-b border-surface-border">
                     <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">contact_mail</span>
-                        Aturan Kelola Data & Notifikasi
+                        <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">group</span>
+                        Penerima Notifikasi Lamaran Baru
                     </h3>
+                    <p class="text-sm text-secondary mt-1">Atur siapa saja tim HR atau pihak CNL yang akan menerima notifikasi setiap kali ada kandidat baru.</p>
                 </div>
-                <div class="p-margin space-y-stack-md">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="font-label-md text-label-md text-on-surface-variant">Notification Emails (HR & CNL)</label>
-                            <input wire:model="mail_notification_addresses" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="hr@example.com, admin@example.com">
-                            <p class="text-xs text-secondary mt-1">Pisahkan dengan koma jika lebih dari satu. Email-email ini akan menerima notifikasi otomatis ketika ada lamaran baru yang masuk.</p>
-                            @error('mail_notification_addresses') <span class="text-error text-sm">{{ $message }}</span> @enderror
-                            
-                            <div class="mt-4 pt-4 border-t border-surface-border">
-                                <label class="flex items-center gap-3 cursor-pointer">
-                                    <div class="relative">
-                                        <input type="checkbox" wire:model="mail_include_full_data" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </div>
-                                    <div>
-                                        <span class="text-sm font-semibold text-on-surface block">Sertakan Seluruh Jawaban Form Pelamar di Email</span>
-                                        <span class="text-xs text-secondary block">Jika aktif, email notifikasi HR akan mencakup semua data kustom yang diisi pelamar (seperti tanggal lahir, file lampiran, dan jawaban kustom lainnya).</span>
-                                    </div>
-                                </label>
+                <div class="p-margin space-y-4">
+                    <label class="font-label-md text-label-md text-on-surface-variant block mb-2">Daftar Email Penerima (HR & CNL)</label>
+                    <input wire:model="mail_notification_addresses" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary" placeholder="hr@example.com, admin@example.com">
+                    <p class="text-xs text-secondary mt-1">Pisahkan dengan koma jika Anda memasukkan lebih dari satu email.</p>
+                    @error('mail_notification_addresses') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                </div>
+            </div>
+
+            {{-- CARD 2: Aturan Pengiriman Data Pelamar --}}
+            <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden mb-stack-lg">
+                <div class="p-margin border-b border-surface-border">
+                    <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">dataset</span>
+                        Aturan Kelola Data Kandidat
+                    </h3>
+                    <p class="text-sm text-secondary mt-1">Tentukan sedetail apa data yang akan langsung dikirimkan melalui email notifikasi ke tim HR.</p>
+                </div>
+                <div class="p-margin space-y-6">
+                    
+                    {{-- Toggle Lampiran --}}
+                    <div>
+                        <label class="flex items-start gap-4 cursor-pointer p-4 border border-surface-border rounded-lg bg-surface-container/30 hover:bg-surface-container-low transition-colors">
+                            <div class="relative mt-1">
+                                <input type="checkbox" wire:model="mail_include_full_data" class="sr-only peer">
+                                <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </div>
-                        </div>
+                            <div>
+                                <span class="text-sm font-semibold text-on-surface block">Kirim Seluruh File dan Jawaban Kustom Pelamar ke Email</span>
+                                <span class="text-xs text-secondary block mt-1">Jika diaktifkan, email notifikasi HR tidak hanya berisi nama pelamar, namun juga melampirkan secara otomatis CV/Dokumen pelamar dan daftar jawaban kustom (seperti domisili, pendidikan, dll) sehingga HR bisa meninjau langsung dari kotak masuk email.</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    {{-- Pesan Kustom --}}
+                    <div>
+                        <label class="font-label-md text-label-md text-on-surface-variant block mb-2">Teks Pengantar Email HR (Opsional)</label>
+                        <textarea wire:model="mail_hr_greeting" rows="3" class="w-full px-4 py-3 border rounded-lg focus:ring-primary focus:border-primary" placeholder="Teks yang akan muncul di bagian paling atas email HR..."></textarea>
+                        <p class="text-xs text-secondary mt-1">Anda bisa mengatur kalimat pembuka kustom (contoh: "Halo Tim HRD, mohon segera ditinjau lamaran ini..."). Biarkan kosong untuk menggunakan pesan bawaan sistem.</p>
+                        @error('mail_hr_greeting') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
                 </div>
-                <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-surface-border bg-surface-container/50 px-margin pb-margin">
-                    <button type="submit" wire:loading.attr="disabled" wire:target="saveNotification" class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span wire:loading.remove wire:target="saveNotification" class="material-symbols-outlined text-[18px]">save</span>
-                        <span wire:loading wire:target="saveNotification" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                        <span wire:loading.remove wire:target="saveNotification">Simpan Aturan Data</span>
-                        <span wire:loading wire:target="saveNotification">Menyimpan...</span>
-                    </button>
-                </div>
-                </form>
             </div>
+
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="submit" wire:loading.attr="disabled" wire:target="saveNotification" class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                    <span wire:loading.remove wire:target="saveNotification" class="material-symbols-outlined text-[20px]">save</span>
+                    <span wire:loading wire:target="saveNotification" class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+                    <span wire:loading.remove wire:target="saveNotification">Simpan Aturan Data</span>
+                    <span wire:loading wire:target="saveNotification">Menyimpan...</span>
+                </button>
+            </div>
+            
+            </form>
         </div>
 </div>
 </div>
