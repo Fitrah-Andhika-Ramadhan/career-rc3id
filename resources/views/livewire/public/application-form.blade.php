@@ -309,7 +309,7 @@ class extends Component
     @if($isClosed)
         <!-- Closed Message (Card style) -->
         <div class="mb-8">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-semibold text-sm bg-surface-bg/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-border shadow-sm">
+            <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-semibold text-sm bg-surface-bg/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-border shadow-sm">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 Kembali ke Daftar Lowongan
             </a>
@@ -325,13 +325,13 @@ class extends Component
                 {{ $job->closed_message ?: 'Mohon maaf, lowongan ini telah ditutup dan tidak lagi menerima lamaran baru.' }}
             </p>
             <div class="flex justify-center">
-                <a href="{{ route('home') }}" class="px-8 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:bg-primary-container transition-all">Lihat Lowongan Lainnya</a>
+                <a href="{{ route('home') }}" wire:navigate class="px-8 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:bg-primary-container transition-all">Lihat Lowongan Lainnya</a>
             </div>
         </div>
     @elseif(!$isSubmitted)
         <!-- Back Button -->
         <div class="mb-8">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-semibold text-sm bg-surface-bg/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-border shadow-sm">
+            <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors font-semibold text-sm bg-surface-bg/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-border shadow-sm">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 Kembali ke Daftar Lowongan
             </a>
