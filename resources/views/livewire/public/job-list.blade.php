@@ -89,7 +89,7 @@ class extends Component
                         <input wire:model.live.debounce.300ms="searchQuery" class="w-full border-none focus:ring-0 text-body-lg font-body-lg bg-transparent text-on-surface placeholder:text-on-surface-variant/70" placeholder="Job title or keywords..." type="text"/>
                     </div>
                     
-                    <button wire:click="searchJobs" class="bg-primary text-white px-10 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                    <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="searchJobs" class="bg-primary text-white px-10 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
                         <span>Search Jobs</span>
                         <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
                     </button>
@@ -97,12 +97,12 @@ class extends Component
 
                 <!-- Dynamic Category Pills -->
                 <div class="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up stagger-5 max-w-4xl mx-auto">
-                    <button wire:click="$set('searchDepartment', 'All Departments / Projects'); searchJobs()" 
+                    <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="$set('searchDepartment', 'All Departments / Projects'); searchJobs()" 
                             class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === 'All Departments / Projects' ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
                         All Departments / Projects
                     </button>
                     @foreach($departments as $dept)
-                        <button wire:click="$set('searchDepartment', '{{ $dept }}'); searchJobs()" 
+                        <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="$set('searchDepartment', '{{ $dept }}'); searchJobs()" 
                                 class="px-5 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-md border shadow-sm hover:-translate-y-0.5 {{ $searchDepartment === $dept ? 'bg-white text-primary border-white shadow-primary/20' : 'bg-white/10 text-white border-white/30 hover:bg-white/20' }}">
                             {{ $dept }}
                         </button>
@@ -114,7 +114,7 @@ class extends Component
     </section>
 
     <!-- Featured Jobs -->
-    <section class="py-24 bg-surface">
+    <section id="job-listings" class="py-24 bg-surface">
         <div class="max-w-container-max mx-auto px-margin">
             <div class="flex justify-between items-end mb-12">
                 <div>
