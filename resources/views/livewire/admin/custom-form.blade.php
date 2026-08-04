@@ -309,26 +309,19 @@ Example output format:
 ]";
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
-                'system_instruction' => [
-                    'parts' => [
-                        ['text' => $systemInstruction]
-                    ]
-                ],
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $this->aiPrompt]
-                        ]
-                    ]
-                ],
-                'generationConfig' => [
-                    'response_mime_type' => 'application/json',
-                ]
-            ]);
+            $response = \Illuminate\Support\Facades\Http::timeout(30)
+                ->withToken($apiKey)
+                ->post("https://api.kie.ai/v1/chat/completions", [
+                    'model' => 'gpt-4o', // KIE AI supports OpenAI models
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemInstruction],
+                        ['role' => 'user', 'content' => $this->aiPrompt]
+                    ],
+                    'temperature' => 0.7,
+                ]);
 
             if ($response->successful()) {
-                $content = $response->json('candidates.0.content.parts.0.text');
+                $content = $response->json('choices.0.message.content');
                 
                 if ($content) {
                     // Extract only the JSON array part from the response
@@ -337,20 +330,21 @@ Example output format:
                         $jsonContent = $matches[0];
                         $parsed = json_decode($jsonContent, true);
                         if (is_array($parsed)) {
-                        $this->fields = $parsed;
-                        $this->pushHistory();
-                        $this->aiModalOpen = false;
-                        $this->aiPrompt = '';
-                        $this->dispatch('notify', '✨ Form berhasil dirancang oleh AI! Silakan periksa dan Simpan.');
-                        return;
+                            $this->fields = $parsed;
+                            $this->pushHistory();
+                            $this->aiModalOpen = false;
+                            $this->aiPrompt = '';
+                            $this->dispatch('notify', '✨ Form berhasil dirancang oleh AI! Silakan periksa dan Simpan.');
+                            return;
+                        }
                     }
                 }
             }
             
-            \Log::error('Gemini API Error: ' . $response->body());
+            \Log::error('KIE AI Error: ' . $response->body());
             $this->dispatch('notify', 'AI gagal merespons dengan format yang benar. Silakan coba lagi.');
         } catch (\Exception $e) {
-            \Log::error('Gemini API Exception: ' . $e->getMessage());
+            \Log::error('KIE AI Exception: ' . $e->getMessage());
             $this->dispatch('notify', 'Terjadi kesalahan sistem saat menghubungi server AI.');
         }
     }
