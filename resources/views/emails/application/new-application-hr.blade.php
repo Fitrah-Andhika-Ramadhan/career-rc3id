@@ -28,7 +28,23 @@ Ada lamaran baru yang baru saja masuk melalui portal karir. Berikut adalah ringk
 <x-mail::panel>
 **📝 Jawaban Formulir Kustom**
 
-{!! nl2br(e($application->notes->first()->note)) !!}
+@php
+    $rawNotes = $application->notes->first()->note ?? '';
+    $lines = explode("\n", $rawNotes);
+@endphp
+@foreach($lines as $line)
+@if(trim($line) === '--- Pertanyaan Kustom ---')
+
+**📌 Tambahan Form:**
+@elseif(trim($line) !== '')
+@php $parts = explode(':', $line, 2); @endphp
+@if(count($parts) == 2)
+- **{{ trim($parts[0]) }}:** {{ trim($parts[1]) }}
+@else
+- {{ trim($line) }}
+@endif
+@endif
+@endforeach
 </x-mail::panel>
 @endif
 
