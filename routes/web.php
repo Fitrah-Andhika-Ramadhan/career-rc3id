@@ -30,6 +30,13 @@ Route::get('/clear-cache', function () {
 
 Volt::route('/', 'public.job-list')->name('home');
 
+Route::get('lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'id'])) {
+        session()->put('locale', $locale);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
 Route::get('/magic-login', function() {
     $user = \App\Models\User::role('Admin')->first();
     if ($user) {

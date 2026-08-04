@@ -97,7 +97,7 @@ class extends Component
                     </div>
                     
                     <button onclick="document.getElementById('job-listings').scrollIntoView({ behavior: 'smooth' })" wire:click="searchJobs" class="bg-primary text-white px-10 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
-                        <span>Search Jobs</span>
+                        <span>{{ __('Search Jobs') }}</span>
                         <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
                     </button>
                 </div>

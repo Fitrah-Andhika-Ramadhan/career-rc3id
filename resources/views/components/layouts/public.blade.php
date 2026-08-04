@@ -124,7 +124,13 @@
                 @endif
             </a>
 
-            <div class="flex items-center gap-gutter">
+            <div class="flex items-center gap-4">
+                <!-- Language Switcher -->
+                <div class="flex bg-surface-container-low rounded-lg p-1 border border-surface-border">
+                    <a href="{{ route('lang.switch', 'id') }}" class="px-2 py-1 rounded text-xs font-bold transition-colors {{ App::getLocale() === 'id' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-on-surface' }}">ID</a>
+                    <a href="{{ route('lang.switch', 'en') }}" class="px-2 py-1 rounded text-xs font-bold transition-colors {{ App::getLocale() === 'en' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-on-surface' }}">EN</a>
+                </div>
+                
                 <a href="{{ url('/magic-login') }}" class="px-4 py-2 bg-primary/10 text-primary rounded-lg font-label-md font-bold hover:bg-primary/20 transition-colors">Demo Login</a>
                 <a href="{{ route('login') }}" class="hidden font-label-md text-label-md text-secondary hover:text-primary transition-colors">Admin Login</a>
             </div>
