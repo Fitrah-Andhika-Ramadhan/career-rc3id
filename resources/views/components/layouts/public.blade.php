@@ -4,6 +4,30 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{{ $title ?? 'CareerRC3ID | Find Your Next Opportunity' }}</title>
+    
+    {{-- Dynamic Favicon --}}
+    @php
+        $faviconPath = '';
+        foreach (['favicon.svg', 'favicon.ico', 'favicon.png', 'favicon.jpg', 'favicon.jpeg', 'favicon.webp'] as $f) {
+            if (file_exists(public_path($f))) {
+                $faviconPath = $f;
+                break;
+            }
+        }
+        $mime = match(pathinfo($faviconPath, PATHINFO_EXTENSION)) {
+            'svg' => 'image/svg+xml',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            default => 'image/x-icon'
+        };
+    @endphp
+    @if($faviconPath)
+        <link rel="icon" type="{{ $mime }}" href="{{ asset($faviconPath) }}?v={{ filemtime(public_path($faviconPath)) }}">
+    @else
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
