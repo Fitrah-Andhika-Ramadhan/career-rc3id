@@ -331,10 +331,12 @@ Example output format:
                 $content = $response->json('candidates.0.content.parts.0.text');
                 
                 if ($content) {
-                    $content = preg_replace('/```json\s*/i', '', $content);
-                    $content = preg_replace('/```\s*/', '', $content);
-                    $parsed = json_decode(trim($content), true);
-                    if (is_array($parsed)) {
+                    // Extract only the JSON array part from the response
+                    preg_match('/\[.*\]/s', $content, $matches);
+                    if (!empty($matches[0])) {
+                        $jsonContent = $matches[0];
+                        $parsed = json_decode($jsonContent, true);
+                        if (is_array($parsed)) {
                         $this->fields = $parsed;
                         $this->pushHistory();
                         $this->aiModalOpen = false;
