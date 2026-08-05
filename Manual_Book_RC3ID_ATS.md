@@ -86,8 +86,37 @@ Halaman **Job Management** (`/admin/jobs`) adalah pusat kendali untuk membuka lo
 
 ### Mode Status Lowongan:
 Setiap lowongan memiliki 2 mode status:
-- **Draft:** Lowongan disimpan di sistem tetapi tidak dapat dilihat oleh publik/pelamar.
-- **Published:** Lowongan resmi dibuka dan formulir aplikasinya dapat diakses melalui URL unik.
+- **Draft:** Lowongan disimpan di sistem tetapi tidak dapat dilihat oleh publik/pelamar. Sangat berguna saat Anda masih menyusun draf deskripsi atau menunggu persetujuan atasan.
+- **Published:** Lowongan resmi dibuka dan formulir aplikasinya dapat diakses melalui URL unik oleh pelamar di seluruh dunia.
+
+### Fitur "Bulk Add Jobs" (Tambah Massal)
+Jika perusahaan Anda sedang membuka rekrutmen besar-besaran (misalnya program *Management Trainee* untuk 10 departemen berbeda), Anda tidak perlu menambahkannya satu per satu.
+1. Klik tombol putih **Bulk Add Jobs**.
+2. Akan muncul sebuah area teks besar (*text area*).
+3. Ketikkan atau tempel (*Paste*) daftar posisi pekerjaan yang ingin dibuka (pisahkan 1 posisi per baris).
+4. Klik **Simpan**. Sistem akan secara instan menciptakan seluruh lowongan tersebut dalam mode **Draft**. Anda tinggal mengedit detail masing-masing lowongan (seperti departemen dan deskripsi) secara bertahap.
+
+---
+
+## 4.1. Template AI Standar (Prompt Rekrutmen)
+
+Untuk menghemat waktu Anda dalam menyusun **Deskripsi Pekerjaan (Job Description)** yang rapi, komprehensif, dan memikat kandidat terbaik, Anda sangat disarankan untuk menggunakan bantuan Kecerdasan Buatan (AI) seperti ChatGPT, Claude, atau Gemini. 
+
+Berikut adalah **Template Prompt Standar** yang direkomendasikan untuk disalin oleh tim HR Anda. Cukup salin (*copy*) kotak di bawah ini, ganti bagian di dalam kurung siku `[...]`, tempelkan (*paste*) ke ChatGPT, lalu salin hasil jawabannya ke dalam editor teks "Deskripsi Pekerjaan" di aplikasi ATS ini:
+
+> **[TEMPLATE PROMPT] - Copy Teks Di Bawah Ini:**
+> 
+> "Halo AI, saya adalah HR Manager di **[Nama Perusahaan Anda]**. Tolong buatkan saya sebuah Job Description yang komprehensif, profesional, namun tetap bernada ramah (*friendly* & modern) untuk posisi **[NAMA POSISI, misal: Digital Marketing Specialist]**. 
+> 
+> Tolong susun menggunakan format berikut:
+> 1. **Paragraf Pembuka** yang menarik (Hook) tentang peran ini.
+> 2. **Tanggung Jawab Utama (Key Responsibilities)** dalam bentuk *bullet points*.
+> 3. **Kualifikasi Minimal (Requirements)** dalam bentuk *bullet points* (masukkan wajib: **[Sebutkan 1-2 syarat wajib, misal: minimal S1, pengalaman 2 tahun]**).
+> 4. **Keuntungan & Fasilitas (Benefits)** bergabung dengan tim kami.
+> 
+> Buat menggunakan Bahasa Indonesia baku yang modern, dan tolong gunakan penataan format teks tebal/miring yang rapi agar langsung siap saya masukkan ke dalam portal lowongan kerja kami."
+
+*Tips Tambahan: Editor deskripsi pekerjaan di RC3ID ATS (CKEditor) sepenuhnya mendukung **Copy-Paste format kaya (Rich Text)** dari ChatGPT. Anda tidak perlu memformat ulang bullet-points atau teks tebal secara manual!*
 
 ---
 
