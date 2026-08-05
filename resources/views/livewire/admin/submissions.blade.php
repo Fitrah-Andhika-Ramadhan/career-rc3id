@@ -86,6 +86,18 @@ class extends Component
 
             $service = new \Google\Service\Sheets($client);
             
+            // Generate Dynamic Headers based on Job Custom Fields
+            $headerRow = ["ID", "Nama Kandidat", "Email", "Telepon", "Posisi Dilamar", "Departemen", "Status", "Tanggal Melamar"];
+            
+            $customFields = $job->custom_fields ? json_decode($job->custom_fields, true) : [];
+            if (is_array($customFields)) {
+                foreach ($customFields as $field) {
+                    if (isset($field['type']) && !in_array($field['type'], ['title', 'section', 'image', 'video'])) {
+                        $headerRow[] = $field['label'] ?? 'Custom Field';
+                    }
+                }
+            }
+            
             // Create Spreadsheet
             $spreadsheet = new \Google\Service\Sheets\Spreadsheet([
                 'properties' => [
@@ -94,10 +106,21 @@ class extends Component
             ]);
             $spreadsheet = $service->spreadsheets->create($spreadsheet);
             
+            // Share Spreadsheet to Anyone with the link (Editor)
+            try {
+                $driveService = new \Google\Service\Drive($client);
+                $permission = new \Google\Service\Drive\Permission([
+                    'type' => 'anyone',
+                    'role' => 'writer',
+                ]);
+                $driveService->permissions->create($spreadsheet->spreadsheetId, $permission);
+            } catch (\Exception $e) {
+                // If sharing fails, continue anyway
+                \Log::error('Failed to share spreadsheet: ' . $e->getMessage());
+            }
+            
             // Add Header Row
-            $values = [
-                ["ID", "Nama Kandidat", "Email", "Telepon", "LinkedIn", "Portfolio", "Tanggal Melamar"]
-            ];
+            $values = [$headerRow];
             $body = new \Google\Service\Sheets\ValueRange([
                 'values' => $values
             ]);
@@ -105,9 +128,20 @@ class extends Component
                 'valueInputOption' => 'RAW'
             ];
             
+            // Calculate ending column letter for the range
+            $colCount = count($headerRow);
+            $endCol = '';
+            $temp = $colCount;
+            while ($temp > 0) {
+                $modulo = ($temp - 1) % 26;
+                $endCol = chr(65 + $modulo) . $endCol;
+                $temp = (int)(($temp - $modulo) / 26);
+            }
+            $range = 'Sheet1!A1:' . $endCol . '1';
+            
             $service->spreadsheets_values->update(
                 $spreadsheet->spreadsheetId,
-                'Sheet1!A1:G1',
+                $range,
                 $body,
                 $params
             );
