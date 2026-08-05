@@ -503,7 +503,7 @@ Example output format:
 };
 ?>
 
-<div class="flex-1 overflow-y-auto h-[calc(100vh-64px)] flex flex-col bg-[#f0ebf8]"
+<div class="flex-1 overflow-y-auto h-[calc(100vh-64px)] flex flex-col bg-slate-50"
      x-data="{}"
      @keydown.window.ctrl.z.exact="if(!['INPUT', 'TEXTAREA'].includes($event.target.tagName)) { $event.preventDefault(); $wire.undo(); }"
      @keydown.window.ctrl.y.exact="if(!['INPUT', 'TEXTAREA'].includes($event.target.tagName)) { $event.preventDefault(); $wire.redo(); }"
@@ -698,80 +698,76 @@ Example output format:
         </div>
 
         {{-- Tabs --}}
-        <div class="flex justify-center gap-8">
+        <div class="flex justify-center gap-2 pb-4">
             <button wire:click="$set('currentTab', 'questions')"
-                class="pb-3 px-2 text-sm font-semibold transition-all relative
-                {{ $currentTab === 'questions' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Questions
-                @if($currentTab === 'questions')
-                <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-md"></div>
-                @endif
+                class="px-6 py-2 text-sm font-medium transition-all rounded-full border 
+                {{ $currentTab === 'questions' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface-bg text-secondary border-surface-border hover:bg-surface-container' }}">
+                <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">format_list_bulleted</span> Questions</div>
             </button>
             <button wire:click="$set('currentTab', 'responses')"
-                class="pb-3 px-2 text-sm font-semibold transition-all relative flex items-center gap-2
-                {{ $currentTab === 'responses' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Responses
-                <span class="bg-surface-container text-on-surface-variant px-1.5 py-0.5 rounded-full text-[11px] leading-none {{ $currentTab === 'responses' ? 'bg-primary text-on-primary' : '' }}">{{ $responsesCount }}</span>
-                @if($currentTab === 'responses')
-                <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-md"></div>
-                @endif
+                class="px-6 py-2 text-sm font-medium transition-all rounded-full border flex items-center gap-2
+                {{ $currentTab === 'responses' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface-bg text-secondary border-surface-border hover:bg-surface-container' }}">
+                <span class="material-symbols-outlined text-[18px]">analytics</span> Responses
+                <span class="px-2 py-0.5 rounded-full text-[11px] leading-none {{ $currentTab === 'responses' ? 'bg-white/20 text-white' : 'bg-surface-container-high text-on-surface' }}">{{ $responsesCount }}</span>
             </button>
             <button wire:click="$set('currentTab', 'settings')"
-                class="pb-3 px-2 text-sm font-semibold transition-all relative
-                {{ $currentTab === 'settings' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Settings
-                @if($currentTab === 'settings')
-                <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-md"></div>
-                @endif
+                class="px-6 py-2 text-sm font-medium transition-all rounded-full border
+                {{ $currentTab === 'settings' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface-bg text-secondary border-surface-border hover:bg-surface-container' }}">
+                <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">settings</span> Settings</div>
             </button>
         </div>
     </div>
 
     {{-- Content Area --}}
-    <div class="p-margin max-w-4xl mx-auto w-full flex-1">
+    <div class="p-margin max-w-6xl mx-auto w-full flex-1 flex gap-8">
         
         @if($currentTab === 'questions')
-        {{-- TAB: QUESTIONS (Google Forms Style) --}}
-        <div class="max-w-3xl mx-auto w-full mt-4 space-y-6 relative pb-24">
-            
-            {{-- Floating Toolbar (Desktop) --}}
-            <div class="absolute -right-20 top-0 bottom-0 hidden xl:block z-20">
-                <div class="bg-surface-bg border border-surface-border shadow-md rounded-xl p-2 flex flex-col gap-1 sticky top-[140px]">
-                    <button @click="$wire.set('aiModalOpen', true)" class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center relative group" title="Build with AI">
-                        <span class="material-symbols-outlined text-[24px]" style="color: #6366f1;">auto_awesome</span>
-                        <!-- Tooltip -->
-                        <div class="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                            AI Template Generator
-                        </div>
+        
+        {{-- Left Sidebar Toolbox (ATS Style instead of Google Forms right floating) --}}
+        <div class="hidden xl:block w-64 flex-shrink-0 pt-4">
+            <div class="bg-white border border-surface-border shadow-sm rounded-xl p-4 sticky top-[140px]">
+                <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-4">Form Elements</h3>
+                <div class="flex flex-col gap-2">
+                    <button wire:click="addBlankField" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">add_box</span> Add Question
                     </button>
-                    <div class="h-px bg-surface-border my-1"></div>
-                    <button wire:click="addBlankField" class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center" title="Add question">
-                        <span class="material-symbols-outlined text-[24px]">add_circle</span>
+                    <button wire:click="addTitleField" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">title</span> Add Text Block
                     </button>
-                    <button wire:click="openImportModal" class="p-2 text-secondary hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center" title="Import questions">
-                        <span class="material-symbols-outlined text-[24px]">upload_file</span>
+                    <button wire:click="addSectionField" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">view_agenda</span> Add Section
                     </button>
-                    <button wire:click="addTitleField" class="p-2 text-secondary hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center" title="Add title and description">
-                        <span class="material-symbols-outlined text-[24px]">match_case</span>
+                    <button wire:click="openImportModal" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">upload_file</span> Import Fields
                     </button>
-                    <button wire:click="addImageField" class="p-2 text-secondary hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center" title="Add image">
-                        <span class="material-symbols-outlined text-[24px]">image</span>
+                    
+                    <div class="h-px bg-surface-border my-2"></div>
+                    
+                    <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2 mt-2">Media</h3>
+                    <button wire:click="addImageField" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">image</span> Add Image
                     </button>
-                    <button wire:click="addVideoField" class="p-2 text-secondary hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center" title="Add video">
-                        <span class="material-symbols-outlined text-[24px]">smart_display</span>
+                    <button wire:click="addVideoField" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">smart_display</span> Add Video
                     </button>
-                    <button wire:click="addSectionField" class="p-2 text-secondary hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors flex items-center justify-center" title="Add section">
-                        <span class="material-symbols-outlined text-[24px]">view_stream</span>
+                    
+                    <div class="h-px bg-surface-border my-2"></div>
+                    
+                    <button @click="$wire.set('aiModalOpen', true)" class="w-full mt-2 px-4 py-2.5 text-sm text-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 font-medium">
+                        <span class="material-symbols-outlined text-[18px]">auto_awesome</span> Generate with AI
                     </button>
                 </div>
             </div>
+        </div>
 
-            {{-- Form Header (Editable) --}}
-            <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden mb-6 relative">
-                <div class="h-3 bg-primary w-full"></div>
-                <div class="p-stack-lg border-b-2 focus-within:border-primary transition-colors">
-                    <input type="text" wire:model.blur="jobTitle" class="w-full font-headline-md text-headline-md text-on-surface mb-2 bg-transparent border-none focus:ring-0 p-0" placeholder="Judul Lowongan / Form">
-                    <textarea wire:model.blur="jobDescription" class="w-full text-on-surface-variant text-sm bg-transparent border-none focus:ring-0 p-0 resize-none" rows="3" placeholder="Deskripsi (Bisa menggunakan baris baru)"></textarea>
+        {{-- TAB: QUESTIONS (Main Canvas) --}}
+        <div class="flex-1 max-w-3xl w-full mt-4 space-y-6 relative pb-24">
+
+            {{-- Form Header (Editable) - Modern ATS Card Style --}}
+            <div class="bg-white border border-surface-border rounded-xl shadow-sm overflow-hidden mb-6 relative">
+                <div class="p-8">
+                    <input type="text" wire:model.blur="jobTitle" class="w-full font-headline-md text-headline-md font-bold text-on-surface mb-3 bg-transparent border-none focus:ring-0 p-0 focus:outline-none" placeholder="Job Title / Form Name">
+                    <textarea wire:model.blur="jobDescription" class="w-full text-on-surface-variant bg-transparent border-none focus:ring-0 p-0 resize-none focus:outline-none leading-relaxed" rows="3" placeholder="Add a description for this application form..."></textarea>
                 </div>
             </div>
 
@@ -787,19 +783,17 @@ Example output format:
                      @dragover.prevent
                      @drop.prevent="if(draggingIndex !== null && dragOverIndex !== null) { $wire.reorder(draggingIndex, dragOverIndex); } draggingIndex = null; dragOverIndex = null; isDraggable = false;"
                      @dragend="draggingIndex = null; dragOverIndex = null; isDraggable = false;"
-                     :class="{ 'opacity-40 scale-[0.98]': draggingIndex === {{ $i }}, 'border-t-4 border-primary': dragOverIndex === {{ $i }} && draggingIndex !== {{ $i }}, 'pb-4': dragOverIndex === {{ $i }} && draggingIndex !== {{ $i }} }"
-                     class="transition-all duration-200 mb-4">
+                     :class="{ 'opacity-40 scale-[0.98]': draggingIndex === {{ $i }}, 'border-t-2 border-primary': dragOverIndex === {{ $i }} && draggingIndex !== {{ $i }}, 'pt-2': dragOverIndex === {{ $i }} && draggingIndex !== {{ $i }} }"
+                     class="transition-all duration-200 mb-4 group/field">
                     
                     @if($editingIndex === $i)
                         {{-- EDIT MODE (Active Card) --}}
-                        <div @click.outside="$set('editingIndex', null)" class="bg-surface-bg border border-surface-border rounded-xl shadow-md p-stack-lg relative transition-all z-10" id="card-{{$i}}">
-                            {{-- Blue active indicator --}}
-                            <div class="absolute left-[-1px] top-[-1px] bottom-[-1px] w-1.5 bg-primary rounded-l-xl"></div>
+                        <div @click.outside="$set('editingIndex', null)" class="bg-white border-2 border-primary/20 rounded-xl shadow-sm p-6 relative transition-all z-10" id="card-{{$i}}">
                             
                             {{-- Drag handle --}}
                             <div @mousedown="isDraggable = true" @mouseup="isDraggable = false" @mouseleave="isDraggable = false" 
-                                 class="absolute top-1 left-1/2 -translate-x-1/2 text-surface-border hover:text-secondary cursor-move flex items-center justify-center py-1 select-none">
-                                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 200">drag_indicator</span>
+                                 class="absolute top-2 left-1/2 -translate-x-1/2 text-surface-border hover:text-secondary cursor-move flex items-center justify-center py-1 select-none">
+                                <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
                             </div>
 
                             <div class="flex flex-col md:flex-row items-start gap-4 mb-4 mt-4">
@@ -1015,10 +1009,10 @@ Example output format:
                             </div>
                         </div>
                     @else
-                        {{-- PREVIEW MODE (Inactive Card) --}}
-                        <div wire:click="editField({{ $i }})" class="bg-surface-bg border border-surface-border shadow-sm rounded-xl p-stack-lg cursor-pointer group transition-all relative">
+                        {{-- VIEW MODE (Inactive Card) --}}
+                        <div wire:click="editField({{ $i }})" class="bg-white border border-surface-border hover:border-primary/30 rounded-xl shadow-sm p-6 relative cursor-pointer group transition-all duration-200">
                             
-                            {{-- Hover drag handles --}}
+                            {{-- Drag handle (only visible on hover) --}}
                             <div class="absolute top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-surface-border flex gap-1 items-center z-10">
                                 <button wire:click.stop="moveUp({{ $i }})" class="hover:text-primary"><span class="material-symbols-outlined text-[18px]">arrow_upward</span></button>
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 200">drag_indicator</span>
