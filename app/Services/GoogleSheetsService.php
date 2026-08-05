@@ -135,7 +135,7 @@ class GoogleSheetsService
             $candidate->phone ?? '-',
             $job->title ?? '-',
             $job->department ?? '-',
-            $application->pipelineStage->name ?? '-',
+            $application->stage->name ?? '-',
             $application->created_at->format('Y-m-d H:i:s'),
         ];
 
