@@ -92,7 +92,11 @@
                     </button>
                     <button type="button" onclick="document.getElementById('email').value='cl.rc3id+admin@unpad.ac.id'; document.getElementById('password').value='Rc31d@CML2026!'; document.forms[0].submit();" class="w-full py-2.5 px-4 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 border border-surface-border shadow-sm">
                         <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
-                        Login sebagai Admin (HR)
+                        Login sebagai Admin (CNL)
+                    </button>
+                    <button type="button" onclick="document.getElementById('email').value='cl.rc3id+hr@unpad.ac.id'; document.getElementById('password').value='Rc31d@HR2026!'; document.forms[0].submit();" class="w-full py-2.5 px-4 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 border border-surface-border shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">engineering</span>
+                        Login sebagai HR
                     </button>
                 </div>
             </form>
