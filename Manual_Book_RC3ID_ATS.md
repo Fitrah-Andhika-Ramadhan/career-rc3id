@@ -98,25 +98,34 @@ Jika perusahaan Anda sedang membuka rekrutmen besar-besaran (misalnya program *M
 
 ---
 
-## 4.1. Template AI Standar (Prompt Rekrutmen)
+## 4.1. Template Job Description (Template Umum)
 
-Untuk menghemat waktu Anda dalam menyusun **Deskripsi Pekerjaan (Job Description)** yang rapi, komprehensif, dan memikat kandidat terbaik, Anda sangat disarankan untuk menggunakan bantuan Kecerdasan Buatan (AI) seperti ChatGPT, Claude, atau Gemini. 
+Untuk menjaga keseragaman dan profesionalisme setiap lowongan kerja yang dipublikasikan, tim HRD disarankan untuk menggunakan **Template Umum** di bawah ini. Anda cukup menyalin (*copy*) teks berikut dan menempelkannya (*paste*) ke editor teks "Deskripsi Pekerjaan" di aplikasi ATS, lalu mengubah bagian di dalam kurung siku `[...]`.
 
-Berikut adalah **Template Prompt Standar** yang direkomendasikan untuk disalin oleh tim HR Anda. Cukup salin (*copy*) kotak di bawah ini, ganti bagian di dalam kurung siku `[...]`, tempelkan (*paste*) ke ChatGPT, lalu salin hasil jawabannya ke dalam editor teks "Deskripsi Pekerjaan" di aplikasi ATS ini:
-
-> **[TEMPLATE PROMPT] - Copy Teks Di Bawah Ini:**
+> **[TEMPLATE JOB DESCRIPTION] - Salin Teks Di Bawah Ini:**
 > 
-> "Halo AI, saya adalah HR Manager di **[Nama Perusahaan Anda]**. Tolong buatkan saya sebuah Job Description yang komprehensif, profesional, namun tetap bernada ramah (*friendly* & modern) untuk posisi **[NAMA POSISI, misal: Digital Marketing Specialist]**. 
+> **Tentang Peran Ini:**
+> Kami sedang mencari seorang **[Nama Posisi, misal: Digital Marketing Specialist]** yang kreatif dan berdedikasi tinggi untuk bergabung dengan tim kami. Dalam peran ini, Anda akan bertanggung jawab untuk **[Sebutkan 1-2 kalimat deskripsi singkat tentang tujuan utama posisi ini]**. Jika Anda memiliki semangat kolaborasi dan inovasi, ini adalah kesempatan yang tepat untuk Anda!
 > 
-> Tolong susun menggunakan format berikut:
-> 1. **Paragraf Pembuka** yang menarik (Hook) tentang peran ini.
-> 2. **Tanggung Jawab Utama (Key Responsibilities)** dalam bentuk *bullet points*.
-> 3. **Kualifikasi Minimal (Requirements)** dalam bentuk *bullet points* (masukkan wajib: **[Sebutkan 1-2 syarat wajib, misal: minimal S1, pengalaman 2 tahun]**).
-> 4. **Keuntungan & Fasilitas (Benefits)** bergabung dengan tim kami.
+> **Tanggung Jawab Utama:**
+> - Merencanakan dan mengeksekusi strategi **[Sebutkan tugas utama 1]**.
+> - Berkolaborasi dengan tim **[Sebutkan departemen terkait]** untuk **[Sebutkan tujuan kolaborasi]**.
+> - Menganalisis data dan menyusun laporan rutin terkait pencapaian target.
+> - **[Tambahkan tanggung jawab operasional harian lainnya]**.
 > 
-> Buat menggunakan Bahasa Indonesia baku yang modern, dan tolong gunakan penataan format teks tebal/miring yang rapi agar langsung siap saya masukkan ke dalam portal lowongan kerja kami."
+> **Kualifikasi Minimal (Requirements):**
+> - Pendidikan minimal **[Misal: S1 Ilmu Komunikasi / Sistem Informasi]**.
+> - Pengalaman kerja minimal **[Misal: 2 tahun]** di bidang yang relevan.
+> - Menguasai **[Sebutkan keterampilan teknis (Hard Skills), misal: Microsoft Office, Figma, atau SEO]**.
+> - Memiliki kemampuan komunikasi dan kerja sama tim yang sangat baik (Soft Skills).
+> 
+> **Keuntungan & Fasilitas (Benefits):**
+> - Gaji kompetitif yang disesuaikan dengan pengalaman.
+> - Asuransi Kesehatan (BPJS & Swasta).
+> - Fasilitas kerja (*Laptop / Inventaris*) dan lingkungan kerja yang fleksibel.
+> - Peluang jenjang karier dan pengembangan diri yang luas.
 
-*Tips Tambahan: Editor deskripsi pekerjaan di RC3ID ATS (CKEditor) sepenuhnya mendukung **Copy-Paste format kaya (Rich Text)** dari ChatGPT. Anda tidak perlu memformat ulang bullet-points atau teks tebal secara manual!*
+*Tips Tambahan: Editor deskripsi pekerjaan di RC3ID ATS (CKEditor) sepenuhnya mendukung penataan format. Anda dapat dengan mudah menebalkan teks atau membuat daftar berpoin (*bullet points*) langsung dari dalam sistem agar lowongan Anda tampak lebih menarik.*
 
 ---
 
