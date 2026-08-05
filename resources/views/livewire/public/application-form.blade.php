@@ -317,6 +317,52 @@ class extends Component
         } catch (\Exception $e) {
             \Log::error('[NOTIFICATION] Failed to send database notification: ' . $e->getMessage());
         }
+
+        // Google Sheets Integration (Webhook)
+        try {
+            $webhookUrl = \App\Models\Setting::where('key', 'google_sheets_webhook_url')->value('value');
+            if (!empty($webhookUrl) && filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
+                $payload = [
+                    'id' => $application->id,
+                    'job_title' => $this->job->title,
+                    'candidate_name' => $candidate->name,
+                    'candidate_email' => $candidate->email,
+                    'candidate_phone' => $candidate->phone,
+                    'applied_at' => $application->created_at->format('Y-m-d H:i:s'),
+                    'department' => $this->job->department ?? '-',
+                    'work_type' => $this->job->work_type ?? '-',
+                ];
+
+                // Append custom answers
+                foreach ($this->customFields as $field) {
+                    if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
+                    
+                    $label = $field['label'] ?? 'Unknown';
+                    $answer = $this->customAnswers[$field['id']] ?? '-';
+                    
+                    if (is_array($answer)) {
+                        if (in_array('__other__', $answer)) {
+                            $otherText = $this->otherAnswers[$field['id']] ?? '';
+                            $answer = array_map(function($a) use ($otherText) {
+                                return $a === '__other__' ? $otherText : $a;
+                            }, $answer);
+                        }
+                        $answer = implode(', ', $answer);
+                    } elseif ($answer === '__other__') {
+                        $answer = $this->otherAnswers[$field['id']] ?? '';
+                    } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                        $answer = $answer->getClientOriginalName();
+                    }
+                    
+                    $payload[$label] = $answer;
+                }
+
+                \Illuminate\Support\Facades\Http::timeout(5)->asJson()->post($webhookUrl, $payload);
+            }
+        } catch (\Exception $e) {
+            \Log::error('[WEBHOOK] Failed to send to Google Sheets: ' . $e->getMessage());
+        }
+
         $this->isSubmitted = true;
     }
 };

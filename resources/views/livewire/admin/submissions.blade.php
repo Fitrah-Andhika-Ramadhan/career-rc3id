@@ -22,6 +22,8 @@ class extends Component
     public $selectedApplication = null;
     public $embedded = false;
     public $showKanbanModal = false;
+    public $showSheetsModal = false;
+    public $googleSheetsWebhookUrl = '';
 
     public function updateStage($appId, $newStageId)
     {
@@ -40,6 +42,18 @@ class extends Component
         } elseif (request()->query('jobId')) {
             $this->jobId = request()->query('jobId');
         }
+        
+        $this->googleSheetsWebhookUrl = \App\Models\Setting::where('key', 'google_sheets_webhook_url')->value('value') ?? '';
+    }
+
+    public function saveSheetsWebhook()
+    {
+        \App\Models\Setting::updateOrCreate(
+            ['key' => 'google_sheets_webhook_url'],
+            ['value' => $this->googleSheetsWebhookUrl]
+        );
+        $this->showSheetsModal = false;
+        $this->dispatch('notify', ['message' => 'Integrasi Google Sheets berhasil disimpan!', 'type' => 'success']);
     }
 
     public function updatingSearch() { $this->resetPage(); }
@@ -207,6 +221,13 @@ class extends Component
             <p class="text-on-surface-variant mt-1">Manage and screen all incoming applications from active job vacancies.</p>
         </div>
         <div class="flex items-center gap-stack-sm flex-wrap">
+            @can('access settings')
+            <button wire:click="$set('showSheetsModal', true)"
+                class="px-4 py-2 bg-success/10 text-success border border-success/20 rounded-lg font-label-md flex items-center gap-2 hover:bg-success/20 shadow-sm transition-all">
+                <span class="material-symbols-outlined text-[18px]">table_view</span>
+                <span>Google Sheets</span>
+            </button>
+            @endcan
             <button wire:click="exportCsv" wire:loading.attr="disabled" wire:target="exportCsv"
                 class="px-4 py-2 bg-surface-container text-on-surface border border-surface-border rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant shadow-sm transition-all disabled:opacity-50">
                 <span wire:loading.remove wire:target="exportCsv" class="material-symbols-outlined text-[18px]">table_chart</span>
@@ -590,6 +611,46 @@ class extends Component
                     </div>
                 </div>
                 @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Google Sheets Integration Modal --}}
+    @if($showSheetsModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-surface-bg rounded-2xl shadow-xl w-full max-w-lg border border-surface-border overflow-hidden" @click.outside="$wire.set('showSheetsModal', false)">
+            <div class="px-6 py-4 border-b border-surface-border flex justify-between items-center bg-surface-container-lowest">
+                <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-success">table_view</span>
+                    Integrasi Google Sheets
+                </h3>
+                <button wire:click="$set('showSheetsModal', false)" class="text-secondary hover:text-error transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6 bg-surface-bg">
+                <div class="mb-4 text-sm text-secondary bg-info/10 p-4 rounded-lg border border-info/20">
+                    <p class="font-semibold text-info mb-1"><span class="material-symbols-outlined text-[16px] align-middle">info</span> Webhook Global</p>
+                    <p>Masukkan URL Webhook Google Apps Script Anda. Setiap kali ada pelamar baru (untuk lowongan apapun), sistem akan otomatis mengirimkan data pelamar (JSON) ke URL ini secara <em>real-time</em>.</p>
+                </div>
+                
+                <form wire:submit.prevent="saveSheetsWebhook">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-on-surface mb-2">URL Webhook (Google Apps Script / Make / Zapier)</label>
+                        <input type="url" wire:model="googleSheetsWebhookUrl" placeholder="https://script.google.com/macros/s/..." 
+                               class="w-full px-4 py-2 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface text-sm">
+                        <p class="text-xs text-secondary mt-2">Kosongkan URL ini jika Anda ingin menonaktifkan integrasi Google Sheets.</p>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-semibold text-secondary hover:text-on-surface transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2 text-sm font-semibold bg-primary text-on-primary rounded-lg shadow hover:bg-primary-container transition-all flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">save</span> Simpan URL
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
