@@ -407,35 +407,70 @@
         }
     </script>
     <!-- Guideline Modal -->
-    <div x-show="showGuidelineModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" x-transition>
-        <div @click.away="showGuidelineModal = false" class="bg-surface-bg border border-surface-border rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden mx-4">
-            <div class="p-4 border-b border-surface-border flex justify-between items-center bg-surface-container-lowest sticky top-0 z-10 shrink-0">
-                <h2 class="font-headline-md text-headline-md font-bold text-on-surface flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">menu_book</span>
-                    Manual Book ATS
-                </h2>
-                <button @click="showGuidelineModal = false" class="text-secondary hover:text-error transition-colors p-1 rounded-lg hover:bg-surface-variant">
-                    <span class="material-symbols-outlined">close</span>
+    <div x-show="showGuidelineModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md" 
+         x-transition:enter="transition ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="transition ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0">
+         
+        <div @click.away="showGuidelineModal = false" class="bg-surface-bg rounded-2xl shadow-2xl w-full max-w-5xl h-[88vh] flex flex-col relative overflow-hidden mx-4"
+             x-transition:enter="transition ease-out duration-300 transform" 
+             x-transition:enter-start="opacity-0 translate-y-8 scale-95" 
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100" 
+             x-transition:leave="transition ease-in duration-200 transform" 
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100" 
+             x-transition:leave-end="opacity-0 translate-y-8 scale-95">
+             
+            <div class="px-6 py-5 md:px-8 flex justify-between items-center bg-white/95 backdrop-blur-sm sticky top-0 z-10 shrink-0 border-b border-surface-border shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shadow-inner">
+                        <span class="material-symbols-outlined text-primary text-[28px]">menu_book</span>
+                    </div>
+                    <div>
+                        <h2 class="font-headline-md text-[20px] md:text-[22px] font-bold text-on-surface leading-tight tracking-tight">
+                            Buku Panduan ATS
+                        </h2>
+                        <p class="text-[13px] text-secondary font-medium mt-0.5">Dokumentasi Resmi & Prosedur Sistem</p>
+                    </div>
+                </div>
+                <button @click="showGuidelineModal = false" class="text-secondary hover:text-error hover:bg-error/10 transition-all w-10 h-10 rounded-full flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-error/50">
+                    <span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">close</span>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto flex-1 markdown-body text-on-surface">
-                {!! \Illuminate\Support\Str::markdown(file_exists(base_path('Manual_Book_RC3ID_ATS.md')) ? file_get_contents(base_path('Manual_Book_RC3ID_ATS.md')) : 'Dokumen tidak ditemukan.') !!}
+            
+            <div class="p-6 md:p-12 overflow-y-auto flex-1 markdown-body bg-[#fafcff]">
+                <div class="max-w-3xl mx-auto">
+                    {!! \Illuminate\Support\Str::markdown(file_exists(base_path('Manual_Book_RC3ID_ATS.md')) ? file_get_contents(base_path('Manual_Book_RC3ID_ATS.md')) : 'Dokumen tidak ditemukan.') !!}
+                </div>
             </div>
         </div>
     </div>
     
     <style>
-        .markdown-body h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #111; }
-        .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #111; border-bottom: 1px solid #eaeaea; padding-bottom: 0.3em; }
-        .markdown-body h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1rem; color: #333; }
-        .markdown-body p { margin-bottom: 1rem; line-height: 1.6; color: #444; }
-        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #444; }
-        .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; color: #444; }
-        .markdown-body a { color: var(--color-primary, #005bbf); text-decoration: underline; font-weight: 500; }
-        .markdown-body hr { margin: 1.5rem 0; border-top: 1px solid #e5e7eb; }
-        .markdown-body strong { font-weight: 600; color: #111; }
-        .markdown-body pre { background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow: auto; font-family: monospace; font-size: 85%; margin-bottom: 1rem; }
-        .markdown-body code { font-family: monospace; background-color: rgba(175,184,193,0.2); padding: 0.2em 0.4em; border-radius: 6px; font-size: 85%; }
+        .markdown-body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .markdown-body h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 1.5rem; color: #0f172a; letter-spacing: -0.025em; }
+        .markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1.25rem; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; letter-spacing: -0.015em; }
+        .markdown-body h3 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; color: #1e293b; }
+        .markdown-body p { margin-bottom: 1.25rem; font-size: 1.05rem; }
+        .markdown-body ul { list-style-type: none; padding-left: 1rem; margin-bottom: 1.5rem; }
+        .markdown-body ul li { position: relative; padding-left: 1.25rem; margin-bottom: 0.5rem; font-size: 1.05rem; }
+        .markdown-body ul li::before { content: '•'; position: absolute; left: 0; color: var(--color-primary, #3b82f6); font-weight: bold; font-size: 1.2em; top: -0.1em; }
+        .markdown-body ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1.5rem; font-size: 1.05rem; }
+        .markdown-body ol li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+        .markdown-body a { color: var(--color-primary, #2563eb); text-decoration: none; font-weight: 500; border-bottom: 1px transparent; transition: border-color 0.2s; }
+        .markdown-body a:hover { border-bottom: 1px solid var(--color-primary, #2563eb); }
+        .markdown-body hr { margin: 2.5rem 0; border: 0; border-top: 1px dashed #cbd5e1; }
+        .markdown-body strong { font-weight: 700; color: #0f172a; }
+        .markdown-body blockquote { border-left: 4px solid var(--color-primary, #3b82f6); margin-left: 0; margin-bottom: 1.5rem; font-style: italic; color: #475569; background: #f0f7ff; padding: 1.25rem; border-radius: 0 0.75rem 0.75rem 0; font-size: 1.05rem; }
+        .markdown-body pre { background-color: #0f172a; color: #f8fafc; padding: 1.25rem; border-radius: 0.75rem; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        .markdown-body pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+        .markdown-body code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background-color: #f1f5f9; color: #db2777; padding: 0.2em 0.4em; border-radius: 0.375rem; font-size: 0.875em; font-weight: 600; border: 1px solid #e2e8f0; }
     </style>
 </body>
 </html>
