@@ -492,6 +492,119 @@ Example output format:
     }
 
     // ── Save to DB ────────────────────────────────────────────────
+    public function exportExcel()
+    {
+        if (!class_exists(\OpenSpout\Writer\XLSX\Writer::class)) {
+            $this->dispatch('notify', 'Library Excel belum siap, muat ulang halaman.');
+            return;
+        }
+
+        $fileName = 'kandidat-' . date('Y-m-d') . '.xlsx';
+        $options = new \OpenSpout\Writer\XLSX\Options();
+        $writer = new \OpenSpout\Writer\XLSX\Writer($options);
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'export');
+        $writer->openToFile($tempFile);
+        
+        $googleService = new \App\Services\GoogleSheetsService();
+        $job = Job::find($this->selectedJobId);
+        if (!$job) return;
+
+        $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
+        $sheet = $writer->getCurrentSheet();
+        $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet1';
+        $sheet->setName($sheetName);
+        
+        $csvHeaders = $googleService->getHeaders($job);
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge(['ID', 'Departemen'], $csvHeaders)));
+        
+        foreach ($applications as $app) {
+            $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge([$app->id, $app->job->department ?? '-'], $row)));
+        }
+
+        $writer->close();
+        return response()->download($tempFile, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportCsv()
+    {
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=candidates-" . date('Y-m-d') . ".csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            $googleService = new \App\Services\GoogleSheetsService();
+            $job = Job::find($this->selectedJobId);
+            if (!$job) return;
+
+            $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
+            $csvHeaders = $googleService->getHeaders($job);
+            fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders), ';');
+            
+            foreach ($applications as $app) {
+                $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+                fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row), ';');
+            }
+            fclose($file);
+        };
+
+        return response()->streamDownload($callback, 'candidates-' . date('Y-m-d') . '.csv', $headers);
+    }
+    
+    public function unlinkGoogleSheets()
+    {
+        $job = Job::find($this->selectedJobId);
+        if ($job) {
+            $job->google_spreadsheet_id = null;
+            $job->save();
+            $this->dispatch('notify', 'Google Sheets form telah diputuskan (Unlinked).');
+        }
+    }
+    
+    public function deleteAllResponses()
+    {
+        $job = Job::find($this->selectedJobId);
+        if ($job) {
+            Application::where('job_id', $job->id)->delete();
+            $this->dispatch('notify', 'Seluruh response telah dihapus secara permanen.');
+            // Refresh response count
+            $this->responsesCount = 0;
+        }
+    }
+    public function syncToGoogleSheets()
+    {
+        if (!$this->selectedJobId) return;
+        $job = Job::find($this->selectedJobId);
+        if (!$job || !$job->google_spreadsheet_id) return;
+        
+        try {
+            $service = new \App\Services\GoogleSheetsService();
+            $service->syncAllCandidatesToSheet($job);
+            $this->dispatch('notify', 'Berhasil menyinkronkan seluruh data ke Google Sheets.');
+        } catch (\Exception $e) {
+            $this->dispatch('notify', 'Gagal sinkronisasi: ' . $e->getMessage());
+        }
+    }
+
+    public function openGoogleSheets()
+    {
+        if ($this->selectedJobId) {
+            $job = Job::find($this->selectedJobId);
+            if ($job && $job->google_spreadsheet_id) {
+                $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+                $this->dispatch('show-sheets-sweetalert', ['url' => $url]);
+            }
+        }
+    }
     public function saveForm()
     {
         if ($this->selectedJobId) {
@@ -1147,11 +1260,11 @@ Example output format:
                     @endphp
                     
                     @if($hasSpreadsheet)
-                        <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" 
-                           title="Lihat di Google Sheets"
+                        <button type="button" wire:click="openGoogleSheets"
+                           title="Pengaturan Google Sheets"
                            class="inline-flex items-center justify-center p-2 bg-success text-white rounded-lg hover:opacity-90 transition-opacity shadow-sm">
                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">table_view</span>
-                        </a>
+                        </button>
                     @else
                         <button wire:click="$dispatch('open-sheets-modal')"
                            title="Hubungkan ke Google Sheets"
@@ -1168,9 +1281,37 @@ Example output format:
                     </a>
                     @endif
                     
-                    <button class="p-2 text-secondary hover:bg-surface-container rounded-full transition-colors flex items-center justify-center" title="More options">
-                        <span class="material-symbols-outlined text-[20px]">more_vert</span>
-                    </button>
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" @click.outside="open = false" class="p-2 text-secondary hover:bg-surface-container rounded-full transition-colors flex items-center justify-center" title="More options">
+                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                        </button>
+                        
+                        <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 top-full mt-1 w-[260px] bg-surface-bg border border-surface-border rounded-md shadow-lg z-50 py-2">
+                            <button class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50" disabled>
+                                Get email notifications for new responses
+                            </button>
+                            <button class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50" disabled>
+                                Select destination for responses
+                            </button>
+                            <button wire:click="unlinkGoogleSheets" wire:confirm="Anda yakin ingin memutus form ini dari Spreadsheet?" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-secondary">link_off</span> Unlink form
+                            </button>
+                            <hr class="my-2 border-surface-border">
+                            <button wire:click="exportExcel" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-secondary">download</span> Download responses (.xlsx)
+                            </button>
+                            <button wire:click="exportCsv" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-secondary">download</span> Download responses (.csv)
+                            </button>
+                            <button onclick="window.print()" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-secondary">print</span> Print all responses
+                            </button>
+                            <hr class="my-2 border-surface-border">
+                            <button wire:click="deleteAllResponses" wire:confirm="PERINGATAN: Semua lamaran dan data pelamar pada loker ini akan dihapus permanen. Lanjutkan?" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-error/10 transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-secondary">delete</span> Delete all responses
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="p-0">
@@ -1427,6 +1568,40 @@ Example output format:
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $wire.loadStandardTemplate();
+                    }
+                });
+            });
+            
+            $wire.on('show-sheets-sweetalert', (data) => {
+                const url = data[0].url;
+                Swal.fire({
+                    title: 'Google Sheets Terhubung',
+                    text: 'Apa yang ingin Anda lakukan dengan Spreadsheet ini?',
+                    icon: 'info',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonColor: '#1a73e8', // Google Blue
+                    denyButtonColor: '#0f9d58', // Google Green
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Buka Spreadsheet',
+                    denyButtonText: 'Sinkronisasi Ulang (Sync All)',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open(url, '_blank');
+                    } else if (result.isDenied) {
+                        Swal.fire({
+                            title: 'Menyinkronkan Data...',
+                            html: 'Mohon tunggu, jangan tutup halaman ini.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        $wire.syncToGoogleSheets().then(() => {
+                            Swal.close();
+                        });
                     }
                 });
             });

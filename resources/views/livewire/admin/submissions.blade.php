@@ -121,54 +121,79 @@ class extends Component
         $this->showModal = true;
     }
 
-    public function exportCsv()
+    public function exportExcel()
     {
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=candidates-" . date('Y-m-d') . ".csv",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
+        // Require OpenSpout classes
+        // Since we may not have aliased them, we use the fully qualified namespaces
+        if (!class_exists(\OpenSpout\Writer\XLSX\Writer::class)) {
+            $this->dispatch('notify', ['message' => 'Library Excel belum siap, mohon tunggu sebentar atau muat ulang halaman.', 'type' => 'warning']);
+            return;
+        }
 
-        $callback = function() {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+        $fileName = 'kandidat-' . date('Y-m-d') . '.xlsx';
+        
+        // OpenSpout setup
+        $options = new \OpenSpout\Writer\XLSX\Options();
+        $writer = new \OpenSpout\Writer\XLSX\Writer($options);
+        
+        // We will write to a temp file and then stream it
+        $tempFile = tempnam(sys_get_temp_dir(), 'export');
+        $writer->openToFile($tempFile);
+        
+        $googleService = new \App\Services\GoogleSheetsService();
+        $sheetCount = 0;
+
+        if ($this->jobId) {
+            // Export Single Job
+            $job = Job::find($this->jobId);
+            $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
             
-            $googleService = new \App\Services\GoogleSheetsService();
+            $sheet = $writer->getCurrentSheet();
+            $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet1';
+            $sheet->setName($sheetName);
             
-            if ($this->jobId) {
-                // Export Single Job
-                $job = Job::find($this->jobId);
+            $csvHeaders = $googleService->getHeaders($job);
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge(['ID', 'Departemen'], $csvHeaders)));
+            
+            foreach ($applications as $app) {
+                $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+                $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge([$app->id, $app->job->department ?? '-'], $row)));
+            }
+        } else {
+            // Export All Jobs
+            $jobs = Job::whereHas('applications')->get();
+            foreach ($jobs as $job) {
+                if ($sheetCount > 0) {
+                    $writer->addNewSheetAndMakeItCurrent();
+                }
+                
+                $sheet = $writer->getCurrentSheet();
+                // Sheet names must be <= 31 chars and no special chars
+                $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet' . ($sheetCount + 1);
+                $sheet->setName($sheetName);
+                
                 $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
                 $csvHeaders = $googleService->getHeaders($job);
-                fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders), ';');
+                $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge(['ID', 'Departemen'], $csvHeaders)));
                 
                 foreach ($applications as $app) {
                     $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
-                    fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row), ';');
+                    $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge([$app->id, $app->job->department ?? '-'], $row)));
                 }
-            } else {
-                // Export All Jobs grouped by Job Title
-                $jobs = Job::whereHas('applications')->get();
-                foreach ($jobs as $job) {
-                    $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
-                    
-                    fputcsv($file, ["=== Lowongan: " . $job->title . " ==="], ';');
-                    $csvHeaders = $googleService->getHeaders($job);
-                    fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders), ';');
-                    
-                    foreach ($applications as $app) {
-                        $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
-                        fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row), ';');
-                    }
-                    fputcsv($file, [], ';'); // Spacing between jobs
-                }
+                
+                $sheetCount++;
             }
-            fclose($file);
-        };
+            
+            if ($jobs->isEmpty()) {
+                $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Belum ada data pelamar.']));
+            }
+        }
 
-        return response()->streamDownload($callback, 'candidates-' . date('Y-m-d') . '.csv', $headers);
+        $writer->close();
+        
+        return response()->download($tempFile, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     public function exportZip()
@@ -314,12 +339,12 @@ class extends Component
                 <span>Google Sheets</span>
             </button>
             @endcan
-            <button wire:click="exportCsv" wire:loading.attr="disabled" wire:target="exportCsv"
-                class="px-4 py-2 bg-surface-container text-on-surface border border-surface-border rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant shadow-sm transition-all disabled:opacity-50">
-                <span wire:loading.remove wire:target="exportCsv" class="material-symbols-outlined text-[18px]">table_chart</span>
-                <span wire:loading wire:target="exportCsv" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                <span wire:loading.remove wire:target="exportCsv">Export CSV</span>
-                <span wire:loading wire:target="exportCsv">Exporting...</span>
+            <button wire:click="exportExcel" wire:loading.attr="disabled" wire:target="exportExcel"
+                class="inline-flex items-center gap-2 px-4 py-2 border border-surface-border text-on-surface hover:bg-surface-container rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
+                <span wire:loading.remove wire:target="exportExcel" class="material-symbols-outlined text-[18px]">table_chart</span>
+                <span wire:loading wire:target="exportExcel" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span wire:loading.remove wire:target="exportExcel">Export Excel</span>
+                <span wire:loading wire:target="exportExcel">Exporting...</span>
             </button>
             <button wire:click="exportZip" wire:loading.attr="disabled" wire:target="exportZip"
                 class="px-4 py-2 bg-primary text-white rounded-lg font-label-md flex items-center gap-2 hover:opacity-90 shadow-sm transition-all disabled:opacity-50">
