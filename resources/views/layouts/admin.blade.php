@@ -415,7 +415,7 @@
          x-transition:leave-start="opacity-100" 
          x-transition:leave-end="opacity-0">
          
-        <div @click.away="showGuidelineModal = false" class="bg-surface-bg rounded-2xl shadow-2xl w-full max-w-5xl h-[88vh] flex flex-col relative overflow-hidden mx-4"
+        <div @click.away="showGuidelineModal = false" class="bg-surface-bg rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col relative overflow-hidden mx-4"
              x-transition:enter="transition ease-out duration-300 transform" 
              x-transition:enter-start="opacity-0 translate-y-8 scale-95" 
              x-transition:enter-end="opacity-100 translate-y-0 scale-100" 
@@ -423,7 +423,7 @@
              x-transition:leave-start="opacity-100 translate-y-0 scale-100" 
              x-transition:leave-end="opacity-0 translate-y-8 scale-95">
              
-            <div class="px-6 py-5 md:px-8 flex justify-between items-center bg-white/95 backdrop-blur-sm sticky top-0 z-10 shrink-0 border-b border-surface-border shadow-sm">
+            <div class="px-6 py-5 flex justify-between items-center bg-white/95 backdrop-blur-sm sticky top-0 z-10 shrink-0 border-b border-surface-border shadow-sm">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shadow-inner">
                         <span class="material-symbols-outlined text-primary text-[28px]">menu_book</span>

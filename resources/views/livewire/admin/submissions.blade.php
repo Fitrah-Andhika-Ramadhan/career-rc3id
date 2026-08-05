@@ -21,6 +21,16 @@ class extends Component
     public $showModal = false;
     public $selectedApplication = null;
     public $embedded = false;
+    public $showKanbanModal = false;
+
+    public function updateStage($appId, $newStageId)
+    {
+        $app = Application::find($appId);
+        if ($app) {
+            $app->pipeline_stage_id = $newStageId;
+            $app->save();
+        }
+    }
 
     public function mount($initialJobId = null, $embedded = false)
     {
@@ -211,6 +221,12 @@ class extends Component
                 <span wire:loading.remove wire:target="exportZip">Export ZIP (ATS)</span>
                 <span wire:loading wire:target="exportZip">Packing...</span>
             </button>
+            @can('manage kanban')
+            <button wire:click="$set('showKanbanModal', true)" class="px-4 py-2 bg-info text-white rounded-lg font-label-md flex items-center gap-2 hover:opacity-90 shadow-sm transition-all">
+                <span class="material-symbols-outlined text-[18px]">view_kanban</span>
+                Buka Papan Kanban
+            </button>
+            @endcan
         </div>
     </div>
 
@@ -489,6 +505,91 @@ class extends Component
 
             <div class="p-margin border-t border-surface-border bg-surface-container-lowest flex justify-end gap-3">
                 <button wire:click="$set('showModal', false)" class="px-6 py-2 border border-surface-border text-on-surface rounded-lg hover:bg-surface-container transition-all font-label-md">Tutup</button>
+            </div>
+        </div>
+    </div>
+    @endif
+    {{-- Kanban Modal --}}
+    @if($showKanbanModal)
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+         x-data="{}"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        
+        <div @click.away="$wire.set('showKanbanModal', false)" class="bg-surface-bg rounded-2xl shadow-2xl w-full h-[95vh] flex flex-col relative overflow-hidden mx-4"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-8 scale-95">
+             
+            <div class="px-6 py-4 flex justify-between items-center bg-white border-b border-surface-border sticky top-0 z-10 shrink-0 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info">
+                        <span class="material-symbols-outlined">view_kanban</span>
+                    </div>
+                    <div>
+                        <h2 class="font-headline-md text-lg font-bold text-on-surface leading-tight">
+                            Kanban Pipeline (HR)
+                        </h2>
+                        <p class="text-xs text-secondary">{{ $jobId ? 'Filter: ' . ($jobs->firstWhere('id', $jobId)?->title ?? '') : 'Menampilkan Semua Lowongan' }}</p>
+                    </div>
+                </div>
+                <button wire:click="$set('showKanbanModal', false)" class="text-secondary hover:text-error hover:bg-error/10 transition-colors w-9 h-9 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="p-6 flex-1 overflow-x-auto bg-[#f8fafc] flex gap-4 h-full">
+                @php
+                    $stages = \App\Models\PipelineStage::orderBy('order')->get();
+                @endphp
+                @foreach($stages as $stage)
+                <div class="w-[300px] flex-shrink-0 flex flex-col bg-surface-container-lowest rounded-xl shadow-sm border border-surface-border overflow-hidden h-full">
+                    <div class="p-3 bg-surface-container border-b border-surface-border flex justify-between items-center">
+                        <h3 class="font-bold text-sm text-on-surface">{{ $stage->name }}</h3>
+                        <span class="bg-surface-variant text-on-surface-variant text-xs px-2 py-0.5 rounded-full font-semibold">
+                            {{ $applications->where('pipeline_stage_id', $stage->id)->count() }}
+                        </span>
+                    </div>
+                    
+                    <div class="p-3 flex-1 overflow-y-auto space-y-3">
+                        @foreach($applications->where('pipeline_stage_id', $stage->id) as $app)
+                        <div class="bg-surface-bg border border-surface-border p-3 rounded-lg shadow-sm hover:shadow-md transition-all group">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="font-semibold text-sm text-on-surface">{{ $app->candidate->name }}</p>
+                                <button wire:click="viewDetails({{ $app->id }})" class="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                </button>
+                            </div>
+                            <p class="text-xs text-secondary truncate">{{ $app->job->title }}</p>
+                            <p class="text-[10px] text-secondary/70 mt-1">{{ $app->created_at->diffForHumans() }}</p>
+                            
+                            <div class="mt-3 flex gap-2 justify-between border-t border-surface-border pt-2">
+                                @if($stage->id > 1)
+                                <button wire:click="updateStage({{ $app->id }}, {{ $stage->id - 1 }})" class="text-[10px] flex items-center gap-1 text-secondary hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[14px]">arrow_back</span> Prev
+                                </button>
+                                @else
+                                <div></div>
+                                @endif
+                                
+                                @if($stage->id < $stages->count())
+                                <button wire:click="updateStage({{ $app->id }}, {{ $stage->id + 1 }})" class="text-[10px] flex items-center gap-1 text-primary hover:text-info transition-colors font-semibold">
+                                    Next <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
     </div>
