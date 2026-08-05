@@ -15,6 +15,24 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/install-google', function () {
+    try {
+        $output = "";
+        $output .= "Git Pull Output: " . shell_exec('git pull 2>&1') . "<br><br>";
+        
+        // Coba jalankan composer (jika composer tersedia secara global)
+        // Gunakan path absolut jika diperlukan di shared hosting. Untuk Hostinger biasanya `composer` cukup.
+        $output .= "Composer Output: " . shell_exec('composer install --no-interaction --prefer-dist 2>&1') . "<br><br>";
+        
+        Artisan::call('migrate', ['--force' => true]);
+        $output .= "Migrasi Output: " . Artisan::output() . "<br><br>";
+        
+        return "Selesai! <br><br> <pre>" . $output . "</pre>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 Route::get('/clear-cache', function () {
     try {
         Artisan::call('view:clear');
