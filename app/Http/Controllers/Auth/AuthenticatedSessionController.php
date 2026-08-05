@@ -27,6 +27,18 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        
+        $user = Auth::user();
+        
+        // Dynamic redirection based on role
+        if ($user->hasRole('Super Admin') || $user->can('access dashboard')) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        } elseif ($user->hasRole('HR') || $user->can('access submissions')) {
+            // HR typically focuses on submissions/kanban first
+            return redirect()->intended(route('admin.submissions.index', absolute: false));
+        }
+        
+        // Default fallback (e.g. for CNL Admin who only has 'access jobs')
         return redirect()->intended(route('admin.jobs.index', absolute: false));
     }
 
