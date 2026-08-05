@@ -2,7 +2,7 @@
 
 ## 🚀 Latest Updates (Minggu Ini)
 
-Pada minggu ini, pengembangan sistem berfokus pada **Fitur Ekspor & Integrasi HR**, **Pembuatan Laporan Profil PDF**, **Perombakan Sistem Backup**, dan **Penyempurnaan Email Automasi**.
+Pada minggu ini, pengembangan sistem berfokus pada **Fitur Ekspor & Integrasi HR**, **Pembuatan Laporan Profil PDF**, **Integrasi Cerdas Google Sheets**, **Perombakan Sistem Backup**, dan **Penyempurnaan Email Automasi**.
 
 ### 1. Fitur Advanced ZIP Export (Opsi 1: Unduh ATS) 🗂️
 - **Struktur Folder Cerdas**: Saat menekan "Export ZIP (ATS)", sistem kini akan membuat struktur folder yang sangat rapi: `[Nama Departemen] -> [Nomor_Nama Kandidat]`.
@@ -31,7 +31,15 @@ Pada minggu ini, pengembangan sistem berfokus pada **Fitur Ekspor & Integrasi HR
 - **Database Migration**: Menambahkan sebuah *file migration* untuk secara otomatis menciptakan peran (Role) "HR" ke dalam tabel `roles` di *database*.
 - **Integrasi UI User Management**: Opsi "HR" kini tersedia dan bisa langsung dipilih saat menambahkan atau mengubah posisi pengguna di halaman *User Management*.
 
+### 7. Integrasi Google Sheets Cerdas (Sinkronisasi Form Pelamar) 📊
+- **Google OAuth 2.0 Auth Flow**: Mengembangkan sistem login Google langsung dari *dashboard* ATS untuk memverifikasi akun tanpa harus mengatur API secara manual (didukung *auto-catch error* dari sistem).
+- **Pop-Up Kustom Kloningan Google Forms**: Mendesain ulang *modal pop-up* sinkronisasi dengan *inline styles* yang akurat dan responsif sehingga tampilannya 100% otentik menyerupai pop-up "Select Destination" di Google Forms asli.
+- **Header Kolom Dinamis**: Kolom *spreadsheet* yang dibuat secara otomatis menyesuaikan (*sync*) dengan daftar pertanyaan (*custom fields*) spesifik yang dibuat HR untuk setiap lowongan. Kolom dasar (ID, Nama, Email, Telepon) diletakkan di depan, diikuti oleh kolom pertanyaan kustom di belakangnya.
+- **Otomatisasi Hak Akses (Auto-Share)**: Menyelesaikan kendala perizinan akses (*You need access*) dengan mengintegrasikan fungsi Google Drive API. Setiap *spreadsheet* baru yang dibuat ATS otomatis diatur perizinannya menjadi **"Anyone with the link can edit/view"**, sehingga semua Admin atau Tim HR (meski menggunakan akun Unpad) bisa langsung membuka file tanpa harus meminta akses ke email pembuat.
+- **Akses Izin Fleksibel**: Memperbarui regulasi *backend* agar admin dengan izin *"Custom Form"* (seperti peran *Communication & Learning Admin*) juga diperbolehkan untuk melakukan sinkronisasi Google Sheets, tidak lagi dibatasi hanya untuk Super Admin.
+
 ---
+
 
 ## 📅 Arsip Pembaruan (Minggu Sebelumnya)
 
