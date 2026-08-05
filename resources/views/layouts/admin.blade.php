@@ -62,7 +62,7 @@
     </style>
     @livewireStyles
 </head>
-<body class="bg-surface font-body-md text-on-surface flex min-h-screen" x-data="{ mobileMenuOpen: false }">
+<body class="bg-surface font-body-md text-on-surface flex min-h-screen" x-data="{ mobileMenuOpen: false, showGuidelineModal: false }">
 
     <!-- Mobile Sidebar Overlay -->
     <div x-show="mobileMenuOpen" 
@@ -211,9 +211,9 @@
                 <!-- Optional Global Search can go here -->
             </div>
             <div class="flex items-center gap-stack-md ml-margin">
-                <a href="https://github.com/Fitrah-Andhika-Ramadhan/career-rc3id/blob/main/Manual_Book_RC3ID_ATS.md" target="_blank" title="Baca Buku Panduan (Manual Book)" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
+                <button type="button" @click="showGuidelineModal = true" title="Baca Buku Panduan (Manual Book)" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
                     <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
-                </a>
+                </button>
                 <a href="{{ route('home') }}" target="_blank" title="Lihat Website" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
                     <span class="material-symbols-outlined" data-icon="public">public</span>
                 </a>
@@ -406,5 +406,36 @@
             });
         }
     </script>
+    <!-- Guideline Modal -->
+    <div x-show="showGuidelineModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" x-transition>
+        <div @click.away="showGuidelineModal = false" class="bg-surface-bg border border-surface-border rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden mx-4">
+            <div class="p-4 border-b border-surface-border flex justify-between items-center bg-surface-container-lowest sticky top-0 z-10 shrink-0">
+                <h2 class="font-headline-md text-headline-md font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">menu_book</span>
+                    Manual Book ATS
+                </h2>
+                <button @click="showGuidelineModal = false" class="text-secondary hover:text-error transition-colors p-1 rounded-lg hover:bg-surface-variant">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 markdown-body text-on-surface">
+                {!! \Illuminate\Support\Str::markdown(file_exists(base_path('Manual_Book_RC3ID_ATS.md')) ? file_get_contents(base_path('Manual_Book_RC3ID_ATS.md')) : 'Dokumen tidak ditemukan.') !!}
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .markdown-body h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #111; }
+        .markdown-body h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #111; border-bottom: 1px solid #eaeaea; padding-bottom: 0.3em; }
+        .markdown-body h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1rem; color: #333; }
+        .markdown-body p { margin-bottom: 1rem; line-height: 1.6; color: #444; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #444; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; color: #444; }
+        .markdown-body a { color: var(--color-primary, #005bbf); text-decoration: underline; font-weight: 500; }
+        .markdown-body hr { margin: 1.5rem 0; border-top: 1px solid #e5e7eb; }
+        .markdown-body strong { font-weight: 600; color: #111; }
+        .markdown-body pre { background-color: #f6f8fa; padding: 16px; border-radius: 6px; overflow: auto; font-family: monospace; font-size: 85%; margin-bottom: 1rem; }
+        .markdown-body code { font-family: monospace; background-color: rgba(175,184,193,0.2); padding: 0.2em 0.4em; border-radius: 6px; font-size: 85%; }
+    </style>
 </body>
 </html>
