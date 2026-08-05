@@ -89,7 +89,7 @@ export default {
                 "stack-lg": "32px",
                 "gutter": "16px",
                 "stack-md": "16px",
-                "container-max": "1440px",
+                "container-max": "1920px",
                 "unit": "4px",
                 "stack-sm": "8px",
                 "margin": "24px"

@@ -137,7 +137,7 @@ class extends Component
                             <h3 class="font-headline-sm text-headline-sm text-primary font-semibold bg-primary/10 px-4 py-1.5 rounded-full inline-block border border-primary/20">{{ $date }}</h3>
                             <div class="h-px bg-surface-border flex-1"></div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-gutter">
                             @foreach($jobs as $job)
                                 @php
                                     $isExpired = $job->deadline_date && now()->startOfDay()->gt($job->deadline_date);
