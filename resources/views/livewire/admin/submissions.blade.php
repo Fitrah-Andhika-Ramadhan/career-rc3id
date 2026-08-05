@@ -76,6 +76,35 @@ class extends Component
         }
     }
 
+    public function syncToGoogleSheets()
+    {
+        if (!$this->jobId) return;
+        $job = Job::find($this->jobId);
+        if (!$job || !$job->google_spreadsheet_id) return;
+        
+        try {
+            $service = new \App\Services\GoogleSheetsService();
+            $service->syncAllCandidatesToSheet($job);
+            $this->dispatch('notify', ['message' => 'Berhasil menyinkronkan seluruh data ke Google Sheets.', 'type' => 'success']);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['message' => 'Gagal sinkronisasi: ' . $e->getMessage(), 'type' => 'error']);
+        }
+    }
+
+    public function openGoogleSheets()
+    {
+        if ($this->jobId) {
+            $job = Job::find($this->jobId);
+            if ($job && $job->google_spreadsheet_id) {
+                $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+                $this->dispatch('show-sheets-sweetalert', ['url' => $url]);
+                return;
+            }
+        }
+        
+        $this->showSheetsModal = true;
+    }
+
     public function updatingSearch() { $this->resetPage(); }
     public function updatingJobId() { $this->resetPage(); }
     public function updatingStageFilter() { $this->resetPage(); }
@@ -94,10 +123,6 @@ class extends Component
 
     public function exportCsv()
     {
-        $query = Application::with(['candidate', 'job', 'stage', 'notes']);
-        if ($this->jobId) $query->where('job_id', $this->jobId);
-        $applications = $query->get();
-
         $headers = [
             "Content-type"        => "text/csv",
             "Content-Disposition" => "attachment; filename=candidates-" . date('Y-m-d') . ".csv",
@@ -106,33 +131,38 @@ class extends Component
             "Expires"             => "0"
         ];
 
-        $callback = function() use ($applications) {
+        $callback = function() {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
             
+            $googleService = new \App\Services\GoogleSheetsService();
+            
             if ($this->jobId) {
+                // Export Single Job
                 $job = Job::find($this->jobId);
-                $googleService = new \App\Services\GoogleSheetsService();
+                $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
                 $csvHeaders = $googleService->getHeaders($job);
-                fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders));
+                fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders), ';');
                 
                 foreach ($applications as $app) {
                     $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
-                    fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row));
+                    fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row), ';');
                 }
             } else {
-                fputcsv($file, ['ID', 'Nama Kandidat', 'Email', 'Telepon', 'Posisi Dilamar', 'Departemen', 'Status', 'Tanggal Melamar']);
-                foreach ($applications as $app) {
-                    fputcsv($file, [
-                        $app->id,
-                        $app->candidate->name,
-                        $app->candidate->email,
-                        $app->candidate->phone ?? '-',
-                        $app->job->title,
-                        $app->job->department ?? '-',
-                        $app->stage->name,
-                        $app->created_at->format('Y-m-d H:i:s')
-                    ]);
+                // Export All Jobs grouped by Job Title
+                $jobs = Job::whereHas('applications')->get();
+                foreach ($jobs as $job) {
+                    $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
+                    
+                    fputcsv($file, ["=== Lowongan: " . $job->title . " ==="], ';');
+                    $csvHeaders = $googleService->getHeaders($job);
+                    fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders), ';');
+                    
+                    foreach ($applications as $app) {
+                        $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+                        fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row), ';');
+                    }
+                    fputcsv($file, [], ';'); // Spacing between jobs
                 }
             }
             fclose($file);
@@ -154,37 +184,40 @@ class extends Component
         $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
         // Add CSV summary
-        // Add CSV summary
         $csvContent = "\xEF\xBB\xBF"; // UTF-8 BOM
+        $googleService = new \App\Services\GoogleSheetsService();
         
         if ($this->jobId) {
             $job = Job::find($this->jobId);
-            $googleService = new \App\Services\GoogleSheetsService();
             $csvHeaders = $googleService->getHeaders($job);
             
             // Build CSV Headers manually to handle escaping
             $escapedHeaders = array_map(function($h) { return '"' . str_replace('"', '""', $h) . '"'; }, array_merge(['ID', 'Departemen'], $csvHeaders));
-            $csvContent .= implode(',', $escapedHeaders) . "\n";
+            $csvContent .= implode(';', $escapedHeaders) . "\n";
             
             foreach ($applications as $app) {
                 $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
                 $fullRow = array_merge([$app->id, $app->job->department ?? '-'], $row);
                 $escapedRow = array_map(function($v) { return '"' . str_replace('"', '""', $v) . '"'; }, $fullRow);
-                $csvContent .= implode(',', $escapedRow) . "\n";
+                $csvContent .= implode(';', $escapedRow) . "\n";
             }
         } else {
-            $csvContent .= "ID,Nama Kandidat,Email,Telepon,Posisi Dilamar,Departemen,Status,Tanggal Melamar\n";
-            foreach ($applications as $app) {
-                $csvContent .= implode(',', [
-                    $app->id,
-                    '"' . $app->candidate->name . '"',
-                    $app->candidate->email,
-                    $app->candidate->phone ?? '-',
-                    '"' . $app->job->title . '"',
-                    '"' . ($app->job->department ?? '-') . '"',
-                    $app->stage->name,
-                    $app->created_at->format('Y-m-d H:i:s'),
-                ]) . "\n";
+            $jobsWithApps = Job::whereHas('applications')->get();
+            foreach ($jobsWithApps as $job) {
+                $jobApps = $applications->where('job_id', $job->id);
+                
+                $csvContent .= "\"=== Lowongan: " . str_replace('"', '""', $job->title) . " ===\"\n";
+                $csvHeaders = $googleService->getHeaders($job);
+                $escapedHeaders = array_map(function($h) { return '"' . str_replace('"', '""', $h) . '"'; }, array_merge(['ID', 'Departemen'], $csvHeaders));
+                $csvContent .= implode(';', $escapedHeaders) . "\n";
+                
+                foreach ($jobApps as $app) {
+                    $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+                    $fullRow = array_merge([$app->id, $app->job->department ?? '-'], $row);
+                    $escapedRow = array_map(function($v) { return '"' . str_replace('"', '""', $v) . '"'; }, $fullRow);
+                    $csvContent .= implode(';', $escapedRow) . "\n";
+                }
+                $csvContent .= "\n";
             }
         }
         
@@ -275,7 +308,7 @@ class extends Component
         </div>
         <div class="flex items-center gap-stack-sm flex-wrap">
             @can('access settings')
-            <button wire:click="$set('showSheetsModal', true)"
+            <button wire:click="openGoogleSheets"
                 class="px-4 py-2 bg-success/10 text-success border border-success/20 rounded-lg font-label-md flex items-center gap-2 hover:bg-success/20 shadow-sm transition-all">
                 <span class="material-symbols-outlined text-[18px]">table_view</span>
                 <span>Google Sheets</span>
@@ -744,5 +777,43 @@ class extends Component
         </div>
     </div>
     @endif
-</div>
 
+    @script
+    <script>
+        $wire.on('show-sheets-sweetalert', (data) => {
+            const url = data[0].url;
+            Swal.fire({
+                title: 'Google Sheets Terhubung',
+                text: 'Apa yang ingin Anda lakukan dengan Spreadsheet ini?',
+                icon: 'info',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#1a73e8', // Google Blue
+                denyButtonColor: '#0f9d58', // Google Green
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Buka Spreadsheet',
+                denyButtonText: 'Sinkronisasi Ulang (Sync All)',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open(url, '_blank');
+                } else if (result.isDenied) {
+                    // Tampilkan loading Swalert sambil memanggil Livewire
+                    Swal.fire({
+                        title: 'Menyinkronkan Data...',
+                        html: 'Mohon tunggu, jangan tutup halaman ini.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    $wire.syncToGoogleSheets().then(() => {
+                        Swal.close();
+                    });
+                }
+            });
+        });
+    </script>
+    @endscript
+</div>
