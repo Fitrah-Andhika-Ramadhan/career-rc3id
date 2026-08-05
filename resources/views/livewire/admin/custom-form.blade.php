@@ -1141,8 +1141,7 @@ Example output format:
                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">table_view</span>
                         </a>
                     @else
-                        <!-- In custom-form we redirect back to Candidate Submissions with open sheets modal trigger (or we just tell them to use the main menu) -->
-                        <button onclick="alert('Silakan klik menu Candidate Submissions di sidebar sebelah kiri, lalu klik tombol Google Sheets di sana!')"
+                        <button wire:click="$dispatch('open-sheets-modal')"
                            title="Hubungkan ke Google Sheets"
                            class="inline-flex items-center justify-center p-2 bg-success text-white rounded-lg hover:opacity-90 transition-opacity shadow-sm">
                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">table_view</span>
