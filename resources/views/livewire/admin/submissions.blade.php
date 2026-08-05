@@ -50,14 +50,70 @@ class extends Component
         }
     }
 
-    public function saveSheetsWebhook()
+    public function createSpreadsheetForJob()
     {
-        \App\Models\Setting::updateOrCreate(
-            ['key' => 'google_sheets_webhook_url'],
-            ['value' => $this->googleSheetsWebhookUrl]
-        );
-        $this->showSheetsModal = false;
-        $this->dispatch('notify', ['message' => 'Integrasi Google Sheets berhasil disimpan!', 'type' => 'success']);
+        if (!$this->jobId) return;
+        
+        $job = Job::find($this->jobId);
+        if (!$job || $job->google_spreadsheet_id) return;
+
+        $tokenStr = \App\Models\Setting::where('key', 'google_oauth_token')->value('value');
+        if (!$tokenStr) return;
+
+        try {
+            $client = new \Google\Client();
+            $client->setClientId(env('GOOGLE_CLIENT_ID'));
+            $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+            $client->setAccessToken(json_decode($tokenStr, true));
+
+            // Refresh token if expired
+            if ($client->isAccessTokenExpired()) {
+                $refreshToken = $client->getRefreshToken();
+                if ($refreshToken) {
+                    $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                    \App\Models\Setting::updateOrCreate(
+                        ['key' => 'google_oauth_token'],
+                        ['value' => json_encode($client->getAccessToken())]
+                    );
+                }
+            }
+
+            $service = new \Google\Service\Sheets($client);
+            
+            // Create Spreadsheet
+            $spreadsheet = new \Google\Service\Sheets\Spreadsheet([
+                'properties' => [
+                    'title' => 'ATS Responses - ' . $job->title
+                ]
+            ]);
+            $spreadsheet = $service->spreadsheets->create($spreadsheet);
+            
+            // Add Header Row
+            $values = [
+                ["ID", "Nama Kandidat", "Email", "Telepon", "LinkedIn", "Portfolio", "Tanggal Melamar"]
+            ];
+            $body = new \Google\Service\Sheets\ValueRange([
+                'values' => $values
+            ]);
+            $params = [
+                'valueInputOption' => 'RAW'
+            ];
+            
+            $service->spreadsheets_values->update(
+                $spreadsheet->spreadsheetId,
+                'Sheet1!A1:G1',
+                $body,
+                $params
+            );
+
+            // Save ID
+            $job->google_spreadsheet_id = $spreadsheet->spreadsheetId;
+            $job->save();
+
+            $this->dispatch('notify', ['message' => 'Spreadsheet berhasil dibuat!', 'type' => 'success']);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['message' => 'Gagal membuat Spreadsheet: ' . $e->getMessage(), 'type' => 'error']);
+        }
     }
 
     public function updatingSearch() { $this->resetPage(); }
@@ -627,7 +683,7 @@ class extends Component
             <div class="px-6 py-4 border-b border-surface-border flex justify-between items-center bg-surface-container-lowest">
                 <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
                     <span class="material-symbols-outlined text-success">table_view</span>
-                    Integrasi Google Sheets
+                    Google Sheets Asli
                 </h3>
                 <button wire:click="$set('showSheetsModal', false)" class="text-secondary hover:text-error transition-colors">
                     <span class="material-symbols-outlined">close</span>
@@ -635,26 +691,66 @@ class extends Component
             </div>
             
             <div class="p-6 bg-surface-bg">
-                <div class="mb-4 text-sm text-secondary bg-info/10 p-4 rounded-lg border border-info/20">
-                    <p class="font-semibold text-info mb-1"><span class="material-symbols-outlined text-[16px] align-middle">info</span> Webhook Global</p>
-                    <p>Masukkan URL Webhook Google Apps Script Anda. Setiap kali ada pelamar baru (untuk lowongan apapun), sistem akan otomatis mengirimkan data pelamar (JSON) ke URL ini secara <em>real-time</em>.</p>
-                </div>
+                @php
+                    $isGoogleConnected = \App\Models\Setting::where('key', 'google_oauth_token')->exists();
+                @endphp
                 
-                <form wire:submit.prevent="saveSheetsWebhook">
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-on-surface mb-2">URL Webhook (Google Apps Script / Make / Zapier)</label>
-                        <input type="url" wire:model="googleSheetsWebhookUrl" placeholder="https://script.google.com/macros/s/..." 
-                               class="w-full px-4 py-2 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface text-sm">
-                        <p class="text-xs text-secondary mt-2">Kosongkan URL ini jika Anda ingin menonaktifkan integrasi Google Sheets.</p>
+                @if(!$isGoogleConnected)
+                    <div class="mb-6 text-sm text-secondary bg-error/10 p-4 rounded-lg border border-error/20 flex gap-3 items-start">
+                        <span class="material-symbols-outlined text-error mt-0.5">warning</span>
+                        <div>
+                            <p class="font-semibold text-error mb-1">Belum Terhubung ke Akun Google</p>
+                            <p>Anda harus menghubungkan akun Google Anda terlebih dahulu agar sistem dapat membuat Spreadsheet secara otomatis untuk menyimpan data pelamar.</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <a href="{{ route('google.auth') }}" class="px-6 py-3 font-semibold bg-white border border-outline-variant text-on-surface rounded-lg shadow-sm hover:bg-surface-container transition-all flex items-center gap-3">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-5 h-5">
+                            Hubungkan dengan Google
+                        </a>
+                    </div>
+                @else
+                    <div class="mb-4 text-sm text-secondary bg-success/10 p-4 rounded-lg border border-success/20 flex gap-3 items-center">
+                        <span class="material-symbols-outlined text-success">check_circle</span>
+                        <div>
+                            <p class="font-semibold text-success">Terhubung ke Google</p>
+                        </div>
                     </div>
                     
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-semibold text-secondary hover:text-on-surface transition-colors">Batal</button>
-                        <button type="submit" class="px-5 py-2 text-sm font-semibold bg-primary text-on-primary rounded-lg shadow hover:bg-primary-container transition-all flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[18px]">save</span> Simpan URL
-                        </button>
-                    </div>
-                </form>
+                    @if($jobId)
+                        @php
+                            $currentJob = \App\Models\Job::find($jobId);
+                        @endphp
+                        @if($currentJob && $currentJob->google_spreadsheet_id)
+                            <div class="mt-6 p-4 border border-outline-variant rounded-xl bg-surface-container-lowest text-center">
+                                <p class="text-sm font-medium text-on-surface mb-2">Spreadsheet untuk lowongan ini sudah dibuat!</p>
+                                <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-success text-white font-semibold rounded-lg hover:bg-success/90 transition-colors shadow-sm">
+                                    <span class="material-symbols-outlined text-[18px]">open_in_new</span> Buka Spreadsheet
+                                </a>
+                            </div>
+                        @else
+                            <div class="mt-6 flex flex-col gap-3">
+                                <p class="text-sm text-secondary text-center mb-2">Klik tombol di bawah ini untuk membuat Spreadsheet baru khusus untuk lowongan <strong>{{ $currentJob?->title }}</strong>.</p>
+                                <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="w-full px-5 py-3 text-sm font-bold bg-success text-white rounded-lg shadow hover:bg-success/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                                    <span wire:loading.remove wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[20px]">add_box</span>
+                                    <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[20px] animate-spin">sync</span>
+                                    <span wire:loading.remove wire:target="createSpreadsheetForJob">Buat Spreadsheet Baru</span>
+                                    <span wire:loading wire:target="createSpreadsheetForJob">Membuat...</span>
+                                </button>
+                            </div>
+                        @endif
+                    @else
+                        <div class="mt-6 p-6 border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center text-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-3xl">touch_app</span>
+                            <p class="text-on-surface font-semibold text-sm">Pilih Lowongan Terlebih Dahulu</p>
+                            <p class="text-xs text-secondary">Anda harus memilih satu lowongan dari dropdown "Filter Lowongan" di atas tabel untuk membuat Spreadsheet khusus lowongan tersebut.</p>
+                        </div>
+                    @endif
+                @endif
+            </div>
+            
+            <div class="p-4 border-t border-surface-border bg-surface-container-lowest flex justify-end">
+                <button type="button" wire:click="$set('showSheetsModal', false)" class="px-5 py-2 text-sm font-semibold text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-variant rounded-lg">Tutup</button>
             </div>
         </div>
     </div>

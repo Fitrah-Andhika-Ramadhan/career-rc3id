@@ -69,6 +69,9 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+Route::get('/google/auth', [\App\Http\Controllers\GoogleIntegrationController::class, 'auth'])->name('google.auth');
+Route::get('/google/callback', [\App\Http\Controllers\GoogleIntegrationController::class, 'callback'])->name('google.callback');
+
 // Fallback to serve logo directly via Laravel (fixes PHP built-in server caching 404 on Windows)
 Route::get('/{filename}', function ($filename) {
     $path = public_path($filename);

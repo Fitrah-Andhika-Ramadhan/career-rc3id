@@ -318,49 +318,60 @@ class extends Component
             \Log::error('[NOTIFICATION] Failed to send database notification: ' . $e->getMessage());
         }
 
-        // Google Sheets Integration (Webhook)
+        // Google Sheets Integration (Native API)
         try {
-            $webhookUrl = \App\Models\Setting::where('key', 'google_sheets_webhook_url')->value('value');
-            if (!empty($webhookUrl) && filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
-                $payload = [
-                    'id' => $application->id,
-                    'job_title' => $this->job->title,
-                    'candidate_name' => $candidate->name,
-                    'candidate_email' => $candidate->email,
-                    'candidate_phone' => $candidate->phone,
-                    'applied_at' => $application->created_at->format('Y-m-d H:i:s'),
-                    'department' => $this->job->department ?? '-',
-                    'work_type' => $this->job->work_type ?? '-',
-                ];
-
-                // Append custom answers
-                foreach ($this->customFields as $field) {
-                    if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
-                    
-                    $label = $field['label'] ?? 'Unknown';
-                    $answer = $this->customAnswers[$field['id']] ?? '-';
-                    
-                    if (is_array($answer)) {
-                        if (in_array('__other__', $answer)) {
-                            $otherText = $this->otherAnswers[$field['id']] ?? '';
-                            $answer = array_map(function($a) use ($otherText) {
-                                return $a === '__other__' ? $otherText : $a;
-                            }, $answer);
-                        }
-                        $answer = implode(', ', $answer);
-                    } elseif ($answer === '__other__') {
-                        $answer = $this->otherAnswers[$field['id']] ?? '';
-                    } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                        $answer = $answer->getClientOriginalName();
+            $spreadsheetId = $this->job->google_spreadsheet_id;
+            $tokenStr = \App\Models\Setting::where('key', 'google_oauth_token')->value('value');
+            
+            if ($spreadsheetId && $tokenStr) {
+                $client = new \Google\Client();
+                $client->setClientId(env('GOOGLE_CLIENT_ID'));
+                $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+                $client->setAccessToken(json_decode($tokenStr, true));
+                
+                // Refresh token if expired
+                if ($client->isAccessTokenExpired()) {
+                    $refreshToken = $client->getRefreshToken();
+                    if ($refreshToken) {
+                        $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                        \App\Models\Setting::updateOrCreate(
+                            ['key' => 'google_oauth_token'],
+                            ['value' => json_encode($client->getAccessToken())]
+                        );
                     }
-                    
-                    $payload[$label] = $answer;
                 }
-
-                \Illuminate\Support\Facades\Http::timeout(5)->asJson()->post($webhookUrl, $payload);
+                
+                $service = new \Google\Service\Sheets($client);
+                
+                $row = [
+                    $application->id,
+                    $candidate->name,
+                    $candidate->email,
+                    $candidate->phone,
+                    $candidate->linkedin_url ?? '-',
+                    $candidate->portfolio_url ?? '-',
+                    $application->created_at->format('Y-m-d H:i:s')
+                ];
+                
+                // We are only inserting the basic fields into the sheet right now since the header created in submissions.blade.php only has these basic fields.
+                // In the future, we could dynamically update the header and rows if custom fields exist.
+                
+                $body = new \Google\Service\Sheets\ValueRange([
+                    'values' => [$row]
+                ]);
+                $params = [
+                    'valueInputOption' => 'RAW'
+                ];
+                
+                $service->spreadsheets_values->append(
+                    $spreadsheetId,
+                    'Sheet1!A1',
+                    $body,
+                    $params
+                );
             }
         } catch (\Exception $e) {
-            \Log::error('[WEBHOOK] Failed to send to Google Sheets: ' . $e->getMessage());
+            \Log::error('[GOOGLE SHEETS] Failed to append row: ' . $e->getMessage());
         }
 
         $this->isSubmitted = true;
