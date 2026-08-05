@@ -229,7 +229,7 @@ class GoogleSheetsService
             $spreadsheetId = $job->google_spreadsheet_id;
 
             $headers = $this->getHeaders($job);
-            $applications = $job->applications()->with('candidate', 'stage', 'notes')->orderBy('created_at', 'asc')->get();
+            $applications = $job->applications()->with('candidate', 'stage', 'media', 'notes')->orderBy('created_at', 'asc')->get();
 
             $values = [$headers]; // Add headers first
             foreach ($applications as $app) {

@@ -146,7 +146,7 @@ class extends Component
         if ($this->jobId) {
             // Export Single Job
             $job = Job::find($this->jobId);
-            $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
+            $applications = Application::with(['candidate', 'job', 'stage', 'media', 'notes'])->where('job_id', $job->id)->get();
             
             $sheet = $writer->getCurrentSheet();
             $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet1';
@@ -172,7 +172,7 @@ class extends Component
                 $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet' . ($sheetCount + 1);
                 $sheet->setName($sheetName);
                 
-                $applications = Application::with(['candidate', 'job', 'stage', 'notes'])->where('job_id', $job->id)->get();
+                $applications = Application::with(['candidate', 'job', 'stage', 'media', 'notes'])->where('job_id', $job->id)->get();
                 $csvHeaders = $googleService->getHeaders($job);
                 $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge(['ID', 'Departemen'], $csvHeaders)));
                 
