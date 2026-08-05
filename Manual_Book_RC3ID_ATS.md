@@ -96,36 +96,19 @@ Jika perusahaan Anda sedang membuka rekrutmen besar-besaran (misalnya program *M
 3. Ketikkan atau tempel (*Paste*) daftar posisi pekerjaan yang ingin dibuka (pisahkan 1 posisi per baris).
 4. Klik **Simpan**. Sistem akan secara instan menciptakan seluruh lowongan tersebut dalam mode **Draft**. Anda tinggal mengedit detail masing-masing lowongan (seperti departemen dan deskripsi) secara bertahap.
 
----
+## 4.1. Pembuatan Formulir dengan Template Standar (Template Umum)
 
-## 4.1. Template Job Description (Template Umum)
+Alih-alih menyusun pertanyaan untuk formulir pelamar dari nol (kosong), sistem ATS ini telah menyediakan fitur **Template Standar** yang siap pakai dan disesuaikan dengan standar HR umum!
 
-Untuk menjaga keseragaman dan profesionalisme setiap lowongan kerja yang dipublikasikan, tim HRD disarankan untuk menggunakan **Template Umum** di bawah ini. Anda cukup menyalin (*copy*) teks berikut dan menempelkannya (*paste*) ke editor teks "Deskripsi Pekerjaan" di aplikasi ATS, lalu mengubah bagian di dalam kurung siku `[...]`.
+**Cara Menggunakan Template Standar:**
+1. Masuk ke halaman **Custom Form** (melalui sidebar menu atau tombol form di halaman *Jobs*).
+2. Perhatikan *toolbar* melayang di sisi sebelah kanan layar Anda.
+3. Klik tombol berlogo sihir/bintang (✨) bernama **AI Template Generator**.
+4. Saat *pop-up* terbuka, **hiraukan kotak teks AI** dan langsung klik tombol **"Template Standar"** berwarna putih di sudut kiri bawah.
+5. **Selesai!** Sistem akan secara instan menghasilkan puluhan pertanyaan standar HR (Mulai dari *Identitas Diri, Pendidikan, Pengalaman Kerja,* hingga *Upload CV & Ijazah*).
+6. Anda bebas mengedit, menghapus, atau menggeser urutan pertanyaan tersebut sesuai kebutuhan sebelum mengklik **Simpan Form**.
 
-> **[TEMPLATE JOB DESCRIPTION] - Salin Teks Di Bawah Ini:**
-> 
-> **Tentang Peran Ini:**
-> Kami sedang mencari seorang **[Nama Posisi, misal: Digital Marketing Specialist]** yang kreatif dan berdedikasi tinggi untuk bergabung dengan tim kami. Dalam peran ini, Anda akan bertanggung jawab untuk **[Sebutkan 1-2 kalimat deskripsi singkat tentang tujuan utama posisi ini]**. Jika Anda memiliki semangat kolaborasi dan inovasi, ini adalah kesempatan yang tepat untuk Anda!
-> 
-> **Tanggung Jawab Utama:**
-> - Merencanakan dan mengeksekusi strategi **[Sebutkan tugas utama 1]**.
-> - Berkolaborasi dengan tim **[Sebutkan departemen terkait]** untuk **[Sebutkan tujuan kolaborasi]**.
-> - Menganalisis data dan menyusun laporan rutin terkait pencapaian target.
-> - **[Tambahkan tanggung jawab operasional harian lainnya]**.
-> 
-> **Kualifikasi Minimal (Requirements):**
-> - Pendidikan minimal **[Misal: S1 Ilmu Komunikasi / Sistem Informasi]**.
-> - Pengalaman kerja minimal **[Misal: 2 tahun]** di bidang yang relevan.
-> - Menguasai **[Sebutkan keterampilan teknis (Hard Skills), misal: Microsoft Office, Figma, atau SEO]**.
-> - Memiliki kemampuan komunikasi dan kerja sama tim yang sangat baik (Soft Skills).
-> 
-> **Keuntungan & Fasilitas (Benefits):**
-> - Gaji kompetitif yang disesuaikan dengan pengalaman.
-> - Asuransi Kesehatan (BPJS & Swasta).
-> - Fasilitas kerja (*Laptop / Inventaris*) dan lingkungan kerja yang fleksibel.
-> - Peluang jenjang karier dan pengembangan diri yang luas.
-
-*Tips Tambahan: Editor deskripsi pekerjaan di RC3ID ATS (CKEditor) sepenuhnya mendukung penataan format. Anda dapat dengan mudah menebalkan teks atau membuat daftar berpoin (*bullet points*) langsung dari dalam sistem agar lowongan Anda tampak lebih menarik.*
+*Tips: Template standar ini sangat menghemat waktu Anda, terutama jika Anda sedang terburu-buru membuka lowongan baru tanpa perlu repot memikirkan susunan pertanyaan.*
 
 ---
 
