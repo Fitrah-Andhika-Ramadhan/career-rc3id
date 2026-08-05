@@ -284,6 +284,16 @@ class extends Component
             ]);
         });
 
+        // ── Google Sheets Real-time Sync ─────────────────────────────────
+        if ($this->job->google_spreadsheet_id) {
+            try {
+                $sheetsService = new \App\Services\GoogleSheetsService();
+                $sheetsService->syncCandidateToSheet($this->job, $application);
+            } catch (\Exception $e) {
+                \Log::warning('[GoogleSheets] Failed to sync application in realtime: ' . $e->getMessage());
+            }
+        }
+
         // ── Send emails AFTER transaction committed ──────────────────
         try {
             Mail::to($candidate->email)->send(new ApplicationSubmitted($candidate, $this->job));

@@ -755,7 +755,20 @@ Example output format:
                     <button wire:click="openImportModal" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
                         <span class="material-symbols-outlined text-[20px] text-primary">upload_file</span> Import Fields
                     </button>
-                    <button wire:click="loadStandardTemplate" onclick="return confirm('Memuat template standar akan menimpa seluruh pertanyaan saat ini. Anda yakin?')" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                    <button type="button" @click="Swal.fire({
+                        title: 'Gunakan Template Standar?',
+                        text: 'Memuat template standar akan menimpa seluruh pertanyaan saat ini. Anda yakin?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#007b83',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Muat Template',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $wire.loadStandardTemplate();
+                        }
+                    })" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
                         <span class="material-symbols-outlined text-[20px] text-primary">dynamic_form</span> Standard Template
                     </button>
                     
