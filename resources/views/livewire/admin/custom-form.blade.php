@@ -755,20 +755,7 @@ Example output format:
                     <button wire:click="openImportModal" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
                         <span class="material-symbols-outlined text-[20px] text-primary">upload_file</span> Import Fields
                     </button>
-                    <button type="button" @click="Swal.fire({
-                        title: 'Gunakan Template Standar?',
-                        text: 'Memuat template standar akan menimpa seluruh pertanyaan saat ini. Anda yakin?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#007b83',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Ya, Muat Template',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $wire.loadStandardTemplate();
-                        }
-                    })" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                    <button type="button" @click="$dispatch('show-template-confirm')" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
                         <span class="material-symbols-outlined text-[20px] text-primary">dynamic_form</span> Standard Template
                     </button>
                     
@@ -1425,6 +1412,23 @@ Example output format:
             Livewire.on('form-saved', (url) => {
                 // Automatically open the preview page in a new tab when saved
                 window.open(url[0], '_blank');
+            });
+            
+            $wire.on('show-template-confirm', () => {
+                Swal.fire({
+                    title: 'Gunakan Template Standar?',
+                    text: 'Memuat template standar akan menimpa seluruh pertanyaan saat ini. Anda yakin?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#007b83',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Muat Template',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $wire.loadStandardTemplate();
+                    }
+                });
             });
         </script>
         @endscript
