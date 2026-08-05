@@ -41,6 +41,8 @@ class extends Component
             $this->jobId = $initialJobId;
         } elseif (request()->query('jobId')) {
             $this->jobId = request()->query('jobId');
+        }
+        
         try {
             $this->googleSheetsWebhookUrl = \App\Models\Setting::where('key', 'google_sheets_webhook_url')->value('value') ?? '';
         } catch (\Exception $e) {
