@@ -178,6 +178,21 @@ class extends Component
 
     // ── Inline Edit Helpers ────────────────────────────────────────
     
+    public function loadStandardTemplate()
+    {
+        $this->fields = [
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'IDENTITAS DIRI', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nama Lengkap', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Email', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'date', 'label' => 'Tanggal lahir', 'required' => false],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nomor telepon', 'required' => true],
+        ];
+        $this->editingIndex = null;
+        $this->pushHistory();
+        $this->saveForm();
+        $this->dispatch('notify', 'Template Standar berhasil dimuat!');
+    }
+
     public function addBlankField()
     {
         $this->fields[] = [
@@ -739,6 +754,9 @@ Example output format:
                     </button>
                     <button wire:click="openImportModal" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
                         <span class="material-symbols-outlined text-[20px] text-primary">upload_file</span> Import Fields
+                    </button>
+                    <button wire:click="loadStandardTemplate" onclick="return confirm('Memuat template standar akan menimpa seluruh pertanyaan saat ini. Anda yakin?')" class="w-full px-4 py-2 text-sm text-left text-on-surface hover:text-primary hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-all flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[20px] text-primary">dynamic_form</span> Standard Template
                     </button>
                     
                     <div class="h-px bg-surface-border my-2"></div>
