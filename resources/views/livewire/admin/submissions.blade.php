@@ -63,93 +63,13 @@ class extends Component
         $job = Job::find($this->jobId);
         if (!$job || $job->google_spreadsheet_id) return;
 
-        $tokenStr = \App\Models\Setting::where('key', 'google_oauth_token')->value('value');
-        if (!$tokenStr) return;
-
         try {
-            $client = new \Google\Client();
-            $client->setClientId(env('GOOGLE_CLIENT_ID'));
-            $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
-            $client->setAccessToken(json_decode($tokenStr, true));
-
-            // Refresh token if expired
-            if ($client->isAccessTokenExpired()) {
-                $refreshToken = $client->getRefreshToken();
-                if ($refreshToken) {
-                    $client->fetchAccessTokenWithRefreshToken($refreshToken);
-                    \App\Models\Setting::updateOrCreate(
-                        ['key' => 'google_oauth_token'],
-                        ['value' => json_encode($client->getAccessToken())]
-                    );
-                }
-            }
-
-            $service = new \Google\Service\Sheets($client);
+            $service = new \App\Services\GoogleSheetsService();
+            $service->createSpreadsheetForJob($job);
             
-            // Generate Dynamic Headers based on Job Custom Fields
-            $headerRow = ["ID", "Nama Kandidat", "Email", "Telepon", "Posisi Dilamar", "Departemen", "Status", "Tanggal Melamar"];
+            // Re-fetch job to get the updated ID
+            $this->selectedJob = Job::find($this->jobId);
             
-            $customFields = $job->custom_fields ? json_decode($job->custom_fields, true) : [];
-            if (is_array($customFields)) {
-                foreach ($customFields as $field) {
-                    if (isset($field['type']) && !in_array($field['type'], ['title', 'section', 'image', 'video'])) {
-                        $headerRow[] = $field['label'] ?? 'Custom Field';
-                    }
-                }
-            }
-            
-            // Create Spreadsheet
-            $spreadsheet = new \Google\Service\Sheets\Spreadsheet([
-                'properties' => [
-                    'title' => 'ATS Responses - ' . $job->title
-                ]
-            ]);
-            $spreadsheet = $service->spreadsheets->create($spreadsheet);
-            
-            // Share Spreadsheet to Anyone with the link (Editor)
-            try {
-                $driveService = new \Google\Service\Drive($client);
-                $permission = new \Google\Service\Drive\Permission([
-                    'type' => 'anyone',
-                    'role' => 'writer',
-                ]);
-                $driveService->permissions->create($spreadsheet->spreadsheetId, $permission);
-            } catch (\Exception $e) {
-                // If sharing fails, continue anyway
-                \Log::error('Failed to share spreadsheet: ' . $e->getMessage());
-            }
-            
-            // Add Header Row
-            $values = [$headerRow];
-            $body = new \Google\Service\Sheets\ValueRange([
-                'values' => $values
-            ]);
-            $params = [
-                'valueInputOption' => 'RAW'
-            ];
-            
-            // Calculate ending column letter for the range
-            $colCount = count($headerRow);
-            $endCol = '';
-            $temp = $colCount;
-            while ($temp > 0) {
-                $modulo = ($temp - 1) % 26;
-                $endCol = chr(65 + $modulo) . $endCol;
-                $temp = (int)(($temp - $modulo) / 26);
-            }
-            $range = 'Sheet1!A1:' . $endCol . '1';
-            
-            $service->spreadsheets_values->update(
-                $spreadsheet->spreadsheetId,
-                $range,
-                $body,
-                $params
-            );
-
-            // Save ID
-            $job->google_spreadsheet_id = $spreadsheet->spreadsheetId;
-            $job->save();
-
             $this->dispatch('notify', ['message' => 'Spreadsheet berhasil dibuat!', 'type' => 'success']);
         } catch (\Exception $e) {
             $this->dispatch('notify', ['message' => 'Gagal membuat Spreadsheet: ' . $e->getMessage(), 'type' => 'error']);
@@ -174,7 +94,7 @@ class extends Component
 
     public function exportCsv()
     {
-        $query = Application::with(['candidate', 'job', 'stage']);
+        $query = Application::with(['candidate', 'job', 'stage', 'notes']);
         if ($this->jobId) $query->where('job_id', $this->jobId);
         $applications = $query->get();
 
@@ -189,18 +109,31 @@ class extends Component
         $callback = function() use ($applications) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
-            fputcsv($file, ['ID', 'Nama Kandidat', 'Email', 'Telepon', 'Posisi Dilamar', 'Departemen', 'Status', 'Tanggal Melamar']);
-            foreach ($applications as $app) {
-                fputcsv($file, [
-                    $app->id,
-                    $app->candidate->name,
-                    $app->candidate->email,
-                    $app->candidate->phone ?? '-',
-                    $app->job->title,
-                    $app->job->department ?? '-',
-                    $app->stage->name,
-                    $app->created_at->format('Y-m-d H:i:s')
-                ]);
+            
+            if ($this->jobId) {
+                $job = Job::find($this->jobId);
+                $googleService = new \App\Services\GoogleSheetsService();
+                $csvHeaders = $googleService->getHeaders($job);
+                fputcsv($file, array_merge(['ID', 'Departemen'], $csvHeaders));
+                
+                foreach ($applications as $app) {
+                    $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+                    fputcsv($file, array_merge([$app->id, $app->job->department ?? '-'], $row));
+                }
+            } else {
+                fputcsv($file, ['ID', 'Nama Kandidat', 'Email', 'Telepon', 'Posisi Dilamar', 'Departemen', 'Status', 'Tanggal Melamar']);
+                foreach ($applications as $app) {
+                    fputcsv($file, [
+                        $app->id,
+                        $app->candidate->name,
+                        $app->candidate->email,
+                        $app->candidate->phone ?? '-',
+                        $app->job->title,
+                        $app->job->department ?? '-',
+                        $app->stage->name,
+                        $app->created_at->format('Y-m-d H:i:s')
+                    ]);
+                }
             }
             fclose($file);
         };
@@ -221,20 +154,40 @@ class extends Component
         $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
         // Add CSV summary
+        // Add CSV summary
         $csvContent = "\xEF\xBB\xBF"; // UTF-8 BOM
-        $csvContent .= "ID,Nama Kandidat,Email,Telepon,Posisi Dilamar,Departemen,Status,Tanggal Melamar\n";
-        foreach ($applications as $app) {
-            $csvContent .= implode(',', [
-                $app->id,
-                '"' . $app->candidate->name . '"',
-                $app->candidate->email,
-                $app->candidate->phone ?? '-',
-                '"' . $app->job->title . '"',
-                '"' . ($app->job->department ?? '-') . '"',
-                $app->stage->name,
-                $app->created_at->format('Y-m-d H:i:s'),
-            ]) . "\n";
+        
+        if ($this->jobId) {
+            $job = Job::find($this->jobId);
+            $googleService = new \App\Services\GoogleSheetsService();
+            $csvHeaders = $googleService->getHeaders($job);
+            
+            // Build CSV Headers manually to handle escaping
+            $escapedHeaders = array_map(function($h) { return '"' . str_replace('"', '""', $h) . '"'; }, array_merge(['ID', 'Departemen'], $csvHeaders));
+            $csvContent .= implode(',', $escapedHeaders) . "\n";
+            
+            foreach ($applications as $app) {
+                $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+                $fullRow = array_merge([$app->id, $app->job->department ?? '-'], $row);
+                $escapedRow = array_map(function($v) { return '"' . str_replace('"', '""', $v) . '"'; }, $fullRow);
+                $csvContent .= implode(',', $escapedRow) . "\n";
+            }
+        } else {
+            $csvContent .= "ID,Nama Kandidat,Email,Telepon,Posisi Dilamar,Departemen,Status,Tanggal Melamar\n";
+            foreach ($applications as $app) {
+                $csvContent .= implode(',', [
+                    $app->id,
+                    '"' . $app->candidate->name . '"',
+                    $app->candidate->email,
+                    $app->candidate->phone ?? '-',
+                    '"' . $app->job->title . '"',
+                    '"' . ($app->job->department ?? '-') . '"',
+                    $app->stage->name,
+                    $app->created_at->format('Y-m-d H:i:s'),
+                ]) . "\n";
+            }
         }
+        
         $zip->addFromString('rekap_pelamar.csv', $csvContent);
 
         // Add CV/resumes per Department folder → candidate subfolder
