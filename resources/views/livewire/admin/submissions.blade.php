@@ -25,6 +25,12 @@ class extends Component
     public $showSheetsModal = false;
     public $googleSheetsWebhookUrl = '';
 
+    #[\Livewire\Attributes\On('open-sheets-modal')]
+    public function openSheetsModal()
+    {
+        $this->showSheetsModal = true;
+    }
+
     public function updateStage($appId, $newStageId)
     {
         $app = Application::find($appId);
