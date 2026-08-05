@@ -94,6 +94,9 @@ export default {
                 "stack-sm": "8px",
                 "margin": "24px"
             },
+            maxWidth: {
+                "container-max": "1920px",
+            },
             fontSize: {
                 "headline-xl": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
                 "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
