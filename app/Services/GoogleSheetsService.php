@@ -109,19 +109,13 @@ class GoogleSheetsService
      */
     public function getHeaders(Job $job): array
     {
-        $headerRow = ['Tanggal Lamaran', 'Nama Lengkap', 'Email', 'No. HP', 'Status Lamaran'];
+        $headerRow = ['ID', 'Nama Kandidat', 'Email', 'Telepon', 'Posisi Dilamar', 'Departemen', 'Status', 'Tanggal Melamar'];
         $fields = is_array($job->custom_fields) ? $job->custom_fields : json_decode($job->custom_fields, true) ?? [];
         
         foreach ($fields as $field) {
             if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
-            // Skip fields that are already in the basic identity to avoid duplication
-            $label = strtolower($field['label']);
-            if (str_contains($label, 'nama') || str_contains($label, 'name') ||
-                str_contains($label, 'email') || str_contains($label, 'surel') ||
-                str_contains($label, 'telepon') || str_contains($label, 'phone') || str_contains($label, 'hp')) {
-                continue;
-            }
-            $headerRow[] = $field['label'];
+            // Always include custom fields to match exactly what is in the form builder
+            $headerRow[] = $field['label'] ?? 'Custom Field';
         }
         return $headerRow;
     }
@@ -133,17 +127,19 @@ class GoogleSheetsService
     {
         $candidate = $application->candidate;
         
-        // Base fields
+        // Base fields (first 8 columns)
         $row = [
-            $application->created_at->format('Y-m-d H:i:s'),
+            $application->id,
             $candidate->name ?? '-',
             $candidate->email ?? '-',
             $candidate->phone ?? '-',
+            $job->title ?? '-',
+            $job->department ?? '-',
             $application->pipelineStage->name ?? '-',
+            $application->created_at->format('Y-m-d H:i:s'),
         ];
 
-        // Parse custom notes to extract answers (since we didn't save answers as JSON, we parse from notes)
-        // Alternatively, if passed during submission, we can use the array. But for sync all, we parse from notes.
+        // Parse custom notes to extract answers
         $notes = $application->notes()->latest()->first()?->note ?? '';
         $customAnswers = [];
         $lines = explode("\n", $notes);
@@ -154,8 +150,8 @@ class GoogleSheetsService
             }
         }
 
-        // Add custom fields in the order of headers (skipping the first 5 base fields)
-        for ($i = 5; $i < count($headers); $i++) {
+        // Add custom fields in the order of headers (skipping the first 8 base fields)
+        for ($i = 8; $i < count($headers); $i++) {
             $headerLabel = $headers[$i];
             $row[] = $customAnswers[$headerLabel] ?? '-';
         }
