@@ -150,10 +150,26 @@ class GoogleSheetsService
             }
         }
 
+        $mediaItems = $application->getMedia('documents');
+
         // Add custom fields in the order of headers (skipping the first 8 base fields)
         for ($i = 8; $i < count($headers); $i++) {
             $headerLabel = $headers[$i];
-            $row[] = $customAnswers[$headerLabel] ?? '-';
+            $val = $customAnswers[$headerLabel] ?? '-';
+            
+            if (is_string($val) && str_starts_with($val, 'Berkas dilampirkan: ')) {
+                $filename = trim(str_replace('Berkas dilampirkan: ', '', $val));
+                // Find matching media
+                $matchedMedia = $mediaItems->first(function ($media) use ($filename) {
+                    return $media->file_name === $filename || $media->name === $filename;
+                });
+                
+                if ($matchedMedia) {
+                    $val = asset($matchedMedia->getUrl());
+                }
+            }
+            
+            $row[] = $val;
         }
 
         return $row;
