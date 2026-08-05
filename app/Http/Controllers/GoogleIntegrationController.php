@@ -30,21 +30,23 @@ class GoogleIntegrationController extends Controller
 
     public function auth()
     {
-        // Only admins can connect
-        if (!auth()->user()->can('access settings')) {
-            abort(403, 'Unauthorized action.');
+        if (!auth()->check() || (!auth()->user()->can('access settings') && !auth()->user()->can('access custom form'))) {
+            abort(403, 'UNAUTHORIZED ACTION.');
         }
 
-        $client = $this->getClient();
-        $authUrl = $client->createAuthUrl();
-        return redirect()->away($authUrl);
+        try {
+            $client = $this->getClient();
+            $authUrl = $client->createAuthUrl();
+            return redirect()->away($authUrl);
+        } catch (\Exception $e) {
+            return redirect('/admin/custom-form')->with('error', 'Gagal menghubungkan ke Google: ' . $e->getMessage());
+        }
     }
 
     public function callback(Request $request)
     {
-        // Only admins can connect
-        if (!auth()->user()->can('access settings')) {
-            abort(403, 'Unauthorized action.');
+        if (!auth()->check() || (!auth()->user()->can('access settings') && !auth()->user()->can('access custom form'))) {
+            abort(403, 'UNAUTHORIZED ACTION.');
         }
 
         if ($request->has('code')) {
