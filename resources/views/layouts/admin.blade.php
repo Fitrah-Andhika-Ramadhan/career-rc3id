@@ -211,6 +211,9 @@
                 <!-- Optional Global Search can go here -->
             </div>
             <div class="flex items-center gap-stack-md ml-margin">
+                <a href="https://github.com/Fitrah-Andhika-Ramadhan/career-rc3id/blob/main/Manual_Book_RC3ID_ATS.md" target="_blank" title="Baca Buku Panduan (Manual Book)" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                </a>
                 <a href="{{ route('home') }}" target="_blank" title="Lihat Website" class="p-2 text-secondary hover:bg-surface-container hover:text-primary rounded-full relative transition-colors flex items-center justify-center">
                     <span class="material-symbols-outlined" data-icon="public">public</span>
                 </a>
