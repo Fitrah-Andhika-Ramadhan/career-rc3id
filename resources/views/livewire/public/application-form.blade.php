@@ -267,6 +267,7 @@ class extends Component
                     } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
                         $application->addMedia($answer->getRealPath())
                                    ->usingName($answer->getClientOriginalName())
+                                   ->usingFileName($answer->getClientOriginalName())
                                    ->toMediaCollection('documents');
                         $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
                     }
