@@ -682,81 +682,77 @@ class extends Component
     </div>
     @endif
 
-    {{-- Google Sheets Integration Modal --}}
+        {{-- Google Sheets Integration Modal --}}
     @if($showSheetsModal)
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-surface-bg rounded-2xl shadow-xl w-full max-w-lg border border-surface-border overflow-hidden" @click.outside="$wire.set('showSheetsModal', false)">
-            <div class="px-6 py-4 border-b border-surface-border flex justify-between items-center bg-surface-container-lowest">
-                <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-                    <span class="material-symbols-outlined text-success">table_view</span>
-                    Google Sheets Asli
-                </h3>
-                <button wire:click="$set('showSheetsModal', false)" class="text-secondary hover:text-error transition-colors">
-                    <span class="material-symbols-outlined">close</span>
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-[500px] overflow-hidden" @click.outside="$wire.set('showSheetsModal', false)">
+            <div class="px-6 py-5 flex justify-between items-center">
+                <h3 class="text-base font-medium text-[#202124]">Select destination for responses</h3>
+                <button wire:click="$set('showSheetsModal', false)" class="text-[#5f6368] hover:bg-[#f1f3f4] p-1.5 rounded-full transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
             </div>
             
-            <div class="p-6 bg-surface-bg">
+            <div class="px-6 pb-2 pt-2 bg-white">
                 @php
                     $isGoogleConnected = \App\Models\Setting::where('key', 'google_oauth_token')->exists();
+                    $currentJob = $jobId ? \App\Models\Job::find($jobId) : null;
                 @endphp
                 
                 @if(!$isGoogleConnected)
-                    <div class="mb-6 text-sm text-secondary bg-error/10 p-4 rounded-lg border border-error/20 flex gap-3 items-start">
-                        <span class="material-symbols-outlined text-error mt-0.5">warning</span>
-                        <div>
-                            <p class="font-semibold text-error mb-1">Belum Terhubung ke Akun Google</p>
-                            <p>Anda harus menghubungkan akun Google Anda terlebih dahulu agar sistem dapat membuat Spreadsheet secara otomatis untuk menyimpan data pelamar.</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-center">
-                        <a href="{{ route('google.auth') }}" class="px-6 py-3 font-semibold bg-white border border-outline-variant text-on-surface rounded-lg shadow-sm hover:bg-surface-container transition-all flex items-center gap-3">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-5 h-5">
-                            Hubungkan dengan Google
+                    <div class="mb-6 text-sm text-[#3c4043] flex flex-col gap-4">
+                        <p>You need to authorize Google Sheets first before creating a destination.</p>
+                        <a href="{{ route('google.auth') }}" class="px-4 py-2 border border-[#dadce0] rounded-md text-[#1a73e8] font-medium text-sm inline-flex items-center w-max hover:bg-[#f8f9fa] transition-colors gap-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-4 h-4">
+                            Connect to Google
                         </a>
                     </div>
                 @else
-                    <div class="mb-4 text-sm text-secondary bg-success/10 p-4 rounded-lg border border-success/20 flex gap-3 items-center">
-                        <span class="material-symbols-outlined text-success">check_circle</span>
-                        <div>
-                            <p class="font-semibold text-success">Terhubung ke Google</p>
+                    @if($currentJob && $currentJob->google_spreadsheet_id)
+                        <div class="mb-4 text-sm text-[#3c4043]">
+                            <p class="mb-4">Spreadsheet already exists for this form.</p>
+                            <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" class="text-[#1a73e8] font-medium hover:underline">
+                                Open Spreadsheet
+                            </a>
                         </div>
-                    </div>
-                    
-                    @if($jobId)
-                        @php
-                            $currentJob = \App\Models\Job::find($jobId);
-                        @endphp
-                        @if($currentJob && $currentJob->google_spreadsheet_id)
-                            <div class="mt-6 p-4 border border-outline-variant rounded-xl bg-surface-container-lowest text-center">
-                                <p class="text-sm font-medium text-on-surface mb-2">Spreadsheet untuk lowongan ini sudah dibuat!</p>
-                                <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-success text-white font-semibold rounded-lg hover:bg-success/90 transition-colors shadow-sm">
-                                    <span class="material-symbols-outlined text-[18px]">open_in_new</span> Buka Spreadsheet
-                                </a>
-                            </div>
-                        @else
-                            <div class="mt-6 flex flex-col gap-3">
-                                <p class="text-sm text-secondary text-center mb-2">Klik tombol di bawah ini untuk membuat Spreadsheet baru khusus untuk lowongan <strong>{{ $currentJob?->title }}</strong>.</p>
-                                <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="w-full px-5 py-3 text-sm font-bold bg-success text-white rounded-lg shadow hover:bg-success/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-                                    <span wire:loading.remove wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[20px]">add_box</span>
-                                    <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[20px] animate-spin">sync</span>
-                                    <span wire:loading.remove wire:target="createSpreadsheetForJob">Buat Spreadsheet Baru</span>
-                                    <span wire:loading wire:target="createSpreadsheetForJob">Membuat...</span>
-                                </button>
-                            </div>
-                        @endif
                     @else
-                        <div class="mt-6 p-6 border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center text-center gap-2">
-                            <span class="material-symbols-outlined text-secondary text-3xl">touch_app</span>
-                            <p class="text-on-surface font-semibold text-sm">Pilih Lowongan Terlebih Dahulu</p>
-                            <p class="text-xs text-secondary">Anda harus memilih satu lowongan dari dropdown "Filter Lowongan" di atas tabel untuk membuat Spreadsheet khusus lowongan tersebut.</p>
+                        <!-- Google Forms style radio options -->
+                        <div class="flex flex-col gap-4 mb-2">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-[#007b83] flex items-center justify-center">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-[#007b83]"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <span class="text-sm text-[#202124]">Create a new spreadsheet</span>
+                                        <input type="text" readonly value="{{ $currentJob ? $currentJob->title . ' (Responses)' : 'Job Application (Responses)' }}" class="border-b border-[#dadce0] focus:border-[#007b83] outline-none px-0 py-1 text-sm text-[#202124] w-full sm:w-[220px] bg-transparent">
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-start gap-3 cursor-not-allowed opacity-60" title="Coming soon">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-[#dadce0] flex items-center justify-center">
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-sm text-[#202124]">Select existing spreadsheet</span>
+                                </div>
+                            </label>
                         </div>
                     @endif
                 @endif
             </div>
             
-            <div class="p-4 border-t border-surface-border bg-surface-container-lowest flex justify-end">
-                <button type="button" wire:click="$set('showSheetsModal', false)" class="px-5 py-2 text-sm font-semibold text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-variant rounded-lg">Tutup</button>
+            <div class="px-6 py-4 flex justify-end gap-2">
+                <button wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-medium text-[#5f6368] hover:bg-[#f1f3f4] rounded-md transition-colors">
+                    Cancel
+                </button>
+                @if($isGoogleConnected && (!$currentJob || !$currentJob->google_spreadsheet_id))
+                <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium text-[#007b83] hover:bg-[#e0f2f1] rounded-md transition-colors flex items-center gap-2 disabled:opacity-50">
+                    <span wire:loading.remove wire:target="createSpreadsheetForJob">Create</span>
+                    <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                    <span wire:loading wire:target="createSpreadsheetForJob">Creating...</span>
+                </button>
+                @endif
             </div>
         </div>
     </div>
