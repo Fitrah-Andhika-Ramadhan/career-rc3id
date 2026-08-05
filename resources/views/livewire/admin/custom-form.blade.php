@@ -1127,13 +1127,40 @@ Example output format:
         <div class="mt-4 bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden">
             <div class="bg-surface-container-lowest p-6 border-b border-surface-border flex justify-between items-center">
                 <h2 class="font-headline-lg text-headline-lg text-on-surface">{{ $responsesCount }} Responses</h2>
-                @if($responsesCount > 0)
-                <a href="{{ route('admin.submissions.index') }}?jobId={{ $selectedJobId }}" 
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg font-semibold hover:opacity-90 transition-opacity">
-                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">table_view</span>
-                    View in Submissions
-                </a>
-                @endif
+                
+                <div class="flex items-center gap-2">
+                    @php
+                        $currentJob = \App\Models\Job::find($selectedJobId);
+                        $hasSpreadsheet = $currentJob && $currentJob->google_spreadsheet_id;
+                    @endphp
+                    
+                    @if($hasSpreadsheet)
+                        <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" 
+                           title="Lihat di Google Sheets"
+                           class="inline-flex items-center justify-center p-2 bg-success text-white rounded-lg hover:opacity-90 transition-opacity shadow-sm">
+                           <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">table_view</span>
+                        </a>
+                    @else
+                        <!-- In custom-form we redirect back to Candidate Submissions with open sheets modal trigger (or we just tell them to use the main menu) -->
+                        <button onclick="alert('Silakan klik menu Candidate Submissions di sidebar sebelah kiri, lalu klik tombol Google Sheets di sana!')"
+                           title="Hubungkan ke Google Sheets"
+                           class="inline-flex items-center justify-center p-2 bg-success text-white rounded-lg hover:opacity-90 transition-opacity shadow-sm">
+                           <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">table_view</span>
+                        </button>
+                    @endif
+                    
+                    @if($responsesCount > 0)
+                    <a href="{{ route('admin.submissions.index') }}?jobId={{ $selectedJobId }}" 
+                       title="View in Submissions"
+                       class="inline-flex items-center justify-center p-2 text-secondary hover:bg-surface-container rounded-full transition-colors">
+                       <span class="material-symbols-outlined text-[20px]">table_chart</span>
+                    </a>
+                    @endif
+                    
+                    <button class="p-2 text-secondary hover:bg-surface-container rounded-full transition-colors flex items-center justify-center" title="More options">
+                        <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                    </button>
+                </div>
             </div>
             <div class="p-0">
                 {{-- Embed the submissions view for this specific job --}}
