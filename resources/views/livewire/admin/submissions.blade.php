@@ -682,13 +682,13 @@ class extends Component
     </div>
     @endif
 
-        {{-- Google Sheets Integration Modal --}}
+            {{-- Google Sheets Integration Modal --}}
     @if($showSheetsModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-[500px] overflow-hidden" @click.outside="$wire.set('showSheetsModal', false)">
+        <div class="bg-white rounded-lg shadow-2xl w-full overflow-hidden" style="max-width: 500px;" @click.outside="$wire.set('showSheetsModal', false)">
             <div class="px-6 py-5 flex justify-between items-center">
-                <h3 class="text-base font-medium text-[#202124]">Select destination for responses</h3>
-                <button wire:click="$set('showSheetsModal', false)" class="text-[#5f6368] hover:bg-[#f1f3f4] p-1.5 rounded-full transition-colors flex items-center justify-center">
+                <h3 class="text-base font-medium" style="color: #202124;">Select destination for responses</h3>
+                <button wire:click="$set('showSheetsModal', false)" class="p-1.5 rounded-full transition-colors flex items-center justify-center" style="color: #5f6368; ">
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
             </div>
@@ -700,18 +700,18 @@ class extends Component
                 @endphp
                 
                 @if(!$isGoogleConnected)
-                    <div class="mb-6 text-sm text-[#3c4043] flex flex-col gap-4">
+                    <div class="mb-6 text-sm flex flex-col gap-4" style="color: #3c4043;">
                         <p>You need to authorize Google Sheets first before creating a destination.</p>
-                        <a href="{{ route('google.auth') }}" class="px-4 py-2 border border-[#dadce0] rounded-md text-[#1a73e8] font-medium text-sm inline-flex items-center w-max hover:bg-[#f8f9fa] transition-colors gap-2">
+                        <a href="{{ route('google.auth') }}" class="px-4 py-2 border rounded-md font-medium text-sm inline-flex items-center w-max transition-colors gap-2" style="border-color: #dadce0; color: #1a73e8; ">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-4 h-4">
                             Connect to Google
                         </a>
                     </div>
                 @else
                     @if($currentJob && $currentJob->google_spreadsheet_id)
-                        <div class="mb-4 text-sm text-[#3c4043]">
+                        <div class="mb-4 text-sm" style="color: #3c4043;">
                             <p class="mb-4">Spreadsheet already exists for this form.</p>
-                            <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" class="text-[#1a73e8] font-medium hover:underline">
+                            <a href="https://docs.google.com/spreadsheets/d/{{ $currentJob->google_spreadsheet_id }}" target="_blank" class="font-medium hover:underline" style="color: #1a73e8;">
                                 Open Spreadsheet
                             </a>
                         </div>
@@ -719,22 +719,22 @@ class extends Component
                         <!-- Google Forms style radio options -->
                         <div class="flex flex-col gap-4 mb-2">
                             <label class="flex items-start gap-3 cursor-pointer">
-                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-[#007b83] flex items-center justify-center">
-                                    <div class="w-2.5 h-2.5 rounded-full bg-[#007b83]"></div>
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center" style="border-color: #007b83;">
+                                    <div class="w-2.5 h-2.5 rounded-full" style="background-color: #007b83;"></div>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                                        <span class="text-sm text-[#202124]">Create a new spreadsheet</span>
-                                        <input type="text" readonly value="{{ $currentJob ? $currentJob->title . ' (Responses)' : 'Job Application (Responses)' }}" class="border-b border-[#dadce0] focus:border-[#007b83] outline-none px-0 py-1 text-sm text-[#202124] w-full sm:w-[220px] bg-transparent">
+                                        <span class="text-sm" style="color: #202124;">Create a new spreadsheet</span>
+                                        <input type="text" readonly value="{{ $currentJob ? $currentJob->title . ' (Responses)' : 'Job Application (Responses)' }}" class="border-b outline-none px-0 py-1 text-sm w-full sm:w-[220px] bg-transparent" style="border-color: #dadce0; color: #202124; ">
                                     </div>
                                 </div>
                             </label>
                             
                             <label class="flex items-start gap-3 cursor-not-allowed opacity-60" title="Coming soon">
-                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 border-[#dadce0] flex items-center justify-center">
+                                <div class="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center" style="border-color: #dadce0;">
                                 </div>
                                 <div class="flex-1">
-                                    <span class="text-sm text-[#202124]">Select existing spreadsheet</span>
+                                    <span class="text-sm" style="color: #202124;">Select existing spreadsheet</span>
                                 </div>
                             </label>
                         </div>
@@ -743,11 +743,11 @@ class extends Component
             </div>
             
             <div class="px-6 py-4 flex justify-end gap-2">
-                <button wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-medium text-[#5f6368] hover:bg-[#f1f3f4] rounded-md transition-colors">
+                <button wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-medium rounded-md transition-colors" style="color: #5f6368; ">
                     Cancel
                 </button>
                 @if($isGoogleConnected && (!$currentJob || !$currentJob->google_spreadsheet_id))
-                <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium text-[#007b83] hover:bg-[#e0f2f1] rounded-md transition-colors flex items-center gap-2 disabled:opacity-50">
+                <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 disabled:opacity-50" style="color: #007b83; ">
                     <span wire:loading.remove wire:target="createSpreadsheetForJob">Create</span>
                     <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
                     <span wire:loading wire:target="createSpreadsheetForJob">Creating...</span>
@@ -758,3 +758,4 @@ class extends Component
     </div>
     @endif
 </div>
+
