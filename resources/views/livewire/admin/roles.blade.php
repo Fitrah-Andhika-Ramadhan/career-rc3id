@@ -149,11 +149,14 @@ class extends Component
 
             <div class="max-h-[60vh] overflow-y-auto pr-2 mb-6 space-y-3">
                 @foreach($permissions as $permission)
+                    @php
+                        $cleanName = str_replace(['access ', 'manage '], '', $permission->name);
+                    @endphp
                     <label class="flex items-center p-3 rounded-lg border {{ in_array($permission->name, $selectedPermissions) ? 'border-primary bg-primary/5' : 'border-surface-border bg-surface-container-lowest' }} cursor-pointer transition-colors hover:border-primary/50">
                         <input type="checkbox" wire:model="selectedPermissions" value="{{ $permission->name }}" class="w-5 h-5 rounded border-surface-border text-primary focus:ring-primary focus:ring-offset-0 mr-3">
                         <div class="flex flex-col">
-                            <span class="font-semibold text-on-surface capitalize">{{ str_replace('access ', '', $permission->name) }} Menu</span>
-                            <span class="text-xs text-secondary">Allow {{ $roleName }} to view and manage {{ str_replace('access ', '', $permission->name) }}.</span>
+                            <span class="font-semibold text-on-surface capitalize">{{ $cleanName }} Menu</span>
+                            <span class="text-xs text-secondary">Allow {{ $roleName }} to view and manage {{ $cleanName }}.</span>
                         </div>
                     </label>
                 @endforeach
