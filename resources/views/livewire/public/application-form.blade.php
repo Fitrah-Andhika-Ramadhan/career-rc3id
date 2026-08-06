@@ -119,7 +119,7 @@ class extends Component
             elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
                 if (!$this->email) $this->email = $val;
             }
-            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($nl, 'hp') || str_contains($normalizedLabel, 'nomor')) {
+            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($normalizedLabel, 'hp') || str_contains($normalizedLabel, 'nomor')) {
                 if (!$this->phone) $this->phone = $val;
             }
             elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
