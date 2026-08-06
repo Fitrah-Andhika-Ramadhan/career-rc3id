@@ -154,7 +154,7 @@ class extends Component
                     $rules["customAnswers.{$field['id']}"] = $requiredRule . '|array';
                 } else {
                     if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                        $rules['email'] = $requiredRule . '|string|email';
+                        $rules["customAnswers.{$field['id']}"] = $requiredRule . '|string|email';
                     } else {
                         $rules["customAnswers.{$field['id']}"] = $requiredRule . '|string';
                     }
