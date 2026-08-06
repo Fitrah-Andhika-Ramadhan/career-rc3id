@@ -110,7 +110,7 @@ class extends Component
             if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
             
             $label = strtolower($field['label']);
-            $val = $this->customAnswers[$field['id']] ?? '';
+            $val = trim($this->customAnswers[$field['id']] ?? '');
             
             if (!$val) continue;
 
@@ -142,6 +142,7 @@ class extends Component
         $messages = [
             'customAnswers.*.required' => 'Field ini wajib diisi.',
             'customAnswers.*.file' => 'File tidak valid.',
+            'customAnswers.*.email' => 'Format email tidak valid.',
         ];
 
         // Custom fields validation for current step
@@ -150,12 +151,17 @@ class extends Component
                 if (in_array($field['type'] ?? 'text', ['title', 'image', 'video', 'section'])) continue;
                 
                 $rule = ($field['required'] ?? false) ? 'required' : 'nullable';
+                $labelStr = strtolower($field['label'] ?? '');
+                
                 if (($field['type'] ?? 'text') === 'file') {
                     $rule .= '|file|max:10240';
                 } elseif (($field['type'] ?? 'text') === 'checkbox') {
                     $rule .= '|array';
                 } else {
                     $rule .= '|string';
+                    if (str_contains($labelStr, 'email') || str_contains($labelStr, 'surel')) {
+                        $rule .= '|email';
+                    }
                 }
                 $rules["customAnswers.{$field['id']}"] = $rule;
                 
