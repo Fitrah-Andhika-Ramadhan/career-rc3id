@@ -632,6 +632,7 @@ Example output format:
                 'syncSuccess' => true,
             ]);
         } catch (\Exception $e) {
+            $this->dispatch('sync-complete');
             $this->dispatch('notify', 'Gagal sinkronisasi: ' . $e->getMessage());
         }
     }
@@ -1627,6 +1628,11 @@ Example output format:
                 });
             });
             
+            // If sync fails, close the loading Swal
+            $wire.on('sync-complete', () => {
+                Swal.close();
+            });
+
             $wire.on('show-sheets-sweetalert', (data) => {
                 const url = data[0].url;
                 const syncSuccess = data[0].syncSuccess ?? false;
@@ -1657,7 +1663,11 @@ Example output format:
                                 Swal.showLoading();
                             }
                         });
-                        $wire.syncToGoogleSheets();
+                        $wire.syncToGoogleSheets().then(() => {
+                            // show-sheets-sweetalert event handles success case
+                        }).catch(() => {
+                            Swal.close();
+                        });
                     }
                 });
             });

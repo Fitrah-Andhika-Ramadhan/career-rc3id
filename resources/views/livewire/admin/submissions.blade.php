@@ -95,6 +95,8 @@ class extends Component
                 'syncSuccess' => true,
             ]);
         } catch (\Exception $e) {
+            // Dispatch sync-complete to close the loading dialog, then notify error
+            $this->dispatch('sync-complete');
             $this->dispatch('notify', ['message' => 'Gagal sinkronisasi: ' . $e->getMessage(), 'type' => 'error']);
         }
     }
@@ -813,6 +815,11 @@ class extends Component
 
     @script
     <script>
+        // If sync fails, close the loading Swal
+        $wire.on('sync-complete', () => {
+            Swal.close();
+        });
+
         $wire.on('show-sheets-sweetalert', (data) => {
             const url = data[0].url;
             const syncSuccess = data[0].syncSuccess ?? false;
@@ -843,7 +850,13 @@ class extends Component
                             Swal.showLoading();
                         }
                     });
-                    $wire.syncToGoogleSheets();
+                    // Use .then() to close loading if no event fires (safety net)
+                    $wire.syncToGoogleSheets().then(() => {
+                        // The show-sheets-sweetalert event will handle opening new Swal
+                        // This .then() only runs if event hasn't already replaced the Swal
+                    }).catch(() => {
+                        Swal.close();
+                    });
                 }
             });
         });
