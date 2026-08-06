@@ -101,45 +101,62 @@ class extends Component
 
     public function extractIdentityVariables()
     {
-        foreach ($this->customAnswers as $id => $val) {
-            $field = collect($this->customFields)->firstWhere('id', $id);
-            if (!$field) continue;
-            
-            $normalizedLabel = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
-            
-            if (str_contains($normalizedLabel, 'nama') || str_contains($normalizedLabel, 'name')) {
-                if (!$this->full_name) $this->full_name = $val;
-            }
-            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($normalizedLabel, 'hp') || str_contains($normalizedLabel, 'nomor')) {
-                if (!$this->phone) $this->phone = $val;
-            }
-            elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
-                if (!$this->dob) $this->dob = $val;
-            }
-            elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
-                if (!$this->email) $this->email = $val;
+        // Loop melalui SEMUA halaman dan SEMUA field untuk menemukan identitas
+        foreach ($this->pages as $page) {
+            foreach ($page['fields'] ?? [] as $field) {
+                $id  = $field['id'] ?? null;
+                if (!$id) continue;
+                $val = $this->customAnswers[$id] ?? null;
+                if (!$val || !is_string($val) || trim($val) === '') continue;
+                $val = trim($val);
+
+                $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+
+                if (!$this->full_name && (str_contains($nl, 'nama') || str_contains($nl, 'name'))) {
+                    $this->full_name = $val;
+                }
+                if (!$this->phone && (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor'))) {
+                    $this->phone = $val;
+                }
+                if (!$this->dob && (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth') || str_contains($nl, 'tanggal'))) {
+                    $this->dob = $val;
+                }
+                if (!$this->email && (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail'))) {
+                    $this->email = $val;
+                }
             }
         }
-        
-        $this->email = is_string($this->email) ? trim($this->email) : '';
-        
+
+        // Fallback: jika email MASIH kosong, scan SELURUH customAnswers untuk nilai yang terlihat seperti email
         if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            // Temukan ID field email agar error bisa ditampilkan di UI
-            $emailFieldId = 'email';
-            foreach ($this->customFields as $field) {
-                $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
-                if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                    $emailFieldId = "customAnswers.{$field['id']}";
+            foreach ($this->customAnswers as $id => $val) {
+                if (is_string($val) && filter_var(trim($val), FILTER_VALIDATE_EMAIL)) {
+                    $this->email = trim($val);
+                    \Log::info('[EMAIL FALLBACK] Found email via value scan: ' . $this->email);
                     break;
                 }
             }
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                $emailFieldId => 'Email gagal diekstrak atau tidak valid. Pastikan Anda mengisinya dengan benar.'
-            ]);
         }
-        
-        if (!$this->full_name) {
-            $this->full_name = 'Hamba Allah';
+
+        $this->email = is_string($this->email) ? trim($this->email) : '';
+
+        \Log::info('[EXTRACT] email=' . $this->email . ' name=' . $this->full_name . ' phone=' . $this->phone);
+
+        if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            // Cari ID field email untuk menampilkan error di posisi yang benar
+            $emailFieldId = null;
+            foreach ($this->pages as $page) {
+                foreach ($page['fields'] ?? [] as $field) {
+                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                        $emailFieldId = "customAnswers.{$field['id']}";
+                        break 2;
+                    }
+                }
+            }
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                $emailFieldId ?? 'email' => 'Email wajib diisi dengan format yang benar (contoh: nama@domain.com).'
+            ]);
         }
     }
 
