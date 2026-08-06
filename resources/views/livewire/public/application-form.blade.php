@@ -146,7 +146,8 @@ class extends Component
         $messages = [
             'customAnswers.*.required' => 'Field ini wajib diisi.',
             'customAnswers.*.file' => 'File tidak valid.',
-            'customAnswers.*.email' => 'Format email tidak valid.',
+            'email' => 'Format email tidak valid.',
+            'full_name' => 'Nama wajib diisi.',
         ];
 
         // Custom fields validation for current step only
@@ -154,21 +155,27 @@ class extends Component
             foreach ($this->pages[$this->currentStep]['fields'] as $field) {
                 if (in_array($field['type'] ?? 'text', ['title', 'image', 'video', 'section'])) continue;
                 
-                $rule = ($field['required'] ?? false) ? 'required' : 'nullable';
-                $labelStr = strtolower($field['label'] ?? '');
-                $normalizedLabelStr = preg_replace('/[^a-z0-9]/', '', $labelStr);
+                $requiredRule = ($field['required'] ?? false) ? 'required' : 'nullable';
+                $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
                 
                 if (($field['type'] ?? 'text') === 'file') {
-                    $rule .= '|file|max:10240';
+                    $rules["customAnswers.{$field['id']}"] = $requiredRule . '|file|max:10240';
                 } elseif (($field['type'] ?? 'text') === 'checkbox') {
-                    $rule .= '|array';
+                    $rules["customAnswers.{$field['id']}"] = $requiredRule . '|array';
                 } else {
-                    $rule .= '|string';
-                    if (str_contains($normalizedLabelStr, 'email') || str_contains($normalizedLabelStr, 'surel') || str_contains($normalizedLabelStr, 'mail')) {
-                        $rule .= '|email';
+                    // Identity fields are now bound directly to dedicated properties
+                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                        $rules['email'] = $requiredRule . '|string|email';
+                    } elseif (str_contains($nl, 'nama') || str_contains($nl, 'name')) {
+                        $rules['full_name'] = $requiredRule . '|string';
+                    } elseif (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor')) {
+                        $rules['phone'] = $requiredRule . '|string';
+                    } elseif (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth')) {
+                        $rules['dob'] = $requiredRule . '|string';
+                    } else {
+                        $rules["customAnswers.{$field['id']}"] = $requiredRule . '|string';
                     }
                 }
-                $rules["customAnswers.{$field['id']}"] = $rule;
                 
                 // Validate 'Other' input
                 if (($field['type'] ?? 'text') === 'radio' && ($this->customAnswers[$field['id']] ?? '') === '__other__') {
@@ -184,43 +191,17 @@ class extends Component
             $this->validate($rules, $messages);
         }
 
-        // Check if candidate already applied (if restriction is enabled)
-        // Only check on first step where email field is present
+        // Check if candidate already applied — use $this->email directly since it's now bound
         $restrictOneApply = filter_var(env('RESTRICT_ONE_APPLY', true), FILTER_VALIDATE_BOOLEAN);
-        if ($restrictOneApply && $this->currentStep === 0) {
-            // Quick check: try to get email from current step answers
-            $tempEmail = '';
-            if (isset($this->pages[$this->currentStep]['fields'])) {
-                foreach ($this->pages[$this->currentStep]['fields'] as $f) {
-                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
-                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                        $val = trim($this->customAnswers[$f['id']] ?? '');
-                        if ($val && filter_var($val, FILTER_VALIDATE_EMAIL)) {
-                            $tempEmail = $val;
-                            break;
-                        }
-                    }
-                }
-            }
-            if ($tempEmail) {
-                $existingCandidate = Candidate::where('email', $tempEmail)->first();
-                if ($existingCandidate) {
-                    $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
-                        ->where('job_id', $this->job->id)
-                        ->exists();
-                    if ($alreadyApplied) {
-                        $emailFieldId = null;
-                        foreach ($this->pages[$this->currentStep]['fields'] as $f) {
-                            $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
-                            if (str_contains($nl, 'email') || str_contains($nl, 'surel')) {
-                                $emailFieldId = $f['id']; break;
-                            }
-                        }
-                        if ($emailFieldId) {
-                            $this->addError("customAnswers.{$emailFieldId}", 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
-                        }
-                        return;
-                    }
+        if ($restrictOneApply && $this->email && filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            $existingCandidate = Candidate::where('email', $this->email)->first();
+            if ($existingCandidate) {
+                $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
+                    ->where('job_id', $this->job->id)
+                    ->exists();
+                if ($alreadyApplied) {
+                    $this->addError('email', 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
+                    return;
                 }
             }
         }
@@ -303,23 +284,35 @@ class extends Component
                 foreach ($this->customFields as $field) {
                     if (($field['type'] ?? 'text') === 'title' || ($field['type'] ?? 'text') === 'section') continue;
                     
-                    $answer = $this->customAnswers[$field['id']] ?? '-';
-                    if (is_array($answer)) {
-                        if (in_array('__other__', $answer)) {
-                            $otherText = $this->otherAnswers[$field['id']] ?? '';
-                            $answer = array_map(function($a) use ($otherText) {
-                                return $a === '__other__' ? $otherText : $a;
-                            }, $answer);
+                    // Identity fields are directly bound to dedicated properties
+                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                        $answer = $this->email ?: '-';
+                    } elseif (str_contains($nl, 'nama') || str_contains($nl, 'name')) {
+                        $answer = $this->full_name ?: '-';
+                    } elseif (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor')) {
+                        $answer = $this->phone ?: '-';
+                    } elseif (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth')) {
+                        $answer = $this->dob ?: '-';
+                    } else {
+                        $answer = $this->customAnswers[$field['id']] ?? '-';
+                        if (is_array($answer)) {
+                            if (in_array('__other__', $answer)) {
+                                $otherText = $this->otherAnswers[$field['id']] ?? '';
+                                $answer = array_map(function($a) use ($otherText) {
+                                    return $a === '__other__' ? $otherText : $a;
+                                }, $answer);
+                            }
+                            $answer = implode(', ', $answer);
+                        } elseif ($answer === '__other__') {
+                            $answer = $this->otherAnswers[$field['id']] ?? '';
+                        } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                            $application->addMedia($answer->getRealPath())
+                                       ->usingName($answer->getClientOriginalName())
+                                       ->usingFileName($answer->getClientOriginalName())
+                                       ->toMediaCollection('documents');
+                            $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
                         }
-                        $answer = implode(', ', $answer);
-                    } elseif ($answer === '__other__') {
-                        $answer = $this->otherAnswers[$field['id']] ?? '';
-                    } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                        $application->addMedia($answer->getRealPath())
-                                   ->usingName($answer->getClientOriginalName())
-                                   ->usingFileName($answer->getClientOriginalName())
-                                   ->toMediaCollection('documents');
-                        $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
                     }
                     $customNotes .= "{$field['label']}: {$answer}\n";
                 }
@@ -585,8 +578,22 @@ class extends Component
                                             </label>
 
                                             @if($field['type'] === 'text' || $field['type'] === 'number' || $field['type'] === 'date')
+                                                @php
+                                                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+                                                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                                                        $wireModel = 'email';
+                                                    } elseif (str_contains($nl, 'nama') || str_contains($nl, 'name')) {
+                                                        $wireModel = 'full_name';
+                                                    } elseif (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor')) {
+                                                        $wireModel = 'phone';
+                                                    } elseif (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth')) {
+                                                        $wireModel = 'dob';
+                                                    } else {
+                                                        $wireModel = 'customAnswers.' . $field['id'];
+                                                    }
+                                                @endphp
                                                 <div class="relative">
-                                                    <input wire:model="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
+                                                    <input wire:model="{{ $wireModel }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                         class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm" 
                                                         @if($field['required']) required @endif />
                                                 </div>
