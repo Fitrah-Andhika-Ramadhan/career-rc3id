@@ -40,11 +40,34 @@ Route::get('/clear-cache', function () {
         Artisan::call('route:clear');
         Artisan::call('config:clear');
         Artisan::call('optimize:clear');
-        return "Semua cache server berhasil dibersihkan secara paksa! ✅ <br><br> Silakan tekan tombol 'Kembali' (Back) di browser Anda dan muat ulang halamannya.";
+
+        // Hapus paksa file Livewire yang sudah terkompilasi (penting setelah update)
+        $livewirePath = storage_path('framework/views/livewire');
+        $deleted = 0;
+        if (is_dir($livewirePath)) {
+            foreach (new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($livewirePath, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            ) as $file) {
+                if ($file->isFile()) {
+                    @unlink($file->getPathname());
+                    $deleted++;
+                }
+            }
+        }
+
+        return "✅ Semua cache berhasil dibersihkan!<br><br>"
+             . "- View cache: cleared<br>"
+             . "- App cache: cleared<br>"
+             . "- Route cache: cleared<br>"
+             . "- Config cache: cleared<br>"
+             . "- Livewire compiled files dihapus: <strong>{$deleted} file</strong><br><br>"
+             . "<em>Silakan kembali ke halaman form dan coba submit kembali.</em>";
     } catch (\Exception $e) {
         return "Error saat membersihkan cache: " . $e->getMessage();
     }
 });
+
 
 Volt::route('/', 'public.job-list')->name('home');
 
