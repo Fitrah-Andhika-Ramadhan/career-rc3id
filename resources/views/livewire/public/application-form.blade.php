@@ -110,7 +110,8 @@ class extends Component
             if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
             
             $label = strtolower($field['label']);
-            $val = trim($this->customAnswers[$field['id']] ?? '');
+            $rawVal = $this->customAnswers[$field['id']] ?? '';
+            $val = is_string($rawVal) ? trim($rawVal) : $rawVal;
             
             if (!$val) continue;
 
