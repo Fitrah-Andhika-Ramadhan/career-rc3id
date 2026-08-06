@@ -124,10 +124,12 @@ class extends Component
         $this->email = is_string($this->email) ? trim($this->email) : '';
         
         if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $this->email = uniqid('applicant_') . '@example.com'; // Fallback
+            $this->addError('email', 'Email wajib diisi dan formatnya harus benar.');
+            throw new \Illuminate\Validation\ValidationException($this->getErrorBag());
         }
+        
         if (!$this->full_name) {
-            $this->full_name = 'Anonymous Applicant';
+            $this->full_name = 'Hamba Allah';
         }
     }
 
