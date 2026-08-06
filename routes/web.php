@@ -36,11 +36,10 @@ Route::get('/install-google', function () {
 Route::get('/deploy', function () {
     $out = '';
 
-    // 1. Git Pull
-    $gitOut = shell_exec('cd ' . base_path() . ' && git pull 2>&1');
-    $out .= "<b>1. Git Pull:</b><br><pre>" . htmlspecialchars($gitOut) . "</pre><br>";
+    // Git pull tidak bisa dari PHP (shell_exec diblokir Hostinger)
+    $out .= "<b>1. Git Pull:</b> Harus dilakukan manual dari hPanel Git ✋<br><br>";
 
-    // 2. Clear all caches
+    // Clear all caches
     Artisan::call('view:clear');
     Artisan::call('cache:clear');
     Artisan::call('route:clear');
@@ -48,7 +47,7 @@ Route::get('/deploy', function () {
     Artisan::call('optimize:clear');
     $out .= "<b>2. Cache cleared</b> ✅<br><br>";
 
-    // 3. Hapus file Livewire compiled
+    // Hapus file Livewire compiled
     $livewirePath = storage_path('framework/views/livewire');
     $deleted = 0;
     if (is_dir($livewirePath)) {
@@ -59,8 +58,8 @@ Route::get('/deploy', function () {
             if ($file->isFile()) { @unlink($file->getPathname()); $deleted++; }
         }
     }
-    $out .= "<b>3. Livewire compiled files dihapus:</b> {$deleted} file ✅<br><br>";
-    $out .= "<hr><b style='color:green'>✅ DEPLOY SELESAI! Silakan buka kembali form lamaran dan coba submit.</b>";
+    $out .= "<b>3. Livewire compiled files dihapus:</b> <strong>{$deleted} file</strong> ✅<br><br>";
+    $out .= "<hr><b style='color:green;font-size:16px'>✅ CACHE BERSIH! Silakan buka form lamaran dan coba submit kembali.</b>";
 
     return $out;
 });
