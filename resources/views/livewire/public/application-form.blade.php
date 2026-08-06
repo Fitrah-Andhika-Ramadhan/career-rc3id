@@ -116,6 +116,9 @@ class extends Component
             elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
                 if (!$this->dob) $this->dob = $val;
             }
+            elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
+                if (!$this->email) $this->email = $val;
+            }
         }
         
         $this->email = is_string($this->email) ? trim($this->email) : '';
@@ -173,15 +176,40 @@ class extends Component
 
         // Check if candidate already applied
         $restrictOneApply = filter_var(env('RESTRICT_ONE_APPLY', true), FILTER_VALIDATE_BOOLEAN);
-        if ($restrictOneApply && $this->email && filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $existingCandidate = Candidate::where('email', $this->email)->first();
-            if ($existingCandidate) {
-                $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
-                    ->where('job_id', $this->job->id)
-                    ->exists();
-                if ($alreadyApplied) {
-                    $this->addError('email', 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
-                    return;
+        if ($restrictOneApply && $this->currentStep === 0) {
+            // Quick check: try to get email from current step answers
+            $tempEmail = '';
+            if (isset($this->pages[$this->currentStep]['fields'])) {
+                foreach ($this->pages[$this->currentStep]['fields'] as $f) {
+                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
+                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                        $val = trim($this->customAnswers[$f['id']] ?? '');
+                        if ($val && filter_var($val, FILTER_VALIDATE_EMAIL)) {
+                            $tempEmail = $val;
+                            break;
+                        }
+                    }
+                }
+            }
+            if ($tempEmail) {
+                $existingCandidate = Candidate::where('email', $tempEmail)->first();
+                if ($existingCandidate) {
+                    $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
+                        ->where('job_id', $this->job->id)
+                        ->exists();
+                    if ($alreadyApplied) {
+                        $emailFieldId = null;
+                        foreach ($this->pages[$this->currentStep]['fields'] as $f) {
+                            $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
+                            if (str_contains($nl, 'email') || str_contains($nl, 'surel')) {
+                                $emailFieldId = $f['id']; break;
+                            }
+                        }
+                        if ($emailFieldId) {
+                            $this->addError("customAnswers.{$emailFieldId}", 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
+                        }
+                        return;
+                    }
                 }
             }
         }
@@ -218,18 +246,15 @@ class extends Component
                 
                 if (($field['type'] ?? 'text') === 'file') {
                     $rule .= '|file|max:10240';
-                    $rules["customAnswers.{$field['id']}"] = $rule;
                 } elseif (($field['type'] ?? 'text') === 'checkbox') {
                     $rule .= '|array';
-                    $rules["customAnswers.{$field['id']}"] = $rule;
                 } else {
                     $rule .= '|string';
                     if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                        $rules['email'] = $rule . '|email';
-                    } else {
-                        $rules["customAnswers.{$field['id']}"] = $rule;
+                        $rule .= '|email';
                     }
                 }
+                $rules["customAnswers.{$field['id']}"] = $rule;
             }
         }
         if (count($rules) > 0) {
@@ -566,16 +591,8 @@ class extends Component
                                             </label>
 
                                             @if($field['type'] === 'text' || $field['type'] === 'number' || $field['type'] === 'date')
-                                                @php
-                                                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
-                                                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                                                        $wireModel = 'email';
-                                                    } else {
-                                                        $wireModel = 'customAnswers.' . $field['id'];
-                                                    }
-                                                @endphp
                                                 <div class="relative">
-                                                    <input wire:model="{{ $wireModel }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
+                                                    <input wire:model="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                         class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm" 
                                                         @if($field['required']) required @endif />
                                                 </div>
