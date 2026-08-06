@@ -93,7 +93,11 @@ Route::get('/google/callback', [\App\Http\Controllers\GoogleIntegrationControlle
 // Secure media download route to bypass Hostinger's 403 Forbidden symlink issue
 Route::get('/download/media/{uuid}', function ($uuid) {
     $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('uuid', $uuid)->firstOrFail();
-    return response()->download($media->getPath(), $media->file_name);
+    $path = $media->getPath();
+    if (!file_exists($path)) {
+        abort(404, 'Berkas fisik tidak ditemukan di server.');
+    }
+    return response()->download($path, $media->file_name);
 })->name('media.download');
 
 // Fallback to serve logo directly via Laravel (fixes PHP built-in server caching 404 on Windows)
