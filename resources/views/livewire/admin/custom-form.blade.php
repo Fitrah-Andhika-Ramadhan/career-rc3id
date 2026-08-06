@@ -181,16 +181,35 @@ class extends Component
     public function loadStandardTemplate()
     {
         $this->fields = [
+            // IDENTITAS DIRI
             ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'IDENTITAS DIRI', 'description' => ''],
             ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nama Lengkap', 'required' => true],
             ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Email', 'required' => true],
             ['id' => uniqid('field_'), 'type' => 'date', 'label' => 'Tanggal lahir', 'required' => false],
             ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Nomor telepon', 'required' => true],
+
+            // PENDIDIKAN DAN REGISTRASI
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENDIDIKAN DAN REGISTRASI', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'radio', 'label' => 'Pendidikan Terakhir', 'required' => true, 'options' => ['D3', 'D4', 'S1', 'S2']],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Jurusan', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Universitas', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'text', 'label' => 'Tahun Lulus', 'required' => true],
+
+            // PENGALAMAN KERJA
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'PENGALAMAN KERJA', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'checkbox', 'label' => 'Riwayat Pekerjaan', 'required' => true, 'options' => ['Administrasi Sumber Daya Manusia', 'HR Generalist', 'Fresh Graduate']],
+            ['id' => uniqid('field_'), 'type' => 'textarea', 'label' => 'Deskripsi singkat pengalaman kerja', 'required' => false],
+
+            // DOKUMEN PENDUKUNG
+            ['id' => uniqid('field_'), 'type' => 'section', 'label' => 'DOKUMEN PENDUKUNG', 'description' => ''],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload CV dan Surat lamaran', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan Upload Ijazah dan Transkrip nilai', 'required' => true],
+            ['id' => uniqid('field_'), 'type' => 'file', 'label' => 'Silakan upload berkas pendukung lainnya (Motivation letter, Pelatihan, dll)', 'required' => false],
         ];
         $this->editingIndex = null;
         $this->pushHistory();
         $this->saveForm();
-        $this->dispatch('notify', 'Template Standar berhasil dimuat!');
+        $this->dispatch('notify', ['message' => 'Template Standar berhasil dimuat!', 'type' => 'success']);
     }
 
     public function addBlankField()
@@ -492,6 +511,24 @@ Example output format:
     }
 
     // ── Save to DB ────────────────────────────────────────────────
+    public function toggleEmailNotifications()
+    {
+        $job = Job::find($this->selectedJobId);
+        if ($job) {
+            $settingKey = 'job_'.$job->id.'_email_notif';
+            $currentSetting = \App\Models\Setting::where('key', $settingKey)->first();
+            $newValue = $currentSetting && $currentSetting->value === '1' ? '0' : '1';
+            
+            \App\Models\Setting::updateOrCreate(
+                ['key' => $settingKey],
+                ['value' => $newValue]
+            );
+            
+            $msg = $newValue === '1' ? 'Notifikasi email untuk lamaran baru DIAKTIFKAN.' : 'Notifikasi email untuk lamaran baru DINONAKTIFKAN.';
+            $this->dispatch('notify', ['message' => $msg, 'type' => 'success']);
+        }
+    }
+
     public function exportExcel()
     {
         if (!class_exists(\OpenSpout\Writer\XLSX\Writer::class)) {
@@ -1286,13 +1323,27 @@ Example output format:
                             <span class="material-symbols-outlined text-[20px]">more_vert</span>
                         </button>
                         
-                        <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 top-full mt-1 w-[260px] bg-surface-bg border border-surface-border rounded-md shadow-lg z-50 py-2">
-                            <button class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50" disabled>
+                        <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 top-full mt-1 w-[280px] bg-surface-bg border border-surface-border rounded-md shadow-lg z-50 py-2">
+                            @php
+                                $isEmailNotifActive = \App\Models\Setting::where('key', 'job_'.$selectedJobId.'_email_notif')->value('value') === '1';
+                            @endphp
+                            <button wire:click="toggleEmailNotifications" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] {{ $isEmailNotifActive ? 'text-primary' : 'text-transparent' }}">check</span>
                                 Get email notifications for new responses
                             </button>
-                            <button class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50" disabled>
+                            
+                            @if($hasSpreadsheet)
+                            <button wire:click="openGoogleSheets" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-transparent">check</span>
                                 Select destination for responses
                             </button>
+                            @else
+                            <button wire:click="$dispatch('open-sheets-modal')" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[20px] text-transparent">check</span>
+                                Select destination for responses
+                            </button>
+                            @endif
+
                             <button wire:click="unlinkGoogleSheets" wire:confirm="Anda yakin ingin memutus form ini dari Spreadsheet?" class="w-full text-left px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-3">
                                 <span class="material-symbols-outlined text-[20px] text-secondary">link_off</span> Unlink form
                             </button>
