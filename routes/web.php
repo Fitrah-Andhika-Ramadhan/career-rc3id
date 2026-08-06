@@ -33,7 +33,40 @@ Route::get('/install-google', function () {
     }
 });
 
+Route::get('/deploy', function () {
+    $out = '';
+
+    // 1. Git Pull
+    $gitOut = shell_exec('cd ' . base_path() . ' && git pull 2>&1');
+    $out .= "<b>1. Git Pull:</b><br><pre>" . htmlspecialchars($gitOut) . "</pre><br>";
+
+    // 2. Clear all caches
+    Artisan::call('view:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    Artisan::call('optimize:clear');
+    $out .= "<b>2. Cache cleared</b> ✅<br><br>";
+
+    // 3. Hapus file Livewire compiled
+    $livewirePath = storage_path('framework/views/livewire');
+    $deleted = 0;
+    if (is_dir($livewirePath)) {
+        foreach (new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($livewirePath, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        ) as $file) {
+            if ($file->isFile()) { @unlink($file->getPathname()); $deleted++; }
+        }
+    }
+    $out .= "<b>3. Livewire compiled files dihapus:</b> {$deleted} file ✅<br><br>";
+    $out .= "<hr><b style='color:green'>✅ DEPLOY SELESAI! Silakan buka kembali form lamaran dan coba submit.</b>";
+
+    return $out;
+});
+
 Route::get('/clear-cache', function () {
+
     try {
         Artisan::call('view:clear');
         Artisan::call('cache:clear');
