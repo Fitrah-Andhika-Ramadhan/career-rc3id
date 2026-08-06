@@ -124,8 +124,17 @@ class extends Component
         $this->email = is_string($this->email) ? trim($this->email) : '';
         
         if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            // Temukan ID field email agar error bisa ditampilkan di UI
+            $emailFieldId = 'email';
+            foreach ($this->customFields as $field) {
+                $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+                if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                    $emailFieldId = "customAnswers.{$field['id']}";
+                    break;
+                }
+            }
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'email' => 'Email wajib diisi dan formatnya harus benar.'
+                $emailFieldId => 'Email gagal diekstrak atau tidak valid. Pastikan Anda mengisinya dengan benar.'
             ]);
         }
         
