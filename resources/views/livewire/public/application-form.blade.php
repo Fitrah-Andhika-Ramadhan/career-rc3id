@@ -161,7 +161,9 @@ class extends Component
                 $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
                 
                 if (($field['type'] ?? 'text') === 'file') {
-                    $rules["customAnswers.{$field['id']}"] = $requiredRule . '|file|max:10240';
+                    // Tidak menggunakan max:10240 — rule itu memanggil filesize() di server
+                    // dan akan crash jika file sementara Livewire sudah terhapus Hostinger
+                    $rules["customAnswers.{$field['id']}"] = $requiredRule . '|nullable';
                 } elseif (($field['type'] ?? 'text') === 'checkbox') {
                     $rules["customAnswers.{$field['id']}"] = $requiredRule . '|array';
                 } else {
@@ -183,7 +185,23 @@ class extends Component
         }
 
         if (count($rules) > 0) {
-            $this->validate($rules, $messages);
+            try {
+                $this->validate($rules, $messages);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                throw $e;
+            } catch (\League\Flysystem\UnableToRetrieveMetadata | \Exception $e) {
+                foreach ($rules as $key => $ruleStr) {
+                    $answerKey = str_replace('customAnswers.', '', $key);
+                    if (isset($this->customAnswers[$answerKey])) {
+                        $file = $this->customAnswers[$answerKey];
+                        if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                            unset($this->customAnswers[$answerKey]);
+                        }
+                    }
+                }
+                $this->addError('file_expired', 'Sesi unggah file telah kedaluwarsa. Silakan unggah ulang file Anda.');
+                return;
+            }
         }
 
         // Check if candidate already applied
@@ -257,7 +275,9 @@ class extends Component
                 $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
                 
                 if (($field['type'] ?? 'text') === 'file') {
-                    $rule .= '|file|max:10240';
+                    // JANGAN pakai max:10240 — rule itu memanggil filesize() di server
+                    // dan akan crash Error 500 jika file sementara sudah terhapus Hostinger
+                    $rule .= '|nullable';
                 } elseif (($field['type'] ?? 'text') === 'checkbox') {
                     $rule .= '|array';
                 } else {
@@ -270,23 +290,25 @@ class extends Component
             }
         }
         if (count($rules) > 0) {
-            // Cek keberadaan fisik file sebelum validasi agar terhindar dari Error 500
-            foreach ($rules as $key => $ruleStr) {
-                if (str_contains($ruleStr, 'file')) {
+            try {
+                $this->validate($rules, $messages);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                throw $e;
+            } catch (\League\Flysystem\UnableToRetrieveMetadata | \Exception $e) {
+                // File sementara Livewire hilang dari server (sesi kedaluwarsa / Hostinger hapus otomatis)
+                // Temukan field file mana yang bermasalah dan reset isinya
+                foreach ($rules as $key => $ruleStr) {
                     $answerKey = str_replace('customAnswers.', '', $key);
                     if (isset($this->customAnswers[$answerKey])) {
                         $file = $this->customAnswers[$answerKey];
                         if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                            if (!file_exists($file->getRealPath())) {
-                                unset($this->customAnswers[$answerKey]);
-                                $this->addError($key, 'Sesi unggah file ini telah kedaluwarsa atau file terhapus dari server. Silakan unggah ulang.');
-                                throw new \Illuminate\Validation\ValidationException($this->getErrorBag());
-                            }
+                            unset($this->customAnswers[$answerKey]);
                         }
                     }
                 }
+                $this->addError('file_expired', 'Sesi unggah file telah kedaluwarsa. Silakan unggah ulang file Anda dan klik Submit kembali.');
+                return;
             }
-            $this->validate($rules, $messages);
         }
         if ($this->getErrorBag()->any()) {
             return;
