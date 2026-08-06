@@ -594,17 +594,15 @@ class extends Component
                                                 </div>
 
                                             @elseif($field['type'] === 'file')
-                                                <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-surface-border border-dashed rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors relative overflow-hidden group">
-                                                    <div class="space-y-1 text-center">
+                                                <div class="mt-2 relative flex justify-center px-6 pt-5 pb-6 border-2 border-surface-border border-dashed rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors overflow-hidden group cursor-pointer">
+                                                    <input wire:model="customAnswers.{{ $field['id'] }}" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" @if($field['required']) required @endif>
+                                                    <div class="space-y-1 text-center relative z-0">
                                                         <span class="material-symbols-outlined text-[40px] text-secondary group-hover:text-primary transition-colors">cloud_upload</span>
                                                         <div class="flex text-sm text-secondary justify-center">
-                                                            <label class="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary-fixed focus-within:outline-none">
-                                                                <span>{{ __('Pilih File') }}</span>
-                                                                <input wire:model="customAnswers.{{ $field['id'] }}" type="file" class="sr-only" @if($field['required']) required @endif>
-                                                            </label>
-                                                            <p class="pl-1">{{ __('atau seret ke sini') }}</p>
+                                                            <span class="font-medium text-primary group-hover:text-primary-fixed">{{ __('Choose File') }}</span>
+                                                            <p class="pl-1">{{ __('or drag and drop here') }}</p>
                                                         </div>
-                                                        <p class="text-xs text-secondary">{{ __('PDF, DOCX, JPG hingga 10MB') }}</p>
+                                                        <p class="text-xs text-secondary">{{ __('PDF, DOCX, JPG up to 10MB') }}</p>
                                                         
                                                         @if(isset($customAnswers[$field['id']]) && $customAnswers[$field['id']] instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
                                                             <div class="mt-4 px-4 py-2.5 bg-success/10 text-success rounded-lg text-sm font-medium flex items-center justify-center gap-2 border border-success/20 shadow-sm">
