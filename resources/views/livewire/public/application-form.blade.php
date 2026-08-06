@@ -569,7 +569,19 @@ class extends Component
                         </div>
 
                         {{-- Card Body (Questions) --}}
-                        <div class="px-6 sm:px-10 py-8 space-y-8 bg-surface-bg">
+                        <div class="p-6 sm:p-10 space-y-6">
+                            
+                            @if ($errors->any())
+                                <div class="bg-error/10 border border-error/20 text-error p-4 rounded-xl mb-6 text-sm">
+                                    <strong class="font-semibold block mb-1"><span class="material-symbols-outlined text-[16px] align-middle mr-1">warning</span> Mohon perbaiki kesalahan berikut:</strong>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
                             @if(count($pages[$currentStep]['fields']) > 0)
                                 @foreach($pages[$currentStep]['fields'] as $field)
                                     @if(($field['type'] ?? 'text') === 'title')
