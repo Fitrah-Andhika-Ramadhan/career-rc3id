@@ -124,8 +124,9 @@ class extends Component
         $this->email = is_string($this->email) ? trim($this->email) : '';
         
         if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $this->addError('email', 'Email wajib diisi dan formatnya harus benar.');
-            throw new \Illuminate\Validation\ValidationException($this->getErrorBag());
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Email wajib diisi dan formatnya harus benar.'
+            ]);
         }
         
         if (!$this->full_name) {
