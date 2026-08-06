@@ -626,7 +626,11 @@ Example output format:
         try {
             $service = new \App\Services\GoogleSheetsService();
             $service->syncAllCandidatesToSheet($job);
-            $this->dispatch('notify', 'Berhasil menyinkronkan seluruh data ke Google Sheets.');
+            // After sync, redispatch sweetalert so user can open or re-sync
+            $this->dispatch('show-sheets-sweetalert', [
+                'url' => 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id,
+                'syncSuccess' => true,
+            ]);
         } catch (\Exception $e) {
             $this->dispatch('notify', 'Gagal sinkronisasi: ' . $e->getMessage());
         }
@@ -1625,18 +1629,22 @@ Example output format:
             
             $wire.on('show-sheets-sweetalert', (data) => {
                 const url = data[0].url;
+                const syncSuccess = data[0].syncSuccess ?? false;
+
                 Swal.fire({
-                    title: 'Google Sheets Terhubung',
-                    text: 'Apa yang ingin Anda lakukan dengan Spreadsheet ini?',
-                    icon: 'info',
+                    title: syncSuccess ? '✅ Sinkronisasi Berhasil!' : 'Google Sheets Terhubung',
+                    text: syncSuccess
+                        ? 'Semua data sudah masuk ke Google Sheets. Apa yang ingin Anda lakukan selanjutnya?'
+                        : 'Apa yang ingin Anda lakukan dengan Spreadsheet ini?',
+                    icon: syncSuccess ? 'success' : 'info',
                     showCancelButton: true,
                     showDenyButton: true,
-                    confirmButtonColor: '#1a73e8', // Google Blue
-                    denyButtonColor: '#0f9d58', // Google Green
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Buka Spreadsheet',
-                    denyButtonText: 'Sinkronisasi Ulang (Sync All)',
-                    cancelButtonText: 'Batal'
+                    confirmButtonColor: '#1a73e8',
+                    denyButtonColor: '#0f9d58',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: '📊 Buka Spreadsheet',
+                    denyButtonText: '🔄 Sinkronisasi Ulang',
+                    cancelButtonText: 'Tutup'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.open(url, '_blank');
@@ -1649,10 +1657,7 @@ Example output format:
                                 Swal.showLoading();
                             }
                         });
-                        
-                        $wire.syncToGoogleSheets().then(() => {
-                            Swal.close();
-                        });
+                        $wire.syncToGoogleSheets();
                     }
                 });
             });

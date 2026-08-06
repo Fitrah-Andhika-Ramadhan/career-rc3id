@@ -68,9 +68,13 @@ class extends Component
             $service->createSpreadsheetForJob($job);
             
             // Re-fetch job to get the updated ID
-            $this->selectedJob = Job::find($this->jobId);
+            $job = Job::find($this->jobId);
             
-            $this->dispatch('notify', ['message' => 'Spreadsheet berhasil dibuat!', 'type' => 'success']);
+            // Close modal and show sweetalert with options
+            $this->showSheetsModal = false;
+            $this->dispatch('show-sheets-sweetalert', [
+                'url' => 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id,
+            ]);
         } catch (\Exception $e) {
             $this->dispatch('notify', ['message' => 'Gagal membuat Spreadsheet: ' . $e->getMessage(), 'type' => 'error']);
         }
@@ -85,7 +89,11 @@ class extends Component
         try {
             $service = new \App\Services\GoogleSheetsService();
             $service->syncAllCandidatesToSheet($job);
-            $this->dispatch('notify', ['message' => 'Berhasil menyinkronkan seluruh data ke Google Sheets.', 'type' => 'success']);
+            // After sync, redispatch sweetalert so user can open or re-sync
+            $this->dispatch('show-sheets-sweetalert', [
+                'url' => 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id,
+                'syncSuccess' => true,
+            ]);
         } catch (\Exception $e) {
             $this->dispatch('notify', ['message' => 'Gagal sinkronisasi: ' . $e->getMessage(), 'type' => 'error']);
         }
@@ -592,7 +600,7 @@ class extends Component
                                     <p class="text-xs text-secondary">{{ $media->name }}</p>
                                 </div>
                             </div>
-                            <a href="{{ $media->getUrl() }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline text-sm font-semibold">
+                            <a href="{{ route('media.download', $media->uuid) }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline text-sm font-semibold">
                                 <span class="material-symbols-outlined text-[16px]">open_in_new</span> Buka
                             </a>
                         </div>
@@ -607,7 +615,7 @@ class extends Component
                                     <p class="text-xs text-secondary">{{ $media->name }}</p>
                                 </div>
                             </div>
-                            <a href="{{ $media->getUrl() }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline text-sm font-semibold">
+                            <a href="{{ route('media.download', $media->uuid) }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline text-sm font-semibold">
                                 <span class="material-symbols-outlined text-[16px]">open_in_new</span> Buka
                             </a>
                         </div>
@@ -622,7 +630,7 @@ class extends Component
                                     <p class="text-xs text-secondary">{{ $media->name }}</p>
                                 </div>
                             </div>
-                            <a href="{{ $media->getUrl() }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline text-sm font-semibold">
+                            <a href="{{ route('media.download', $media->uuid) }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline text-sm font-semibold">
                                 <span class="material-symbols-outlined text-[16px]">open_in_new</span> Buka
                             </a>
                         </div>
@@ -807,23 +815,26 @@ class extends Component
     <script>
         $wire.on('show-sheets-sweetalert', (data) => {
             const url = data[0].url;
+            const syncSuccess = data[0].syncSuccess ?? false;
+
             Swal.fire({
-                title: 'Google Sheets Terhubung',
-                text: 'Apa yang ingin Anda lakukan dengan Spreadsheet ini?',
-                icon: 'info',
+                title: syncSuccess ? '✅ Sinkronisasi Berhasil!' : 'Google Sheets Terhubung',
+                text: syncSuccess
+                    ? 'Semua data sudah masuk ke Google Sheets. Apa yang ingin Anda lakukan selanjutnya?'
+                    : 'Apa yang ingin Anda lakukan dengan Spreadsheet ini?',
+                icon: syncSuccess ? 'success' : 'info',
                 showCancelButton: true,
                 showDenyButton: true,
-                confirmButtonColor: '#1a73e8', // Google Blue
-                denyButtonColor: '#0f9d58', // Google Green
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Buka Spreadsheet',
-                denyButtonText: 'Sinkronisasi Ulang (Sync All)',
-                cancelButtonText: 'Batal'
+                confirmButtonColor: '#1a73e8',
+                denyButtonColor: '#0f9d58',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '📊 Buka Spreadsheet',
+                denyButtonText: '🔄 Sinkronisasi Ulang',
+                cancelButtonText: 'Tutup'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.open(url, '_blank');
                 } else if (result.isDenied) {
-                    // Tampilkan loading Swalert sambil memanggil Livewire
                     Swal.fire({
                         title: 'Menyinkronkan Data...',
                         html: 'Mohon tunggu, jangan tutup halaman ini.',
@@ -832,10 +843,7 @@ class extends Component
                             Swal.showLoading();
                         }
                     });
-                    
-                    $wire.syncToGoogleSheets().then(() => {
-                        Swal.close();
-                    });
+                    $wire.syncToGoogleSheets();
                 }
             });
         });
