@@ -101,9 +101,31 @@ class extends Component
 
     public function extractIdentityVariables()
     {
-        // Identity variables (email, full_name, phone, dob) are now directly bound 
-        // via wire:model in the Blade template. We just need to ensure fallbacks 
-        // are applied if the form didn't include these fields.
+        // Scan ALL custom fields to extract identity from customAnswers
+        foreach ($this->customFields as $field) {
+            if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video', 'file', 'checkbox'])) continue;
+            
+            $label = strtolower($field['label']);
+            $normalizedLabel = preg_replace('/[^a-z0-9]/', '', $label);
+            
+            $rawVal = $this->customAnswers[$field['id']] ?? '';
+            $val = is_string($rawVal) ? trim($rawVal) : '';
+            
+            if (!$val) continue;
+
+            if (str_contains($normalizedLabel, 'nama') || str_contains($normalizedLabel, 'name')) {
+                if (!$this->full_name) $this->full_name = $val;
+            }
+            elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
+                if (!$this->email) $this->email = $val;
+            }
+            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($nl, 'hp') || str_contains($normalizedLabel, 'nomor')) {
+                if (!$this->phone) $this->phone = $val;
+            }
+            elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
+                if (!$this->dob) $this->dob = $val;
+            }
+        }
         
         if (!$this->email || !is_string($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             $this->email = uniqid('applicant_') . '@example.com'; // Fallback
@@ -119,8 +141,7 @@ class extends Component
         $messages = [
             'customAnswers.*.required' => 'Field ini wajib diisi.',
             'customAnswers.*.file' => 'File tidak valid.',
-            'email' => 'Format email tidak valid.',
-            'full_name' => 'Nama wajib diisi.',
+            'customAnswers.*.email' => 'Format email tidak valid.',
         ];
 
         // Custom fields validation for current step only
@@ -128,27 +149,21 @@ class extends Component
             foreach ($this->pages[$this->currentStep]['fields'] as $field) {
                 if (in_array($field['type'] ?? 'text', ['title', 'image', 'video', 'section'])) continue;
                 
-                $requiredRule = ($field['required'] ?? false) ? 'required' : 'nullable';
-                $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+                $rule = ($field['required'] ?? false) ? 'required' : 'nullable';
+                $labelStr = strtolower($field['label'] ?? '');
+                $normalizedLabelStr = preg_replace('/[^a-z0-9]/', '', $labelStr);
                 
                 if (($field['type'] ?? 'text') === 'file') {
-                    $rules["customAnswers.{$field['id']}"] = $requiredRule . '|file|max:10240';
+                    $rule .= '|file|max:10240';
                 } elseif (($field['type'] ?? 'text') === 'checkbox') {
-                    $rules["customAnswers.{$field['id']}"] = $requiredRule . '|array';
+                    $rule .= '|array';
                 } else {
-                    // Identity fields are now bound directly to dedicated properties
-                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                        $rules['email'] = $requiredRule . '|string|email';
-                    } elseif (str_contains($nl, 'nama') || str_contains($nl, 'name')) {
-                        $rules['full_name'] = $requiredRule . '|string';
-                    } elseif (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor')) {
-                        $rules['phone'] = $requiredRule . '|string';
-                    } elseif (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth')) {
-                        $rules['dob'] = $requiredRule . '|string';
-                    } else {
-                        $rules["customAnswers.{$field['id']}"] = $requiredRule . '|string';
+                    $rule .= '|string';
+                    if (str_contains($normalizedLabelStr, 'email') || str_contains($normalizedLabelStr, 'surel') || str_contains($normalizedLabelStr, 'mail')) {
+                        $rule .= '|email';
                     }
                 }
+                $rules["customAnswers.{$field['id']}"] = $rule;
                 
                 // Validate 'Other' input
                 if (($field['type'] ?? 'text') === 'radio' && ($this->customAnswers[$field['id']] ?? '') === '__other__') {
@@ -164,17 +179,42 @@ class extends Component
             $this->validate($rules, $messages);
         }
 
-        // Check if candidate already applied — use $this->email directly since it's now bound
+        // Check if candidate already applied
         $restrictOneApply = filter_var(env('RESTRICT_ONE_APPLY', true), FILTER_VALIDATE_BOOLEAN);
-        if ($restrictOneApply && $this->email && filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $existingCandidate = Candidate::where('email', $this->email)->first();
-            if ($existingCandidate) {
-                $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
-                    ->where('job_id', $this->job->id)
-                    ->exists();
-                if ($alreadyApplied) {
-                    $this->addError('email', 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
-                    return;
+        if ($restrictOneApply && $this->currentStep === 0) {
+            // Quick check: try to get email from current step answers
+            $tempEmail = '';
+            if (isset($this->pages[$this->currentStep]['fields'])) {
+                foreach ($this->pages[$this->currentStep]['fields'] as $f) {
+                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
+                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                        $val = trim($this->customAnswers[$f['id']] ?? '');
+                        if ($val && filter_var($val, FILTER_VALIDATE_EMAIL)) {
+                            $tempEmail = $val;
+                            break;
+                        }
+                    }
+                }
+            }
+            if ($tempEmail) {
+                $existingCandidate = Candidate::where('email', $tempEmail)->first();
+                if ($existingCandidate) {
+                    $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
+                        ->where('job_id', $this->job->id)
+                        ->exists();
+                    if ($alreadyApplied) {
+                        $emailFieldId = null;
+                        foreach ($this->pages[$this->currentStep]['fields'] as $f) {
+                            $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
+                            if (str_contains($nl, 'email') || str_contains($nl, 'surel')) {
+                                $emailFieldId = $f['id']; break;
+                            }
+                        }
+                        if ($emailFieldId) {
+                            $this->addError("customAnswers.{$emailFieldId}", 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
+                        }
+                        return;
+                    }
                 }
             }
         }
@@ -551,22 +591,8 @@ class extends Component
                                             </label>
 
                                             @if($field['type'] === 'text' || $field['type'] === 'number' || $field['type'] === 'date')
-                                                @php
-                                                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
-                                                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
-                                                        $wireModel = 'email';
-                                                    } elseif (str_contains($nl, 'nama') || str_contains($nl, 'name')) {
-                                                        $wireModel = 'full_name';
-                                                    } elseif (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor')) {
-                                                        $wireModel = 'phone';
-                                                    } elseif (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth')) {
-                                                        $wireModel = 'dob';
-                                                    } else {
-                                                        $wireModel = 'customAnswers.' . $field['id'];
-                                                    }
-                                                @endphp
                                                 <div class="relative">
-                                                    <input wire:model="{{ $wireModel }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
+                                                    <input wire:model="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                         class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm" 
                                                         @if($field['required']) required @endif />
                                                 </div>
