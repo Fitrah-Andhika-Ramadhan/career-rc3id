@@ -370,11 +370,21 @@ class extends Component
                         } elseif ($answer === '__other__') {
                             $answer = $this->otherAnswers[$field['id']] ?? '';
                         } elseif ($field['type'] === 'file' && $answer instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                            $application->addMedia($answer->getRealPath())
-                                       ->usingName($answer->getClientOriginalName())
-                                       ->usingFileName($answer->getClientOriginalName())
-                                       ->toMediaCollection('documents');
-                            $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
+                            try {
+                                $realPath = $answer->getRealPath();
+                                if ($realPath && file_exists($realPath)) {
+                                    $application->addMedia($realPath)
+                                               ->usingName($answer->getClientOriginalName())
+                                               ->usingFileName($answer->getClientOriginalName())
+                                               ->toMediaCollection('documents');
+                                    $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
+                                } else {
+                                    $answer = "(Berkas tidak tersimpan — sesi habis)";
+                                }
+                            } catch (\Exception $e) {
+                                \Log::warning('[FILE] Failed to attach media: ' . $e->getMessage());
+                                $answer = "(Berkas tidak tersimpan — error: " . $e->getMessage() . ")";
+                            }
                         }
                     }
                     $customNotes .= "{$field['label']}: {$answer}\n";
