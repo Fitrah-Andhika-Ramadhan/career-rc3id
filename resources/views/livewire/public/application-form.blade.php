@@ -110,26 +110,28 @@ class extends Component
             if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
             
             $label = strtolower($field['label']);
+            $normalizedLabel = preg_replace('/[^a-z0-9]/', '', $label);
+            
             $rawVal = $this->customAnswers[$field['id']] ?? '';
             $val = is_string($rawVal) ? trim($rawVal) : $rawVal;
             
             if (!$val) continue;
 
-            if (str_contains($label, 'nama') || str_contains($label, 'name')) {
+            if (str_contains($normalizedLabel, 'nama') || str_contains($normalizedLabel, 'name')) {
                 if (!$this->full_name) $this->full_name = $val;
             }
-            elseif (str_contains($label, 'email') || str_contains($label, 'surel')) {
+            elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
                 if (!$this->email) $this->email = $val;
             }
-            elseif (str_contains($label, 'telepon') || str_contains($label, 'phone') || str_contains($label, 'hp')) {
+            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($normalizedLabel, 'hp')) {
                 if (!$this->phone) $this->phone = $val;
             }
-            elseif (str_contains($label, 'lahir') || str_contains($label, 'dob') || str_contains($label, 'birth')) {
+            elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
                 if (!$this->dob) $this->dob = $val;
             }
         }
         
-        if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+        if (!$this->email || !is_string($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             $this->email = uniqid('applicant_') . '@example.com'; // Fallback
         }
         if (!$this->full_name) {
@@ -153,6 +155,7 @@ class extends Component
                 
                 $rule = ($field['required'] ?? false) ? 'required' : 'nullable';
                 $labelStr = strtolower($field['label'] ?? '');
+                $normalizedLabelStr = preg_replace('/[^a-z0-9]/', '', $labelStr);
                 
                 if (($field['type'] ?? 'text') === 'file') {
                     $rule .= '|file|max:10240';
@@ -160,7 +163,7 @@ class extends Component
                     $rule .= '|array';
                 } else {
                     $rule .= '|string';
-                    if (str_contains($labelStr, 'email') || str_contains($labelStr, 'surel')) {
+                    if (str_contains($normalizedLabelStr, 'email') || str_contains($normalizedLabelStr, 'surel') || str_contains($normalizedLabelStr, 'mail')) {
                         $rule .= '|email';
                     }
                 }
