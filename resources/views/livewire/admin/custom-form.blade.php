@@ -1173,9 +1173,12 @@ Example output format:
                                         <span class="material-symbols-outlined text-[22px]">more_vert</span>
                                     </button>
                                     <div x-show="cardMenuOpen" x-transition.opacity.duration.200ms style="display: none;"
-                                        class="absolute right-0 bottom-full mb-2 w-48 bg-surface-bg border border-surface-border rounded-lg shadow-lg py-2 z-50">
+                                        class="absolute right-0 bottom-full mb-2 w-56 bg-surface-bg border border-surface-border rounded-lg shadow-lg py-2 z-50">
                                         <button type="button" onclick="alert('Fitur deskripsi sedang dalam pengembangan.')" class="w-full text-left px-4 py-2 hover:bg-surface-container-low text-sm flex items-center gap-3 text-on-surface">
                                             <span class="material-symbols-outlined text-secondary text-[20px]">description</span> Description
+                                        </button>
+                                        <button type="button" onclick="alert('Fitur validasi respons sedang dalam pengembangan.')" class="w-full text-left px-4 py-2 hover:bg-surface-container-low text-sm flex items-center gap-3 text-on-surface">
+                                            <span class="material-symbols-outlined text-secondary text-[20px]">rule</span> Response validation
                                         </button>
                                     </div>
                                 </div>
