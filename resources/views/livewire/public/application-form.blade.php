@@ -106,14 +106,15 @@ class extends Component
         $this->phone = '';
         $this->dob = '';
         
+        // Scan ALL custom fields (not just current step) to extract identity
         foreach ($this->customFields as $field) {
-            if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video'])) continue;
+            if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video', 'file', 'checkbox'])) continue;
             
             $label = strtolower($field['label']);
             $normalizedLabel = preg_replace('/[^a-z0-9]/', '', $label);
             
             $rawVal = $this->customAnswers[$field['id']] ?? '';
-            $val = is_string($rawVal) ? trim($rawVal) : $rawVal;
+            $val = is_string($rawVal) ? trim($rawVal) : '';
             
             if (!$val) continue;
 
@@ -123,7 +124,7 @@ class extends Component
             elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
                 if (!$this->email) $this->email = $val;
             }
-            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($normalizedLabel, 'hp')) {
+            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($normalizedLabel, 'hp') || str_contains($normalizedLabel, 'nomor')) {
                 if (!$this->phone) $this->phone = $val;
             }
             elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
@@ -148,7 +149,7 @@ class extends Component
             'customAnswers.*.email' => 'Format email tidak valid.',
         ];
 
-        // Custom fields validation for current step
+        // Custom fields validation for current step only
         if (isset($this->pages[$this->currentStep]['fields'])) {
             foreach ($this->pages[$this->currentStep]['fields'] as $field) {
                 if (in_array($field['type'] ?? 'text', ['title', 'image', 'video', 'section'])) continue;
@@ -182,29 +183,44 @@ class extends Component
         if (count($rules) > 0) {
             $this->validate($rules, $messages);
         }
-        
-        // Extract identity variables dynamically
-        $this->extractIdentityVariables();
 
         // Check if candidate already applied (if restriction is enabled)
+        // Only check on first step where email field is present
         $restrictOneApply = filter_var(env('RESTRICT_ONE_APPLY', true), FILTER_VALIDATE_BOOLEAN);
-        if ($restrictOneApply && !str_starts_with($this->email, 'applicant_')) {
-            $existingCandidate = Candidate::where('email', $this->email)->first();
-            if ($existingCandidate) {
-                $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
-                    ->where('job_id', $this->job->id)
-                    ->exists();
-                if ($alreadyApplied) {
-                    $emailFieldId = null;
-                    foreach ($this->customFields as $f) {
-                        if (str_contains(strtolower($f['label']), 'email') || str_contains(strtolower($f['label']), 'surel')) {
-                            $emailFieldId = $f['id']; break;
+        if ($restrictOneApply && $this->currentStep === 0) {
+            // Quick check: try to get email from current step answers
+            $tempEmail = '';
+            if (isset($this->pages[$this->currentStep]['fields'])) {
+                foreach ($this->pages[$this->currentStep]['fields'] as $f) {
+                    $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
+                    if (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail')) {
+                        $val = trim($this->customAnswers[$f['id']] ?? '');
+                        if ($val && filter_var($val, FILTER_VALIDATE_EMAIL)) {
+                            $tempEmail = $val;
+                            break;
                         }
                     }
-                    if ($emailFieldId) {
-                        $this->addError("customAnswers.{$emailFieldId}", 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
+                }
+            }
+            if ($tempEmail) {
+                $existingCandidate = Candidate::where('email', $tempEmail)->first();
+                if ($existingCandidate) {
+                    $alreadyApplied = Application::where('candidate_id', $existingCandidate->id)
+                        ->where('job_id', $this->job->id)
+                        ->exists();
+                    if ($alreadyApplied) {
+                        $emailFieldId = null;
+                        foreach ($this->pages[$this->currentStep]['fields'] as $f) {
+                            $nl = preg_replace('/[^a-z0-9]/', '', strtolower($f['label'] ?? ''));
+                            if (str_contains($nl, 'email') || str_contains($nl, 'surel')) {
+                                $emailFieldId = $f['id']; break;
+                            }
+                        }
+                        if ($emailFieldId) {
+                            $this->addError("customAnswers.{$emailFieldId}", 'Anda sudah pernah melamar untuk posisi ini sebelumnya.');
+                        }
+                        return;
                     }
-                    return; // Halt if already applied
                 }
             }
         }
@@ -227,13 +243,37 @@ class extends Component
     {
         if ($this->isClosed) return;
 
-        // Run validation for the last step just in case
-        $this->nextStep();
+        // Validate the final step fields
+        $rules = [];
+        $messages = [
+            'customAnswers.*.required' => 'Field ini wajib diisi.',
+            'customAnswers.*.file' => 'File tidak valid.',
+        ];
+        if (isset($this->pages[$this->currentStep]['fields'])) {
+            foreach ($this->pages[$this->currentStep]['fields'] as $field) {
+                if (in_array($field['type'] ?? 'text', ['title', 'image', 'video', 'section'])) continue;
+                $rule = ($field['required'] ?? false) ? 'required' : 'nullable';
+                if (($field['type'] ?? 'text') === 'file') {
+                    $rule .= '|file|max:10240';
+                } elseif (($field['type'] ?? 'text') === 'checkbox') {
+                    $rule .= '|array';
+                } else {
+                    $rule .= '|string';
+                }
+                $rules["customAnswers.{$field['id']}"] = $rule;
+            }
+        }
+        if (count($rules) > 0) {
+            $this->validate($rules, $messages);
+        }
         if ($this->getErrorBag()->any()) {
             return;
         }
 
         $this->validate(['terms' => 'accepted']);
+
+        // Extract identity from ALL fields across ALL pages
+        $this->extractIdentityVariables();
 
         // Run DB transaction — save data only
         $candidate   = null;

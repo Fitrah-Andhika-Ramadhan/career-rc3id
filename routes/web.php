@@ -90,6 +90,12 @@ require __DIR__.'/auth.php';
 Route::get('/google/auth', [\App\Http\Controllers\GoogleIntegrationController::class, 'auth'])->name('google.auth');
 Route::get('/google/callback', [\App\Http\Controllers\GoogleIntegrationController::class, 'callback'])->name('google.callback');
 
+// Secure media download route to bypass Hostinger's 403 Forbidden symlink issue
+Route::get('/download/media/{uuid}', function ($uuid) {
+    $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('uuid', $uuid)->firstOrFail();
+    return response()->download($media->getPath(), $media->file_name);
+})->name('media.download');
+
 // Fallback to serve logo directly via Laravel (fixes PHP built-in server caching 404 on Windows)
 Route::get('/{filename}', function ($filename) {
     $path = public_path($filename);
@@ -102,6 +108,14 @@ Route::get('/{filename}', function ($filename) {
 Route::get('/migrate-db', function() {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
     return 'Migrasi Database Sukses 100%!';
+});
+
+Route::get('/clear-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('route:clear');
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    return '✅ Cache berhasil dibersihkan! Route, Config, View, dan Application Cache sudah di-clear.';
 });
 
 Volt::route('/{job}', 'public.application-form')->name('jobs.apply');
