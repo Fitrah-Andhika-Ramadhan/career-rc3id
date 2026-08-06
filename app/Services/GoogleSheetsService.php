@@ -190,6 +190,30 @@ class GoogleSheetsService
             $spreadsheetId = $job->google_spreadsheet_id;
 
             $headers = $this->getHeaders($job);
+            
+            // Always update headers in case the user added new fields to the form
+            $headerBody = new Sheets\ValueRange(['values' => [$headers]]);
+            $colCount = count($headers);
+            $endCol = '';
+            $temp = $colCount;
+            while ($temp > 0) {
+                $modulo = ($temp - 1) % 26;
+                $endCol = chr(65 + $modulo) . $endCol;
+                $temp = (int)(($temp - $modulo) / 26);
+            }
+            $range = 'Sheet1!A1:' . $endCol . '1';
+            
+            try {
+                $service->spreadsheets_values->update(
+                    $spreadsheetId,
+                    $range,
+                    $headerBody,
+                    ['valueInputOption' => 'RAW']
+                );
+            } catch (\Exception $e) {
+                Log::warning('Failed to update Google Sheets headers: ' . $e->getMessage());
+            }
+
             $row = $this->getApplicationRow($application, $job, $headers);
 
             $body = new Sheets\ValueRange([
