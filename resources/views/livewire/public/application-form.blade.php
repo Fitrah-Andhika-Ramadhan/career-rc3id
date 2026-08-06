@@ -546,17 +546,17 @@ class extends Component
 
                                             @if($field['type'] === 'text' || $field['type'] === 'number' || $field['type'] === 'date')
                                                 <div class="relative">
-                                                    <input wire:model.blur="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
+                                                    <input wire:model="customAnswers.{{ $field['id'] }}" type="{{ $field['type'] }}" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                         class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm" 
                                                         @if($field['required']) required @endif />
                                                 </div>
                                             @elseif($field['type'] === 'textarea')
-                                                <textarea wire:model.blur="customAnswers.{{ $field['id'] }}" rows="4" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
+                                                <textarea wire:model="customAnswers.{{ $field['id'] }}" rows="4" placeholder="{{ __('Ketik jawaban Anda di sini...') }}"
                                                     class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none resize-none text-on-surface shadow-sm" 
                                                     @if($field['required']) required @endif></textarea>
                                                     
                                             @elseif($field['type'] === 'select')
-                                                <select wire:model.blur="customAnswers.{{ $field['id'] }}" 
+                                                <select wire:model="customAnswers.{{ $field['id'] }}" 
                                                     class="w-full px-4 py-3 bg-surface-container-lowest border border-surface-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-outline-variant transition-all outline-none text-on-surface shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]" 
                                                     @if($field['required']) required @endif>
                                                     <option value="">{{ __('— Pilih salah satu —') }}</option>
