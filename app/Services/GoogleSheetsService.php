@@ -165,7 +165,7 @@ class GoogleSheetsService
                 });
                 
                 if ($matchedMedia) {
-                    $val = asset($matchedMedia->getUrl());
+                    $val = route('media.download', $matchedMedia->uuid);
                 }
             }
             
