@@ -378,11 +378,11 @@ class extends Component
         $application = null;
 
         DB::transaction(function () use (&$candidate, &$application) {
-            // Find or create candidate
-            $candidate = Candidate::firstOrCreate(
+            // Find or create candidate — updateOrCreate agar nama selalu diperbarui
+            $candidate = Candidate::updateOrCreate(
                 ['email' => $this->email],
                 [
-                    'name'  => $this->full_name,
+                    'name'  => $this->full_name ?: ($this->email),
                     'phone' => $this->phone,
                 ]
             );
