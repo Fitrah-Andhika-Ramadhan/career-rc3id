@@ -1,19 +1,29 @@
 <x-mail::message>
-# Halo {{ $candidate->name }},
+# Halo {{ $candidate->name }}, 👋
 
-Terima kasih telah melamar untuk posisi **{{ $job->title }}** di RC3ID.
+Terima kasih atas ketertarikan Anda untuk bergabung bersama **Research Center for Care and Control of Infectious Diseases (RC3ID) Universitas Padjadjaran**.
 
-Kami telah menerima lamaran beserta dokumen (CV/Resume, Ijazah, dll) yang Anda kirimkan. Tim Rekrutmen (HR) kami akan segera meninjau kualifikasi Anda.
+Kami ingin menginformasikan bahwa sistem kami telah **berhasil menerima lamaran Anda** untuk posisi:
 
-Jika profil Anda sesuai dengan kualifikasi yang kami cari, kami akan menghubungi Anda kembali untuk menjadwalkan tahap seleksi berikutnya (Screening / Interview).
+<x-mail::panel>
+**Posisi:** {{ $job->title }}  
+**Status:** Sedang Ditinjau (Under Review)  
+**Waktu Submit:** {{ now()->translatedFormat('l, d F Y - H:i') }}
+</x-mail::panel>
 
-Anda dapat melihat informasi lebih lanjut mengenai karir di RC3ID melalui portal kami.
+Tim Rekrutmen (HR) kami akan segera meninjau kualifikasi serta kelengkapan dokumen yang Anda kirimkan. 
 
-<x-mail::button :url="config('app.url')">
-Kunjungi Portal Karir
+Proses seleksi di RC3ID dilakukan secara saksama. Jika profil dan pengalaman Anda sesuai dengan kualifikasi yang kami butuhkan, perwakilan dari tim kami akan segera menghubungi Anda melalui email atau telepon untuk menjadwalkan tahapan seleksi berikutnya (*Screening* / *Interview*).
+
+Sembari menunggu, Anda dapat melihat informasi lebih lanjut mengenai kegiatan dan riset terbaru kami melalui portal resmi RC3ID.
+
+<x-mail::button :url="config('app.url')" color="primary">
+Kunjungi Portal RC3ID
 </x-mail::button>
 
-Semoga berhasil!<br>
-Tim Rekrutmen,<br>
+Semoga sukses dalam proses seleksi ini! 🌟
+
+Salam hangat,<br>
+**Tim Rekrutmen & SDM**<br>
 {{ config('app.name') }}
 </x-mail::message>

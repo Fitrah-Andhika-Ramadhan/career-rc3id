@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Candidate;
 use App\Models\Job;
 
-class ApplicationSubmitted extends Mailable
+class ApplicationSubmitted extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
