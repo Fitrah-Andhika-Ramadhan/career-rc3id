@@ -101,36 +101,9 @@ class extends Component
 
     public function extractIdentityVariables()
     {
-        $this->full_name = '';
-        $this->email = '';
-        $this->phone = '';
-        $this->dob = '';
-        
-        // Scan ALL custom fields (not just current step) to extract identity
-        foreach ($this->customFields as $field) {
-            if (in_array($field['type'] ?? 'text', ['title', 'section', 'image', 'video', 'file', 'checkbox'])) continue;
-            
-            $label = strtolower($field['label']);
-            $normalizedLabel = preg_replace('/[^a-z0-9]/', '', $label);
-            
-            $rawVal = $this->customAnswers[$field['id']] ?? '';
-            $val = is_string($rawVal) ? trim($rawVal) : '';
-            
-            if (!$val) continue;
-
-            if (str_contains($normalizedLabel, 'nama') || str_contains($normalizedLabel, 'name')) {
-                if (!$this->full_name) $this->full_name = $val;
-            }
-            elseif (str_contains($normalizedLabel, 'email') || str_contains($normalizedLabel, 'surel') || str_contains($normalizedLabel, 'mail')) {
-                if (!$this->email) $this->email = $val;
-            }
-            elseif (str_contains($normalizedLabel, 'telepon') || str_contains($normalizedLabel, 'phone') || str_contains($normalizedLabel, 'hp') || str_contains($normalizedLabel, 'nomor')) {
-                if (!$this->phone) $this->phone = $val;
-            }
-            elseif (str_contains($normalizedLabel, 'lahir') || str_contains($normalizedLabel, 'dob') || str_contains($normalizedLabel, 'birth')) {
-                if (!$this->dob) $this->dob = $val;
-            }
-        }
+        // Identity variables (email, full_name, phone, dob) are now directly bound 
+        // via wire:model in the Blade template. We just need to ensure fallbacks 
+        // are applied if the form didn't include these fields.
         
         if (!$this->email || !is_string($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             $this->email = uniqid('applicant_') . '@example.com'; // Fallback
