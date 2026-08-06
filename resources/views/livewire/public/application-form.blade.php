@@ -102,6 +102,10 @@ class extends Component
     public function extractIdentityVariables()
     {
         // Loop melalui SEMUA halaman dan SEMUA field untuk menemukan identitas
+        // Pass 1: Cari field nama KHUSUS kandidat (paling spesifik)
+        $specificNamePatterns = ['namalengkap', 'namakandida', 'namapelamar', 'namaanda', 'fullname', 'namadepan'];
+        $excludeNamePatterns  = ['perusahaan', 'institusi', 'organisasi', 'company', 'domain', 'user', 'sekolah', 'instansi', 'referensi', 'kantor'];
+
         foreach ($this->pages as $page) {
             foreach ($page['fields'] ?? [] as $field) {
                 $id  = $field['id'] ?? null;
@@ -109,23 +113,56 @@ class extends Component
                 $val = $this->customAnswers[$id] ?? null;
                 if (!$val || !is_string($val) || trim($val) === '') continue;
                 $val = trim($val);
+                $nl  = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
 
-                $nl = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
-
-                if (!$this->full_name && (str_contains($nl, 'nama') || str_contains($nl, 'name'))) {
-                    $this->full_name = $val;
+                // Nama: spesifik dulu
+                if (!$this->full_name) {
+                    $isSpecificName = false;
+                    foreach ($specificNamePatterns as $p) { if (str_contains($nl, $p)) { $isSpecificName = true; break; } }
+                    $isExcluded = false;
+                    foreach ($excludeNamePatterns as $p) { if (str_contains($nl, $p)) { $isExcluded = true; break; } }
+                    if ($isSpecificName && !$isExcluded) {
+                        $this->full_name = $val;
+                    }
                 }
-                if (!$this->phone && (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'hp') || str_contains($nl, 'nomor'))) {
+
+                // Telepon
+                if (!$this->phone && (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || (str_contains($nl, 'hp') && strlen($nl) < 5) || str_contains($nl, 'nomortelepon') || str_contains($nl, 'nomorhp'))) {
                     $this->phone = $val;
                 }
-                if (!$this->dob && (str_contains($nl, 'lahir') || str_contains($nl, 'dob') || str_contains($nl, 'birth') || str_contains($nl, 'tanggal'))) {
+                // DOB
+                if (!$this->dob && (str_contains($nl, 'tanggallahir') || str_contains($nl, 'dob') || str_contains($nl, 'birthdate') || str_contains($nl, 'birthday'))) {
                     $this->dob = $val;
                 }
-                if (!$this->email && (str_contains($nl, 'email') || str_contains($nl, 'surel') || str_contains($nl, 'mail'))) {
+                // Email
+                if (!$this->email && (str_contains($nl, 'email') || str_contains($nl, 'surel') || ($nl === 'mail'))) {
                     $this->email = $val;
                 }
             }
         }
+
+        // Pass 2: Fallback nama — jika belum ketemu, coba cocok lebih longgar (TAPI tetap exclude false positives)
+        if (!$this->full_name) {
+            foreach ($this->pages as $page) {
+                foreach ($page['fields'] ?? [] as $field) {
+                    $id  = $field['id'] ?? null;
+                    if (!$id) continue;
+                    $val = $this->customAnswers[$id] ?? null;
+                    if (!$val || !is_string($val) || trim($val) === '') continue;
+                    $val = trim($val);
+                    $nl  = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+
+                    $isExcluded = false;
+                    foreach ($excludeNamePatterns as $p) { if (str_contains($nl, $p)) { $isExcluded = true; break; } }
+
+                    if (!$isExcluded && (str_contains($nl, 'nama') || $nl === 'name')) {
+                        $this->full_name = $val;
+                        break 2;
+                    }
+                }
+            }
+        }
+
 
         // Fallback: jika email MASIH kosong, scan SELURUH customAnswers untuk nilai yang terlihat seperti email
         if (!$this->email || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
