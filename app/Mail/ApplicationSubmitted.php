@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -13,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Candidate;
 use App\Models\Job;
 
-class ApplicationSubmitted extends Mailable implements ShouldQueue
+class ApplicationSubmitted extends Mailable
 {
     use Queueable, SerializesModels;
 

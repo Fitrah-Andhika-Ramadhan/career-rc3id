@@ -11,9 +11,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-
-class NewApplicationNotification extends Mailable implements ShouldQueue
+class NewApplicationNotification extends Mailable
 {
     use Queueable, SerializesModels;
 
