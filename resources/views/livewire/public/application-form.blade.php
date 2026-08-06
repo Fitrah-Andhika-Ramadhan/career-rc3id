@@ -270,6 +270,22 @@ class extends Component
             }
         }
         if (count($rules) > 0) {
+            // Cek keberadaan fisik file sebelum validasi agar terhindar dari Error 500
+            foreach ($rules as $key => $ruleStr) {
+                if (str_contains($ruleStr, 'file')) {
+                    $answerKey = str_replace('customAnswers.', '', $key);
+                    if (isset($this->customAnswers[$answerKey])) {
+                        $file = $this->customAnswers[$answerKey];
+                        if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                            if (!file_exists($file->getRealPath())) {
+                                unset($this->customAnswers[$answerKey]);
+                                $this->addError($key, 'Sesi unggah file ini telah kedaluwarsa atau file terhapus dari server. Silakan unggah ulang.');
+                                throw new \Illuminate\Validation\ValidationException($this->getErrorBag());
+                            }
+                        }
+                    }
+                }
+            }
             $this->validate($rules, $messages);
         }
         if ($this->getErrorBag()->any()) {
