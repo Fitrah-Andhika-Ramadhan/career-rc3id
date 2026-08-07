@@ -160,7 +160,7 @@
             <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
             <a class="hover:text-primary transition-colors" href="#">Help Center</a>
         </div>
-        <span>© 2026 CareerRC3ID HR Solutions. All rights reserved.</span>
+        <span>© 2026 CareerRC3ID -Fitt Solutions. All rights reserved.</span>
     </footer>
     </div>
     <!-- Animation scripts removed per user request -->
