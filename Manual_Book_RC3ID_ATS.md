@@ -49,8 +49,8 @@ Saat ini terdapat 3 (tiga) peran utama di dalam sistem:
 
 ### Cara Login
 1. Kunjungi tautan administrasi (contoh: `https://namadomain.com/login`).
-2. Masukkan Alamat Email dan Kata Sandi yang telah didaftarkan.
-3. (Khusus pengembangan/Demo) Dapat menggunakan tautan `/magic-login` untuk masuk otomatis sebagai Super Admin pertama kalinya jika diizinkan.
+2. Tampilan halaman login menggunakan antarmuka *Split-Screen* (layar terbagi) yang modern dan selaras dengan warna kementerian. Masukkan Alamat Email dan Kata Sandi Anda pada panel sebelah kanan.
+3. (Khusus keperluan Demo/Testing) Daftar akun demo (seperti akun HR, Admin C&L, atau Super Admin) tidak lagi ditampilkan di halaman depan publik. Kredensial tersebut kini disimpan terpisah di dalam file dokumentasi internal (`demo_accounts.md`) demi menjaga profesionalitas tampilan UI.
 
 ---
 
@@ -264,6 +264,9 @@ Sistem hak akses ini memastikan kebebasan fungsional dan keamanan operasional (R
 A: Fitur-fitur baru kadang membawa dependensi atau perubahan pada arsitektur database. Sangat diwajibkan untuk menjalankan perintah instalasi paket PHP atau migrasi database. Pada server Hostinger, jika Anda kesulitan menggunakan Terminal SSH, cukup jalankan tautan rahasia ini melalui Browser Anda:
 `https://palegreen-lapwing-313339.hostingersite.com/run-migrations`
 Tautan tersebut otomatis memerintahkan server Anda mengeksekusi sinkronisasi database secara aman.
+
+**Q: Bagaimana cara memulihkan atau memunculkan akun demo HR yang tidak sengaja terhapus di server live tanpa harus repot mengakses SSH Terminal?**
+A: Sistem ini telah dilengkapi tautan konfigurasi rahasia (*zero-touch setup*). Cukup kunjungi tautan `https://[domain-anda]/setup-hr` melalui browser (contoh: `https://palegreen-lapwing-313339.hostingersite.com/setup-hr`). Sistem akan secara otomatis mendaftarkan ulang kredensial HR Anda di database.
 
 **Q: ZIP Opsi 2 selalu gagal saat dikirim, dengan keterangan "File too large".**
 A: Terdapat pembatasan keras sebesar **25 Megabytes (MB)** di seluruh dunia untuk lampiran *Email SMTP Protocol* (seperti Gmail atau Google Workspace). Sistem tidak akan membiarkan Anda mengirim ZIP lebih besar dari ukuran ini. Harap ekstrak ZIP Anda dan hapus CV/dokumen yang ukuran PDF-nya terlalu bengkak, lalu ZIP kembali hingga total ukurannya di bawah 25 MB.

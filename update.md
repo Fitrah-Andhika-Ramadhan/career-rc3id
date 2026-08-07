@@ -38,6 +38,16 @@ Pada minggu ini, pengembangan sistem berfokus pada **Fitur Ekspor & Integrasi HR
 - **Otomatisasi Hak Akses (Auto-Share)**: Menyelesaikan kendala perizinan akses (*You need access*) dengan mengintegrasikan fungsi Google Drive API. Setiap *spreadsheet* baru yang dibuat ATS otomatis diatur perizinannya menjadi **"Anyone with the link can edit/view"**, sehingga semua Admin atau Tim HR (meski menggunakan akun Unpad) bisa langsung membuka file tanpa harus meminta akses ke email pembuat.
 - **Akses Izin Fleksibel**: Memperbarui regulasi *backend* agar admin dengan izin *"Custom Form"* (seperti peran *Communication & Learning Admin*) juga diperbolehkan untuk melakukan sinkronisasi Google Sheets, tidak lagi dibatasi hanya untuk Super Admin.
 
+### 8. Desain Ulang Halaman Login (Split-Screen UI) 🎨
+- **Split-Screen Layout**: Merombak antarmuka halaman login menjadi dua sisi (*split-screen*) bergaya aplikasi enterprise modern, dengan panel warna yang selaras dengan halaman depan (*landing page*).
+- **Pengoptimalan UI/UX**: Menghilangkan efek animasi hover 3D demi tampilan yang lebih bersih, statis, dan profesional.
+- **Dokumentasi Kredensial**: Menyembunyikan seluruh tombol *Demo Login* dari halaman depan publik untuk menjaga kerapian, serta mengamankan daftar *email* dan *password* demonya ke dalam file terpisah (`demo_accounts.md`).
+
+### 9. Penyempurnaan Hak Akses (Role HR) & Sidebar 🛠️
+- **Akses Penuh Ekspor Sheets**: Menghapus pembatasan gerbang (*gate*) yang menahan tombol ekspor Google Sheets. Akun HR sekarang bisa langsung mengekspor data ke Sheets tanpa terhalang limitasi hak akses sistem.
+- **Auto-Hide Menu Terlarang**: Memperbarui logika *sidebar* Admin. Menu yang hak aksesnya dibatasi oleh Super Admin kini **otomatis disembunyikan / hilang sepenuhnya** dari pandangan pengguna, menggantikan sistem ikon gembok yang sebelumnya tetap menampilkan nama menu.
+- **Zero-Touch Server Config**: Menciptakan tautan khusus (`/setup-hr`) yang memungkinkan pembuatan/pemulihan ulang akun HR di *database live* (Hostinger) hanya melalui klik *browser*, tanpa memerlukan akses *remote* SSH.
+
 ---
 
 
