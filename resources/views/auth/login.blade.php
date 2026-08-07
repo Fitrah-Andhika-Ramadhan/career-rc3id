@@ -83,7 +83,8 @@
                     <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
                 </button>
                 
-                <!-- Demo Login Buttons -->
+                <!-- Demo Login Buttons (Hidden per user request) -->
+                {{--
                 <div class="mt-6 pt-5 border-t border-surface-border space-y-3">
                     <p class="text-xs text-center text-secondary font-medium tracking-wider">-- DEMO LOGIN (UJICOBA) --</p>
                     <button type="button" onclick="let code = prompt('Masukkan Kode Akses Demo Super Admin:'); if(code === 'Fitrahwp5') { document.getElementById('email').value='cl.rc3id+it@unpad.ac.id'; document.getElementById('password').value='Rc31d@IT2026!'; document.forms[0].submit(); } else if(code !== null) { alert('Kode akses salah!'); }" class="w-full py-2.5 px-4 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 border border-surface-border shadow-sm">
@@ -99,6 +100,7 @@
                         Login sebagai HR
                     </button>
                 </div>
+                --}}
             </form>
         </div>
     </main>
