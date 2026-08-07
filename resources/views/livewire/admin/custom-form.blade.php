@@ -40,6 +40,8 @@ class extends Component
     public string $primaryColor = '#005bbf';
     public bool $aiModalOpen = false;
     public string $aiPrompt = '';
+    public string $geminiApiKey = '';
+    public string $inputApiKey = '';
 
     // ── Persisted config per job (stored in DB as JSON in job column) ──
     
@@ -178,15 +180,42 @@ class extends Component
 
     // ── Inline Edit Helpers ────────────────────────────────────────
     
+    public function openAIModal()
+    {
+        if (!auth()->user()->hasRole('Super Admin')) {
+            $this->dispatch('notify', 'Fitur ini segera hadir (Coming Soon)!');
+            return;
+        }
+        
+        $this->geminiApiKey = \App\Models\Setting::where('key', 'gemini_api_key')->value('value') ?? '';
+        $this->aiModalOpen = true;
+    }
+
+    public function saveGeminiApiKey()
+    {
+        if (!auth()->user()->hasRole('Super Admin')) return;
+        
+        $this->validate(['inputApiKey' => 'required|string']);
+        
+        \App\Models\Setting::updateOrCreate(
+            ['key' => 'gemini_api_key'],
+            ['value' => $this->inputApiKey]
+        );
+        
+        $this->geminiApiKey = $this->inputApiKey;
+        $this->inputApiKey = '';
+        $this->dispatch('notify', 'API Key berhasil disimpan! Anda sekarang bisa menggunakan AI.');
+    }
+
     public function generateAITemplate()
     {
         $this->validate([
             'aiPrompt' => 'required|string|min:5'
         ]);
 
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = $this->geminiApiKey ?: env('GEMINI_API_KEY');
         if (!$apiKey) {
-            $this->addError('aiPrompt', 'GEMINI_API_KEY belum dikonfigurasi di file .env');
+            $this->addError('aiPrompt', 'API Key belum dikonfigurasi. Silakan simpan API Key terlebih dahulu.');
             return;
         }
 
@@ -1027,7 +1056,7 @@ Example output format:
                     
                     <div class="h-px bg-surface-border my-2"></div>
                     
-                    <button @click="$wire.set('aiModalOpen', true)" class="w-full mt-2 px-4 py-2.5 text-sm text-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 font-medium">
+                    <button wire:click="openAIModal" class="w-full mt-2 px-4 py-2.5 text-sm text-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 font-medium">
                         <span class="material-symbols-outlined text-[18px]">auto_awesome</span> Generate with AI
                     </button>
                 </div>
@@ -1924,34 +1953,54 @@ Example output format:
             </div>
             
             <div class="p-6">
-                <div>
-                    <p class="text-sm text-secondary mb-4">
-                        Ketikkan instruksi Anda, dan biarkan AI merancang kuesioner form secara otomatis. <br/>
-                        <span class="text-error font-semibold text-xs mt-1 block">PERHATIAN: Membuat form via AI akan menggantikan/menimpa semua pertanyaan Anda saat ini!</span>
-                    </p>
-                    
-                    <textarea wire:model="aiPrompt" rows="4" 
-                        placeholder="Contoh: Buatkan kuesioner untuk lowongan IT Support. Tambahkan pertanyaan tentang pemahaman jaringan dasar dan sistem operasi." 
-                        class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface resize-none mb-2"></textarea>
-                    @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
-                </div>
-                
-                <div class="flex justify-between items-center mt-6">
-                    <button wire:click="generateStaticTemplate" class="px-4 py-2 rounded-lg font-semibold text-primary hover:bg-primary/10 transition-colors text-sm border border-primary">
-                        Template Standar
-                    </button>
-                    <div class="flex justify-end gap-2">
-                        <button wire:click="$set('aiModalOpen', false)" class="px-4 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
-                            Batal
-                        </button>
-                        <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
-                            <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                            <span wire:loading.remove wire:target="generateAITemplate">Generate (AI)</span>
-                            <span wire:loading wire:target="generateAITemplate">Berpikir...</span>
-                        </button>
+                @if(empty($geminiApiKey))
+                    <div>
+                        <p class="text-sm text-secondary mb-4">
+                            Untuk menggunakan fitur AI Form Generator, Anda perlu memasukkan Google Gemini API Key Anda. 
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary hover:underline">Dapatkan API Key di sini</a>.
+                        </p>
+                        <input type="text" wire:model="inputApiKey" placeholder="AIzaSyB..." class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface mb-2 font-mono text-sm">
+                        @error('inputApiKey') <span class="text-error text-xs font-semibold block mb-2">{{ $message }}</span> @enderror
+                        
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button wire:click="$set('aiModalOpen', false)" class="px-4 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
+                                Batal
+                            </button>
+                            <button wire:click="saveGeminiApiKey" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm shadow-sm flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">save</span> Simpan API Key
+                            </button>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div>
+                        <p class="text-sm text-secondary mb-4">
+                            Ketikkan instruksi Anda, dan biarkan AI merancang kuesioner form secara otomatis. <br/>
+                            <span class="text-error font-semibold text-xs mt-1 block">PERHATIAN: Membuat form via AI akan menggantikan/menimpa semua pertanyaan Anda saat ini!</span>
+                        </p>
+                        
+                        <textarea wire:model="aiPrompt" rows="4" 
+                            placeholder="Contoh: Buatkan kuesioner untuk lowongan IT Support. Tambahkan pertanyaan tentang pemahaman jaringan dasar dan sistem operasi." 
+                            class="w-full bg-surface-container-lowest border border-surface-border rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface resize-none mb-2"></textarea>
+                        @error('aiPrompt') <span class="text-error text-xs font-semibold">{{ $message }}</span> @enderror
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-6">
+                        <button wire:click="generateStaticTemplate" class="px-4 py-2 rounded-lg font-semibold text-primary hover:bg-primary/10 transition-colors text-sm border border-primary">
+                            Template Standar
+                        </button>
+                        <div class="flex justify-end gap-2">
+                            <button wire:click="$set('aiModalOpen', false)" class="px-4 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
+                                Batal
+                            </button>
+                            <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                                <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                                <span wire:loading.remove wire:target="generateAITemplate">Generate (AI)</span>
+                                <span wire:loading wire:target="generateAITemplate">Berpikir...</span>
+                            </button>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
