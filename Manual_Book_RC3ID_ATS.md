@@ -1,421 +1,663 @@
-# Buku Panduan (Manual Book) - RC3ID Applicant Tracking System (ATS)
+# 📖 Buku Panduan Pengguna — RC3ID ATS
+### *Sistem Rekrutmen CareerRC3ID — Panduan Lengkap untuk Staf HR & Admin*
 
-Buku panduan ini merupakan dokumentasi lengkap mengenai penggunaan aplikasi **RC3ID ATS (Applicant Tracking System)**. Aplikasi ini dirancang menggunakan teknologi web modern untuk memberikan pengalaman perekrutan yang cepat, interaktif, dan efisien bagi tim Human Resources (HR) dan Administrator sistem.
-
----
-
-## DAFTAR ISI
-
-1. [Pengantar & Spesifikasi Teknologi](#1-pengantar--spesifikasi-teknologi)
-2. [Persiapan Awal & Arsitektur Peran (Roles)](#2-persiapan-awal--arsitektur-peran-roles)
-3. [Navigasi & Dashboard Utama](#3-navigasi--dashboard-utama)
-4. [Manajemen Lowongan Kerja (Job Management)](#4-manajemen-lowongan-kerja-job-management)
-5. [Sistem Pembuatan Formulir (Custom Form Builder)](#5-sistem-pembuatan-formulir-custom-form-builder)
-6. [Manajemen Pelamar (Candidate Submissions)](#6-manajemen-pelamar-candidate-submissions)
-7. [Manajemen Data Ekspor & Alur ATS (Opsi 1 & 2)](#7-manajemen-data-ekspor--alur-ats-opsi-1--2)
-   - 7.1 [Integrasi Google Sheets (Connect Spreadsheet)](#71-integrasi-google-sheets-connect-spreadsheet)
-8. [Pengaturan Sistem (Settings) & Integrasi Email](#8-pengaturan-sistem-settings--integrasi-email)
-9. [Manajemen Pencadangan Data (Local Backup)](#9-manajemen-pencadangan-data-local-backup)
-10. [Sistem Permohonan Akses (Permission Requests)](#10-sistem-permohonan-akses-permission-requests)
-11. [FAQ & Penanganan Masalah (Troubleshooting)](#11-faq--penanganan-masalah-troubleshooting)
+> **Untuk siapa panduan ini?**
+> Panduan ini ditulis khusus untuk staf HR dan Admin yang **tidak berlatar belakang IT**. Setiap langkah dijelaskan secara sederhana, disertai keterangan gambar halaman yang dimaksud. Ikuti langkah demi langkah, dan Anda pasti bisa!
 
 ---
 
-## 1. Pengantar & Spesifikasi Teknologi
+## 📋 DAFTAR ISI
 
-RC3ID ATS dibangun untuk mengatasi kerumitan dalam proses rekrutmen tradisional. Dengan sistem ini, perusahaan dapat membuka lowongan pekerjaan, merancang formulir pendaftaran dinamis, menerima dan menyeleksi berkas pelamar, serta melakukan pencadangan data secara terpusat.
+1. [Cara Masuk (Login)](#1-cara-masuk-login)
+2. [Mengenal Halaman Utama (Dashboard)](#2-mengenal-halaman-utama-dashboard)
+3. [Membuka Lowongan Kerja Baru](#3-membuka-lowongan-kerja-baru)
+4. [Membuat Formulir Lamaran](#4-membuat-formulir-lamaran)
+   - 4A. Menggunakan Template Standar
+   - 4B. Membuat dengan AI
+   - 4C. Membuat Manual
+5. [Melihat & Mengelola Pelamar](#5-melihat--mengelola-pelamar)
+6. [Mengunduh Data Pelamar (Export)](#6-mengunduh-data-pelamar-export)
+   - 6A. Export Excel
+   - 6B. Export ZIP (Semua Berkas)
+   - 6C. Export Google Sheets
+7. [Menghubungkan Google Sheets](#7-menghubungkan-google-sheets)
+8. [Pengaturan Sistem (Settings)](#8-pengaturan-sistem-settings)
+9. [Cadangkan Data (Backup)](#9-cadangkan-data-backup)
+10. [Permintaan Akses Menu](#10-permintaan-akses-menu)
+11. [Pertanyaan yang Sering Ditanya (FAQ)](#11-pertanyaan-yang-sering-ditanya-faq)
 
-### Teknologi Inti:
-- **Framework:** Laravel 12 (PHP 8.2+)
-- **Frontend / Reaktivitas:** Livewire 3 & Livewire Volt (Single Page Application SPA)
-- **Desain Antarmuka:** Tailwind CSS (Material Design 3 Principles)
-- **Database:** MySQL / MariaDB
-- **Manajemen Media:** Spatie Media Library
-- **Hak Akses:** Spatie Permission
-- **Ekspor Dokumen:** ZipArchive & Barryvdh/DomPDF
+---
+---
 
-Fitur **Single Page Application (SPA)** dengan atribut `wire:navigate` memastikan aplikasi berjalan sangat cepat layaknya aplikasi dekstop, tanpa ada *loading screen* memutih saat berpindah halaman.
+## 1. Cara Masuk (Login)
+
+> 🎯 **Tujuan:** Masuk ke sistem ATS dengan email dan kata sandi Anda.
 
 ---
 
-## 2. Persiapan Awal & Arsitektur Peran (Roles)
-
-Dalam sistem RC3ID ATS, keamanan data sangat dijaga melalui arsitektur Hak Akses (Permissions) dan Peran (Roles).
-
-### Tingkatan Peran (Role)
-Saat ini terdapat 3 (tiga) peran utama di dalam sistem:
-1. **Super Admin:** Memiliki hak penuh tanpa batas. Dapat mengakses seluruh menu, mengatur semua fitur konfigurasi, dan menyetujui/mencabut hak akses pengguna lain.
-2. **Admin:** Akun staf tingkat lanjut. Secara *default*, mereka mungkin tidak memiliki akses ke halaman sensitif (seperti Pengaturan atau Manajemen Pengguna), tetapi dapat **meminta akses (request permission)** kepada Super Admin.
-3. **HR (Human Resources):** Role yang berfokus penuh pada penyaringan kandidat dan pengelolaan lowongan kerja (Jobs & Submissions). Dapat ditugaskan secara spesifik oleh Super Admin.
-
-### Cara Login
-1. Kunjungi tautan administrasi (contoh: `https://namadomain.com/login`).
-2. Tampilan halaman login menggunakan antarmuka *Split-Screen* (layar terbagi) yang modern dan selaras dengan warna kementerian. Masukkan Alamat Email dan Kata Sandi Anda pada panel sebelah kanan.
-3. (Khusus keperluan Demo/Testing) Daftar akun demo (seperti akun HR, Admin C&L, atau Super Admin) tidak lagi ditampilkan di halaman depan publik. Kredensial tersebut kini disimpan terpisah di dalam file dokumentasi internal (`demo_accounts.md`) demi menjaga profesionalitas tampilan UI.
+**📸 Tampilan halaman yang Anda lihat:**
+Halaman login terbagi dua — sisi kiri gelap bertuliskan *"Elevate Your Talent"*, sisi kanan putih berisi form login.
 
 ---
 
-## 3. Navigasi & Dashboard Utama
+### Langkah-langkah:
 
-Setelah berhasil login, Anda akan disambut oleh halaman **Dashboard**.
+**Langkah 1.** Buka browser (Chrome / Edge / Firefox) di komputer Anda.
 
-### Komponen Dashboard:
-- **Statistik Cepat (Quick Stats):** Menampilkan jumlah Total Lowongan Aktif, Total Pelamar (Kandidat), dan Total Kandidat yang dipekerjakan (Hired).
-- **Grafik / Ringkasan Aktivitas:** (Bila diaktifkan) Menunjukkan lonjakan pelamar dalam periode waktu tertentu.
-- **Daftar Pekerjaan Terbaru:** Jalan pintas untuk melihat lowongan mana yang sedang ramai pendaftar.
-
-### Sidebar Navigasi:
-Sidebar (Menu Samping) dirancang menggunakan ikon *Google Material Symbols*. Sistem menampilkan menu yang sesuai dengan izin pengguna — menu yang tidak memiliki izin akses akan **disembunyikan otomatis** agar tampilan *dashboard* selalu bersih dan terfokus sesuai peran (Role) masing-masing pengguna.
-
----
-
-## 4. Manajemen Lowongan Kerja (Job Management)
-
-Halaman **Job Management** (`/admin/jobs`) adalah pusat kendali untuk membuka lowongan baru.
-
-### Cara Menambahkan Lowongan Baru:
-1. Klik tombol biru **+ Tambah Lowongan** di sudut kanan atas.
-2. Formulir pengisian akan muncul (Popup Modal).
-3. Isi informasi berikut:
-   - **Judul Pekerjaan (Title):** Misal "Senior Frontend Developer".
-   - **Departemen / Proyek:** Misal "Information Technology". Sangat penting untuk fitur ekspor (Opsi 1).
-   - **Tipe Pekerjaan:** Penuh waktu (Full-time), Paruh waktu (Part-time), Magang (Internship).
-   - **Lokasi Pekerjaan:** Bisa diisi kota atau "Remote".
-   - **Batas Waktu (Deadline):** Kapan lowongan akan ditutup otomatis.
-   - **Deskripsi Pekerjaan:** Editor Teks Kaya (Rich Text / CKEditor) tempat Anda dapat merinci Kualifikasi, Benefit, dan Persyaratan Pekerjaan. Editor ini juga mendukung penyisipan gambar (Image Upload).
-4. Klik **Simpan**.
-
-### Mode Status Lowongan:
-Setiap lowongan memiliki 2 mode status:
-- **Draft:** Lowongan disimpan di sistem tetapi tidak dapat dilihat oleh publik/pelamar. Sangat berguna saat Anda masih menyusun draf deskripsi atau menunggu persetujuan atasan.
-- **Published:** Lowongan resmi dibuka dan formulir aplikasinya dapat diakses melalui URL unik oleh pelamar di seluruh dunia.
-
-### Fitur "Bulk Add Jobs" (Tambah Massal)
-Jika perusahaan Anda sedang membuka rekrutmen besar-besaran (misalnya program *Management Trainee* untuk 10 departemen berbeda), Anda tidak perlu menambahkannya satu per satu.
-1. Klik tombol putih **Bulk Add Jobs**.
-2. Akan muncul sebuah area teks besar (*text area*).
-3. Ketikkan atau tempel (*Paste*) daftar posisi pekerjaan yang ingin dibuka (pisahkan 1 posisi per baris).
-4. Klik **Simpan**. Sistem akan secara instan menciptakan seluruh lowongan tersebut dalam mode **Draft**. Anda tinggal mengedit detail masing-masing lowongan (seperti departemen dan deskripsi) secara bertahap.
-
-## 4.1. Pembuatan Formulir dengan Template Standar & AI Generator
-
-Alih-alih menyusun pertanyaan formulir pelamar dari nol (kosong), sistem ATS ini menyediakan **dua fitur pintasan** yang langsung terlihat di panel kiri (*sidebar*) halaman **Custom Form Builder**:
-
----
-
-### 🗂️ Fitur 1: Standard Template (Template Standar Siap Pakai)
-
-Tombol **Standard Template** menghasilkan susunan pertanyaan standar HR dalam hitungan detik — tanpa perlu koneksi internet atau API.
-
-**Cara Menggunakan:**
-1. Buka halaman **Custom Form** (melalui sidebar menu, atau klik **Form Builder** dari menu titik tiga (**⋮**) di kartu lowongan pada halaman *Jobs*).
-2. Pada panel **Form Elements** di sisi kiri, cari dan klik tombol **Standard Template** (berlabel seperti ikon dokumen).
-3. **Selesai!** Sistem langsung mengisi form dengan puluhan pertanyaan standar HR yang mencakup:
-   - **Identitas Diri** (Nama Lengkap, Email, Tanggal Lahir, Nomor Telepon)
-   - **Pendidikan** (Jenjang, Jurusan, Universitas, Tahun Lulus)
-   - **Pengalaman Kerja** (Riwayat Pekerjaan, Deskripsi Pengalaman)
-   - **Unggah Berkas** (CV & Ijazah)
-4. Anda bebas **mengedit, menghapus, atau menggeser urutan** pertanyaan tersebut sebelum mengklik **Simpan Form**.
-
-*💡 Tips: Fitur ini sangat menghemat waktu, terutama saat Anda sedang terburu-buru membuka lowongan baru.*
-
----
-
-### 🤖 Fitur 2: Generate with AI (Buat dengan Kecerdasan Buatan)
-
-Tombol **Generate with AI** (berwarna ungu) menggunakan kecerdasan buatan untuk membuat pertanyaan formulir yang **disesuaikan secara cerdas** dengan deskripsi lowongan pekerjaan Anda.
-
-**Cara Menggunakan:**
-1. Buka halaman **Custom Form** pada lowongan yang sudah memiliki deskripsi jabatan.
-2. Pada panel **Form Elements** di sisi kiri, klik tombol **Generate with AI** (tombol berwarna ungu di bagian bawah panel).
-3. Sebuah *pop-up* akan muncul dengan kotak teks AI.
-4. Ketikkan atau tempel deskripsi singkat posisi yang ingin diisi (misalnya: *"Staf Administrasi yang bertugas mengelola berkas penelitian, laporan keuangan, dan koordinasi tim"*).
-5. Klik **Generate** dan tunggu beberapa detik.
-6. AI akan menghasilkan daftar pertanyaan yang relevan secara kontekstual dengan posisi tersebut.
-7. Tinjau hasilnya, lalu klik **Simpan Form**.
-
-*💡 Tips: Fitur AI ini sangat berguna saat Anda membuka posisi unik/teknis yang tidak tercakup oleh template standar, misalnya posisi Peneliti, Analis Data, atau Teknisi Laboratorium.*
-
----
-
-
-
-## 5. Sistem Pembuatan Formulir (Custom Form Builder)
-
-Aplikasi ATS ini sangat canggih karena tidak mengandalkan formulir statis. Setiap lowongan pekerjaan dapat memiliki desain form-nya sendiri yang unik, sehingga pertanyaan yang dijawab pelamar *Staff Administrasi* akan berbeda strukturnya dari pelamar *Software Engineer*.
-
-### Cara Membuka Form Builder:
-1. Buka halaman **Custom Form** (`/admin/custom-form`), atau
-2. Dari halaman **Jobs**, klik ikon titik tiga (**⋮**) di pojok kanan bawah kartu lowongan → pilih **Form Builder**.
-3. Pilih Lowongan mana yang ingin Anda buatkan formulirnya dari *dropdown* di bagian atas.
-
-### Panel Form Elements (Kiri):
-Di panel sebelah kiri, terdapat komponen-komponen yang bisa Anda tambahkan:
-- **Add Question** — Menambahkan pertanyaan dengan tipe: Teks Singkat, Teks Panjang, Dropdown, Radio, Checkbox, hingga Upload Berkas.
-- **Add Text Block** — Menyisipkan blok teks keterangan/instruksi bagi pelamar (non-pertanyaan).
-- **Add Section** — Membagi form menjadi beberapa bagian bertema (misal: "Identitas Diri", "Riwayat Pendidikan").
-- **Import Fields** — Mengimpor pertanyaan dari lowongan lain yang sudah ada (duplikasi cerdas).
-- **Standard Template** — Lihat **Bagian 4.1** di atas.
-- **Generate with AI** — Lihat **Bagian 4.1** di atas.
-
-### Area Form Builder (Tengah):
-Setelah menambahkan elemen, mereka muncul di kanvas tengah. Anda dapat:
-- **Menggeser urutan** pertanyaan dengan *Drag-and-Drop* (seret-dan-lepas).
-- **Mengedit label** pertanyaan dengan klik langsung pada teksnya.
-- **Menandai wajib diisi** (*Required*) dengan mengaktifkan *toggle* di kartu pertanyaan.
-- **Menghapus** pertanyaan yang tidak relevan.
-
-### Live Preview (Kanan):
-Di sisi kanan layar, tersedia **Live Preview** (Pratinjau Langsung). Setiap perubahan yang Anda lakukan di Builder akan langsung terpantul di sini, persis seperti yang akan dilihat oleh pelamar nantinya.
-
-### Menyimpan Form:
-Klik tombol hijau **Simpan Form** di pojok kanan bawah. Formulir langsung aktif dan siap diisi pelamar melalui URL publik lowongan tersebut.
-
----
-
-## 6. Manajemen Pelamar (Candidate Submissions)
-
-Semua pendaftar yang telah mengisi formulir dan mengunggah dokumen (CV/Ijazah) akan bermuara di halaman **Candidate Submissions** (`/admin/submissions`).
-
-### Antarmuka Pengelolaan Pelamar:
-- **Kartu Filter Lowongan:** Di bagian atas layar, terdapat kotak-kotak bertuliskan nama departemen/lowongan. Klik kotak tersebut untuk menyaring dan hanya menampilkan pelamar di posisi tersebut.
-- **Tabel Pendaftar:** Menampilkan Nama, Email, Tanggal Melamar, Posisi, dan **Status Pipeline**.
-
-### Konsep Pipeline Stages (Tahapan Pelamar):
-Aplikasi ini memiliki sistem *Kanban-style Pipeline* (meski ditampilkan dalam tabel). Anda bisa memberikan label pada setiap pelamar:
-- **Applied:** Baru Mendaftar (Bawaan).
-- **Screening:** Sedang dalam peninjauan administrasi.
-- **Interview:** Masuk ke tahap wawancara.
-- **Offer:** Telah diberikan penawaran kerja (Offering Letter).
-- **Hired:** Resmi diterima bekerja.
-- **Rejected:** Gugur / Ditolak.
-
-### Melihat Detail Profil:
-- Klik ikon mata (👁️) pada baris tabel pelamar.
-- Akan muncul layar *Pop-Up Detail* berisi Info Kontak, Pipeline, Jawaban dari **Custom Form**, serta seluruh **Dokumen Terlampir** (CV, Ijazah, Surat Lainnya).
-- Tombol "Buka" akan membuka dokumen pelamar di tab browser baru.
-
----
-
-## 7. Manajemen Data Ekspor & Alur ATS (Opsi 1 & Opsi 2)
-
-Bagian ini merupakan fitur eksklusif terpenting untuk integrasi alur kerja (Workflow) dengan tim penyeleksi / HRD pusat. Terdapat berbagai cara ekspor data yang tersedia:
-
-### Ekspor Cepat (Per Lowongan) — Dari Halaman Jobs
-Untuk mengekspor data satu lowongan spesifik secara langsung tanpa harus masuk ke halaman Submissions:
-1. Buka halaman **Jobs** (`/admin/jobs`).
-2. Klik ikon titik tiga (**⋮**) di pojok kartu lowongan yang ingin diekspor.
-3. Pilih salah satu opsi:
-   - **Export Excel** — Unduh data pelamar dalam format `.xlsx`. Struktur kolomnya **disesuaikan otomatis** dengan pertanyaan (*custom fields*) yang ada di form lowongan tersebut.
-   - **Export Google Sheets** — Sinkronisasi data langsung ke Google Spreadsheet yang terhubung. Sistem akan membuat *spreadsheet* baru jika belum ada, atau memperbarui (*sync*) yang sudah ada.
-   - **Export ZIP Data** — Unduh seluruh berkas (PDF Profil + CV + Ijazah) dalam satu file `.zip` terorganisir.
-
-> 💡 **Mengapa Ekspor Per Lowongan Lebih Akurat?** Setiap form lowongan bisa memiliki pertanyaan (*custom fields*) yang berbeda-beda. Saat diekspor "All" (semua lowongan), struktur kolomnya dipaksakan seragam yang bisa membingungkan. Ekspor per lowongan memastikan setiap kolom Excel/Sheets **persis mewakili** pertanyaan yang ada di form-nya.
-
-### Ekspor Massal (Semua Lowongan) — Dari Halaman Submissions
-Anda juga dapat melakukan ekspor data secara massal melalui halaman Candidate Submissions:
-
-### OPSI 1: UNDUH ATS (Advanced ZIP Export)
-Jika Anda memiliki ratusan kandidat dan ingin membukanya tanpa harus terkoneksi internet (Offline), Anda dapat menekan tombol **"Export ZIP (ATS)"**. Fitur ini berjalan sangat ringan, diciptakan langsung di memori (*on-the-fly*), dan otomatis musnah dari server begitu unduhan selesai (sehingga tidak membebani kapasitas *disk space* server Anda).
-
-Struktur dalam file `.zip` yang diunduh akan ditata otomatis oleh sistem menjadi sangat rapi:
+**Langkah 2.** Ketik alamat website berikut di kotak address bar di atas:
 ```
-📁 ATS-Export-TanggalHariIni.zip
- ┣ 📄 rekap_pelamar.csv
- ┣ 📁 Departemen Teknologi
+https://palegreen-lapwing-313339.hostingersite.com/login
+```
+Tekan **Enter**.
+
+**Langkah 3.** Anda akan melihat halaman login. Di sisi kanan, isi:
+- **Email Address** → ketik alamat email Anda (contoh: `cl.rc3id+admin@unpad.ac.id`)
+- **Password** → ketik kata sandi Anda
+
+**Langkah 4.** Centang kotak **Remember Me** jika Anda tidak ingin login ulang setiap hari.
+
+**Langkah 5.** Klik tombol merah **"Sign In"**.
+
+**Langkah 6.** ✅ Anda akan masuk ke halaman Dashboard.
+
+---
+
+> ❓ **Lupa kata sandi?**
+> Klik tulisan **"Forgot Password?"** di sebelah kanan kotak Password. Masukkan email Anda, lalu cek kotak masuk email Anda untuk tautan pemulihan.
+
+> ❓ **Akun bermasalah atau terkunci?**
+> Hubungi Super Admin IT untuk direset, atau kunjungi tautan khusus: `https://palegreen-lapwing-313339.hostingersite.com/setup-hr` melalui browser.
+
+---
+---
+
+## 2. Mengenal Halaman Utama (Dashboard)
+
+> 🎯 **Tujuan:** Memahami tampilan awal setelah login.
+
+---
+
+**📸 Tampilan halaman yang Anda lihat:**
+Halaman dengan angka-angka ringkasan di atas, dan menu-menu ikon di sisi kiri (Sidebar).
+
+---
+
+### Apa yang ada di halaman Dashboard?
+
+| Bagian | Keterangan |
+|--------|------------|
+| **Angka "Total Lowongan Aktif"** | Berapa banyak posisi yang sedang dibuka saat ini |
+| **Angka "Total Pelamar"** | Jumlah orang yang sudah mengisi formulir lamaran |
+| **Angka "Hired"** | Jumlah pelamar yang sudah diterima bekerja |
+| **Daftar Lowongan Terbaru** | Lowongan mana yang sedang ramai pelamar |
+
+### Menu di sisi kiri (Sidebar):
+
+Ikon-ikon di kiri layar adalah pintasan ke tiap bagian sistem. Anda hanya akan melihat menu yang sesuai dengan hak akses peran Anda:
+
+| Ikon | Nama Menu | Fungsi |
+|------|-----------|--------|
+| 🏠 | Dashboard | Halaman utama |
+| 💼 | Jobs | Daftar lowongan kerja |
+| 📝 | Custom Form | Pembuat formulir lamaran |
+| 👥 | Submissions | Daftar pelamar yang masuk |
+| ⚙️ | Settings | Pengaturan sistem |
+| 💾 | Backup | Cadangkan data |
+| 🔐 | Permission | Kelola hak akses |
+
+---
+---
+
+## 3. Membuka Lowongan Kerja Baru
+
+> 🎯 **Tujuan:** Menambahkan satu atau banyak posisi lowongan pekerjaan yang bisa dilamar oleh kandidat.
+
+---
+
+**📸 Tampilan halaman yang Anda lihat:**
+Klik ikon **💼 Jobs** di menu kiri. Anda akan melihat daftar kartu-kartu lowongan yang sudah ada (atau kosong jika belum ada).
+
+---
+
+### 3A. Menambahkan 1 Lowongan Baru
+
+**Langkah 1.** Di halaman Jobs, klik tombol biru **"+ Tambah Lowongan"** di sudut kanan atas layar.
+
+**Langkah 2.** Sebuah jendela formulir akan muncul. Isi kolom-kolom berikut:
+
+| Kolom | Cara Mengisi | Contoh |
+|-------|-------------|--------|
+| **Judul Pekerjaan** | Nama posisi yang dibuka | `Staff Administrasi Penelitian` |
+| **Departemen** | Nama divisi atau proyek | `Communication & Learning` |
+| **Tipe Pekerjaan** | Pilih dari daftar | `Penuh Waktu / Magang` |
+| **Lokasi** | Kota atau "Remote" | `Bandung` |
+| **Batas Waktu (Deadline)** | Kapan formulir ditutup | `31 Agustus 2026` |
+| **Deskripsi** | Penjelasan tugas dan persyaratan | *(tulis bebas, bisa panjang)* |
+
+**Langkah 3.** Klik tombol **"Simpan"**.
+
+**Langkah 4.** ✅ Lowongan berhasil dibuat dengan status **"Draft"** (tersimpan, belum terlihat publik).
+
+**Langkah 5.** Untuk membuka lowongan ke publik → klik ikon titik tiga (**⋮**) di kartu lowongan → pilih **"Publish"**.
+
+---
+
+### 3B. Menambahkan Banyak Lowongan Sekaligus (Bulk Add)
+
+> ⚡ Berguna saat membuka banyak posisi sekaligus, misalnya 10 posisi berbeda.
+
+**Langkah 1.** Di halaman Jobs, klik tombol putih **"Bulk Add Jobs"**.
+
+**Langkah 2.** Akan muncul kotak teks besar. Ketik atau tempel (Ctrl+V) daftar nama posisi, **satu posisi per baris**. Contoh:
+```
+Staff Administrasi
+Asisten Peneliti
+Koordinator Lapangan
+Teknisi IT
+```
+
+**Langkah 3.** Klik **"Simpan"**.
+
+**Langkah 4.** ✅ Semua posisi langsung dibuat sekaligus sebagai Draft. Anda bisa edit detailnya satu per satu setelah ini.
+
+---
+
+### 3C. Mengubah Detail Lowongan yang Sudah Ada
+
+**Langkah 1.** Di halaman Jobs, temukan kartu lowongan yang ingin diubah.
+
+**Langkah 2.** Klik ikon titik tiga (**⋮**) di pojok kanan bawah kartu tersebut.
+
+**Langkah 3.** Pilih **"Edit"**. Ubah informasi yang diperlukan, lalu klik **"Simpan"**.
+
+> ⚠️ **Perhatian:** Jika Anda **menghapus** sebuah lowongan, semua data pelamar yang sudah masuk untuk posisi itu **juga akan ikut terhapus**. Jika hanya ingin menyembunyikan lowongan dari publik, ubah statusnya ke **"Draft"** alih-alih menghapus.
+
+---
+---
+
+## 4. Membuat Formulir Lamaran
+
+> 🎯 **Tujuan:** Merancang pertanyaan-pertanyaan yang harus diisi oleh pelamar saat mendaftar.
+
+---
+
+**📸 Tampilan halaman yang Anda lihat:**
+Klik ikon **📝 Custom Form** di menu kiri. Halaman terbagi tiga: panel elemen di kiri, kanvas form di tengah, dan pratinjau di kanan.
+
+---
+
+> 💡 **Penting:** Setiap lowongan bisa punya formulir yang berbeda. Misalnya, formulir untuk posisi *Staff Administrasi* menanyakan pengalaman kerja, sedangkan formulir *Asisten Peneliti* menanyakan riwayat publikasi.
+
+Sebelum mulai, **pilih lowongan mana** yang akan dibuatkan formulirnya menggunakan menu pilihan di bagian atas halaman.
+
+---
+
+### 4A. Menggunakan Template Standar ⚡ (Paling Cepat!)
+
+> Template Standar secara otomatis mengisi formulir dengan pertanyaan-pertanyaan HR yang umum. **Cocok untuk posisi biasa dan menghemat banyak waktu.**
+
+**Langkah 1.** Di panel kiri, cari dan klik **"Standard Template"**.
+
+**Langkah 2.** ✅ Selesai! Formulir langsung terisi dengan puluhan pertanyaan standar, meliputi:
+- 👤 Identitas Diri (Nama Lengkap, Email, No. Telepon, Tanggal Lahir)
+- 🎓 Riwayat Pendidikan (Jenjang, Jurusan, Nama Universitas, Tahun Lulus)
+- 💼 Pengalaman Kerja
+- 📎 Unggah CV & Ijazah
+
+**Langkah 3.** Periksa pertanyaan yang muncul. Jika ada yang tidak perlu, klik ikon **🗑️ (tempat sampah)** di kartu pertanyaan tersebut.
+
+**Langkah 4.** Klik tombol hijau **"Simpan Form"** di pojok kanan bawah.
+
+---
+
+### 4B. Membuat dengan AI 🤖 (Untuk Posisi Khusus)
+
+> Fitur AI akan membaca deskripsi pekerjaan Anda lalu membuat pertanyaan yang relevan. **Cocok untuk posisi yang unik atau teknis.**
+
+**Langkah 1.** Di panel kiri bawah, klik tombol ungu **"Generate with AI"**.
+
+**Langkah 2.** Sebuah jendela kecil akan muncul. Di kotak teks yang tersedia, ketik deskripsi singkat pekerjaan tersebut. Contoh:
+> *"Staf yang bertugas mengelola berkas administrasi penelitian, membuat laporan keuangan, dan berkoordinasi dengan tim lapangan."*
+
+**Langkah 3.** Klik tombol **"Generate"** dan tunggu beberapa detik.
+
+**Langkah 4.** AI akan membuat daftar pertanyaan. Tinjau hasilnya — hapus atau ubah yang tidak sesuai.
+
+**Langkah 5.** Klik tombol hijau **"Simpan Form"**.
+
+---
+
+### 4C. Membuat Pertanyaan Satu per Satu (Manual)
+
+> Gunakan ini jika ingin kontrol penuh atas setiap pertanyaan.
+
+**Langkah 1.** Di panel kiri, klik **"Add Question"**.
+
+**Langkah 2.** Sebuah kartu pertanyaan kosong muncul di tengah. Klik pada kartu tersebut dan isi:
+- **Teks pertanyaan** → contoh: "Mengapa Anda tertarik dengan posisi ini?"
+- **Tipe jawaban** → pilih salah satu:
+  - 📝 **Teks Singkat** — untuk jawaban pendek (nama, email, dll.)
+  - 📄 **Teks Panjang** — untuk esai atau penjelasan panjang
+  - ☑️ **Pilihan Ganda** — pelamar memilih satu dari beberapa opsi
+  - 📎 **Upload File** — pelamar mengunggah dokumen (CV, ijazah)
+- **Wajib Diisi** → aktifkan tombol jika pertanyaan ini wajib dijawab
+
+**Langkah 3.** Ulangi untuk pertanyaan berikutnya.
+
+**Langkah 4.** Atur urutan pertanyaan dengan menyeret (drag) kartu ke atas atau ke bawah.
+
+**Langkah 5.** Klik tombol hijau **"Simpan Form"**.
+
+---
+
+### 💡 Tips Berguna di Form Builder
+
+- **Pratinjau formulir** → lihat di panel kanan untuk melihat tampilan yang akan dilihat pelamar.
+- **Add Section** → gunakan untuk memisahkan grup pertanyaan dengan judul (misal: "BAGIAN A: DATA DIRI").
+- **Import Fields** → salin pertanyaan dari formulir lowongan lain yang sudah ada.
+
+---
+---
+
+## 5. Melihat & Mengelola Pelamar
+
+> 🎯 **Tujuan:** Melihat siapa saja yang sudah melamar, memeriksa berkas mereka, dan memperbarui status seleksi.
+
+---
+
+**📸 Tampilan halaman yang Anda lihat:**
+Klik ikon **👥 Submissions** di menu kiri. Anda akan melihat tabel berisi daftar nama pelamar.
+
+---
+
+### 5A. Menyaring Pelamar Berdasarkan Lowongan
+
+Di bagian atas halaman, terdapat kotak-kotak bertuliskan nama lowongan/departemen.
+
+**Langkah 1.** Klik kotak nama lowongan yang ingin Anda lihat pelamarnya.
+
+**Langkah 2.** Tabel di bawahnya akan otomatis menyaring dan hanya menampilkan pelamar dari lowongan itu saja.
+
+---
+
+### 5B. Melihat Detail dan Berkas Pelamar
+
+**Langkah 1.** Di tabel pelamar, temukan nama yang ingin Anda lihat.
+
+**Langkah 2.** Klik ikon **👁️ (mata)** di sebelah kanan baris nama tersebut.
+
+**Langkah 3.** Sebuah jendela detail akan terbuka, berisi:
+
+| Bagian | Isi |
+|--------|-----|
+| **Info Kontak** | Nama, email, nomor HP, tanggal lahir |
+| **Jawaban Form** | Semua jawaban yang diisi pelamar di formulir |
+| **Status Pipeline** | Tahapan seleksi saat ini |
+| **Dokumen Terlampir** | CV, Ijazah, dan berkas lainnya |
+
+**Langkah 4.** Untuk **membuka dokumen** (CV/Ijazah) → klik tombol **"Buka"** di samping nama dokumen. Dokumen akan terbuka di tab browser baru.
+
+---
+
+### 5C. Memperbarui Status Seleksi Pelamar
+
+> Status seleksi membantu Anda melacak di tahap mana setiap pelamar berada.
+
+Dari jendela detail pelamar (langkah 5B di atas):
+
+**Langkah 1.** Cari bagian **"Status / Pipeline"**.
+
+**Langkah 2.** Klik status yang sesuai:
+
+| Status | Artinya |
+|--------|---------|
+| 🆕 **Applied** | Baru mendaftar, belum ditinjau |
+| 🔍 **Screening** | Sedang dicek kelengkapan berkasnya |
+| 🎤 **Interview** | Dipanggil wawancara |
+| 📋 **Offer** | Sudah diberikan penawaran kerja |
+| ✅ **Hired** | Resmi diterima bekerja |
+| ❌ **Rejected** | Tidak lolos seleksi |
+
+**Langkah 3.** Klik **"Simpan"** atau status akan tersimpan otomatis.
+
+---
+
+### 5D. Mencari Pelamar
+
+Di bagian atas tabel, terdapat kotak **"Cari..."**. Ketik nama atau email pelamar untuk langsung menemukannya.
+
+---
+---
+
+## 6. Mengunduh Data Pelamar (Export)
+
+> 🎯 **Tujuan:** Mengunduh data dan berkas pelamar untuk dikirim ke tim HR atau disimpan di komputer lokal.
+
+---
+
+**📸 Tampilan halaman yang Anda lihat:**
+Di halaman **Submissions** atau kartu lowongan di halaman **Jobs**, terdapat tombol-tombol ekspor.
+
+---
+
+### 6A. Export Excel (File Spreadsheet .xlsx)
+
+> 📊 Cocok untuk membuat rekap data pelamar dalam bentuk tabel yang bisa dibuka di Microsoft Excel.
+
+**Cara A — Dari kartu Lowongan (Per Posisi, Direkomendasikan):**
+
+**Langkah 1.** Buka halaman **Jobs**.
+
+**Langkah 2.** Klik ikon titik tiga (**⋮**) di pojok kartu lowongan yang ingin diekspor.
+
+**Langkah 3.** Pilih **"Export Excel"**.
+
+**Langkah 4.** ✅ File `.xlsx` akan langsung terunduh ke komputer Anda. Buka dengan Microsoft Excel.
+
+> 💡 **Mengapa cara ini lebih baik?** Karena kolom-kolom di file Excel akan **persis sesuai** dengan pertanyaan formulir lowongan itu, sehingga hasilnya lebih rapi dan mudah dibaca.
+
+---
+
+**Cara B — Dari halaman Submissions (Semua Posisi):**
+
+**Langkah 1.** Buka halaman **Submissions**.
+
+**Langkah 2.** Pilih filter lowongan yang diinginkan (atau biarkan "All" untuk semua).
+
+**Langkah 3.** Klik tombol **"Export Excel"** di bagian atas halaman.
+
+**Langkah 4.** ✅ File terunduh ke komputer Anda.
+
+---
+
+### 6B. Export ZIP (Semua Berkas Lengkap)
+
+> 📦 Cocok untuk mengunduh SEMUA berkas pelamar (CV, Ijazah, dll.) sekaligus dalam satu file terkompresi.
+
+**Langkah 1.** Buka halaman **Jobs**, klik ikon (**⋮**) di kartu lowongan, pilih **"Export ZIP Data"**,
+ATAU buka halaman **Submissions** dan klik tombol **"Export ZIP (ATS)"**.
+
+**Langkah 2.** Tunggu beberapa saat. File ZIP akan terunduh ke komputer Anda.
+
+**Langkah 3.** Klik kanan file ZIP yang terunduh → pilih **"Extract All"** untuk membuka isinya.
+
+**Langkah 4.** Di dalam ZIP, Anda akan menemukan:
+```
+📁 ATS-Export-Tanggal.zip
+ ┣ 📄 rekap_pelamar.xlsx  ← Tabel ringkasan semua pelamar
+ ┣ 📁 Nama Departemen
  ┃ ┣ 📁 1_Budi Santoso
- ┃ ┃ ┣ 📄 Data_Form_Budi-Santoso.pdf (✨ PDF Otomatis)
+ ┃ ┃ ┣ 📄 Data_Form_Budi-Santoso.pdf  ← Profil otomatis dari sistem
  ┃ ┃ ┣ 📄 CV_Budi_Santoso.pdf
- ┃ ┃ ┗ 📄 Ijazah_Budi_Santoso.png
- ┃ ┗ 📁 2_Siti Aminah
- ┃   ┣ 📄 Data_Form_Siti-Aminah.pdf
- ┃   ┗ 📄 CV_Siti_Aminah.pdf
- ┗ 📁 Departemen Keuangan
-   ┗ 📁 3_Ahmad Subarjo
+ ┃ ┃ └ 📄 Ijazah_Budi_Santoso.jpg
+ ┃ └ 📁 2_Siti Aminah
+ └ 📁 Departemen Lainnya
 ```
 
-**Fitur Khusus PDF Profil (Automated PDF Generator):**
-Di dalam folder masing-masing pelamar, sistem akan melahirkan file **`Data_Form_[Nama].pdf`**. File PDF ini tidak ada di sistem sebelumnya, namun diciptakan khusus saat proses kompresi ZIP.
-PDF ini berisi desain profil cantik, merangkum semua pertanyaan khusus dari *Custom Form*, dan dilengkapi fitur **Hyperlink**. Anda cukup menekan tulisan `CV_Kandidat.pdf` dari dalam file PDF tersebut, dan komputer Anda akan langsung membuka file PDF aslinya yang berdampingan di folder yang sama!
+---
+
+### 6C. Export Google Sheets
+
+> 🌐 Cocok untuk berbagi data secara online dengan tim HR tanpa harus kirim file. Lihat panduan lengkap di **Bagian 7** di bawah.
+
+---
+---
+
+## 7. Menghubungkan Google Sheets
+
+> 🎯 **Tujuan:** Menyinkronkan data pelamar langsung ke Google Spreadsheet online yang bisa diakses bersama tim.
 
 ---
 
-### OPSI 2: UPLOAD & KIRIM ZIP TERKURASI KE HR
-Setelah Admin/Panitia mengunduh ZIP dari Opsi 1, mereka biasa mengekstraknya di komputer lokal, menyeleksinya secara manual, lalu **menghapus folder-folder pelamar yang tidak lolos seleksi awal**. Sisa folder pelamar yang bagus kemudian di-ZIP (dikompres) ulang oleh Admin secara manual di komputernya.
-
-Untuk mengirimkan file ZIP terkurasi (hasil seleksi final) tersebut ke manajer HR:
-1. Buka aplikasi ATS, masuk ke menu **Settings** (`/admin/settings`).
-2. Masuk ke Tab **Data Candidate & HR**.
-3. Gulir ke bawah hingga menemukan panel hitam besar bertuliskan **"Opsi 2: Upload & Kirim ZIP Terkurasi ke HR"**.
-4. Klik **Choose File** dan unggah file ZIP seleksi Anda.
-5. Klik **Kirim Email beserta Lampiran ZIP**.
-6. Muncul *Pop-Up Confirm (SweetAlert)*. Konfirmasi pengiriman.
-
-Sistem akan mengunggah file Anda dan langsung membungkusnya ke dalam email resmi untuk dikirimkan kepada alamat HR Pusat yang Anda daftarkan di Opsi 1.
-*Catatan: Pastikan file ZIP Anda tidak melebihi 25 MB, karena server email global rata-rata menolak lampiran yang melebihi ukuran 25 MB.*
+> ⚠️ **Syarat awal:** Akun Google perlu dihubungkan terlebih dahulu oleh Super Admin. **Ini hanya perlu dilakukan sekali saja.** Setelah itu, semua pengguna (HR dan Admin) langsung bisa menggunakannya.
 
 ---
 
-## 7.1. Integrasi Google Sheets (Connect Spreadsheet)
+### 7A. Otorisasi Akun Google (Hanya Super Admin, Hanya Sekali)
 
-Sistem RC3ID ATS memiliki fitur **integrasi langsung dengan Google Sheets** — data pelamar dapat diekspor secara otomatis dan real-time ke sebuah Google Spreadsheet yang terhubung ke akun Google Anda.
+**📸 Tampilan:** Buka halaman **Settings** dari menu kiri.
 
-> ⚠️ **Prasyarat:** Fitur ini membutuhkan satu kali *otorisasi* (izin akses) ke akun Google. Otorisasi ini hanya perlu dilakukan **sekali** oleh Super Admin, dan hasilnya tersimpan permanen di sistem.
+**Langkah 1.** Klik ikon **⚙️ Settings** di menu kiri.
 
----
+**Langkah 2.** Di halaman Settings, cari bagian **"Google Sheets Integration"** atau **"Connect to Google"**.
 
-### Langkah 1: Otorisasi Akun Google (Hanya Sekali)
+**Langkah 3.** Klik tombol **"Connect to Google"** (atau "Authorize Google Sheets").
 
-1. Masuk ke halaman **Settings** (`/admin/settings`).
-2. Cari bagian **Google Sheets Integration** atau **Connect to Google**.
-3. Klik tombol **Connect to Google** / **Authorize Google Sheets**.
-4. Browser Anda akan diarahkan ke halaman login Google. Pilih akun Google yang ingin digunakan sebagai pemilik Spreadsheet.
-5. Klik **Allow / Izinkan** untuk memberikan akses kepada sistem ATS.
-6. Anda akan diarahkan kembali ke aplikasi dan mendapat konfirmasi bahwa akun Google berhasil terhubung ✅.
+**Langkah 4.** Browser Anda akan membuka halaman login Google. Pilih akun Google instansi Anda (contoh: `cl.rc3id@gmail.com`).
 
-*Setelah langkah ini selesai, seluruh pengguna (HR dan Admin) dapat menggunakan fitur ekspor Google Sheets tanpa perlu login Google lagi.*
+**Langkah 5.** Klik **"Allow / Izinkan"** pada halaman konfirmasi Google.
+
+**Langkah 6.** ✅ Anda kembali ke halaman Settings. Muncul notifikasi "Terhubung ke Google" — artinya berhasil!
 
 ---
 
-### Langkah 2: Membuat & Menyambungkan Spreadsheet ke Lowongan
+### 7B. Mengekspor Data ke Google Sheets
 
-Ada **dua cara** untuk menghubungkan Spreadsheet ke sistem:
+**Cara A — Per Lowongan (Direkomendasikan):**
 
-#### 📋 Cara A: Dari Halaman Jobs (Per Lowongan)
-1. Buka halaman **Jobs** (`/admin/jobs`).
-2. Klik ikon titik tiga (**⋮**) di pojok kartu lowongan yang diinginkan.
-3. Pilih **Export Google Sheets**.
-4. Jika lowongan ini belum memiliki Spreadsheet:
-   - Sistem otomatis **membuat Spreadsheet baru** di Google Drive akun yang terhubung.
-   - Nama Spreadsheet: `ATS Responses - [Nama Lowongan]`.
-   - Header kolom akan disesuaikan **persis dengan pertanyaan** (*custom fields*) form lowongan tersebut.
-5. Jika Spreadsheet sudah ada sebelumnya: Sistem akan melakukan **sinkronisasi ulang** (overwrite) seluruh data terbaru.
-6. Setelah selesai, akan muncul *pop-up* konfirmasi dengan tautan langsung ke Spreadsheet. Klik **"Buka Spreadsheet"** untuk membukanya.
+**Langkah 1.** Buka halaman **Jobs**.
 
-#### 🌐 Cara B: Dari Halaman Candidate Submissions (Semua Lowongan)
-1. Buka halaman **Candidate Submissions** (`/admin/submissions`).
-2. Di bagian atas kanan, klik tombol hijau **Google Sheets**.
-3. Pilih dari dua opsi yang muncul:
-   - **Buat Spreadsheet Baru** — Sistem membuat 1 *Master Spreadsheet* berisi banyak *tab* (satu tab per lowongan).
-   - **Sinkronisasi Ulang** — Memperbarui data di Spreadsheet yang sudah ada.
-4. Klik **"Buka Spreadsheet"** pada notifikasi yang muncul.
+**Langkah 2.** Klik ikon (**⋮**) di kartu lowongan yang ingin diekspor.
+
+**Langkah 3.** Pilih **"Export Google Sheets"**.
+
+**Langkah 4.** Tunggu beberapa detik. Sistem akan:
+- Jika **belum pernah dibuat** → membuat Spreadsheet baru di Google Drive akun yang terhubung.
+- Jika **sudah ada sebelumnya** → memperbarui data di Spreadsheet yang sama.
+
+**Langkah 5.** Muncul jendela konfirmasi dengan 2 tombol:
+- Klik **"📊 Buka Spreadsheet"** → Spreadsheet langsung terbuka di tab baru.
+- Klik **"🔄 Sinkronisasi Ulang"** → Perbarui data jika ada pelamar baru.
+- Klik **"Tutup"** → Tutup jendela.
 
 ---
 
-### Struktur Kolom Spreadsheet
+**Cara B — Semua Lowongan Sekaligus:**
 
-| Kolom | Keterangan |
-|---|---|
-| **ID** | Nomor urut lamaran di database |
-| **Nama Kandidat** | Nama lengkap pelamar |
-| **Email** | Alamat email pelamar |
-| **Telepon** | Nomor HP pelamar |
-| **Posisi Dilamar** | Nama lowongan pekerjaan |
-| **Departemen** | Departemen/divisi lowongan |
-| **Status** | Status Pipeline (Applied, Screening, Interview, Hired, Rejected) |
-| **Tanggal Melamar** | Waktu pengiriman formulir |
-| *[Kolom Custom]* | Jawaban atas pertanyaan khusus sesuai form masing-masing lowongan |
+**Langkah 1.** Buka halaman **Submissions**.
 
-> 💡 **Poin Penting:** Kolom pada baris terakhir tabel di atas (*Kolom Custom*) akan berbeda-beda tergantung lowongannya. Inilah mengapa **Ekspor Per Lowongan** menghasilkan format yang lebih rapi dibanding ekspor massal.
+**Langkah 2.** Klik tombol hijau **"Google Sheets"** di bagian atas kanan halaman.
+
+**Langkah 3.** Sistem membuat 1 *Master Spreadsheet* berisi banyak tab (satu tab = satu lowongan).
 
 ---
 
-### FAQ Google Sheets
+### 7C. Isi Kolom di Spreadsheet
 
-**Q: Apakah Spreadsheet otomatis terupdate saat ada pelamar baru masuk?**
-A: Tidak secara *real-time* otomatis. Anda perlu menekan tombol **Sinkronisasi Ulang** (🔄) secara manual setiap kali ingin mendapatkan data terbaru di Spreadsheet.
+Saat Anda membuka Spreadsheet hasil ekspor, Anda akan melihat kolom-kolom berikut:
 
-**Q: Akun Google mana yang sebaiknya digunakan untuk otorisasi?**
-A: Gunakan akun Google yang dimiliki oleh instansi/organisasi (misalnya akun `@unpad.ac.id` atau `@kemenkes.go.id`), agar Spreadsheet tersimpan di Google Drive instansi dan dapat diakses bersama tim.
-
-**Q: Apakah Spreadsheet yang dibuat bisa dibagikan ke orang lain?**
-A: Ya. Spreadsheet yang dibuat oleh sistem secara otomatis sudah diatur sebagai *anyone with the link can write*, sehingga siapa saja yang memegang tautannya dapat melihat dan mengedit data tersebut.
+| Nama Kolom | Isi |
+|-----------|-----|
+| ID | Nomor urut pelamar |
+| Nama Kandidat | Nama lengkap pelamar |
+| Email | Alamat email pelamar |
+| Telepon | Nomor HP pelamar |
+| Posisi Dilamar | Nama lowongan yang dilamar |
+| Departemen | Divisi lowongan |
+| Status | Tahap seleksi (Applied / Interview / Hired / dst.) |
+| Tanggal Melamar | Kapan formulir dikirim |
+| *(kolom jawaban form)* | Jawaban dari setiap pertanyaan di formulir |
 
 ---
 
-## 8. Pengaturan Sistem (Settings) & Integrasi Email
+> 💡 **Tips:** Setelah Spreadsheet dibuat, Anda bisa **membagikan tautannya** ke anggota tim HR lain agar mereka bisa melihat data secara langsung tanpa harus login ke sistem ATS.
 
-Halaman **Settings** (`/admin/settings`) mengendalikan variabel global aplikasi.
+---
+---
+
+## 8. Pengaturan Sistem (Settings)
+
+> 🎯 **Tujuan:** Mengatur nama instansi, logo, dan alamat email penerima notifikasi.
+
+---
+
+**📸 Tampilan:** Klik ikon **⚙️ Settings** di menu kiri.
+
+---
 
 ### Tab "Umum / General"
-- Mengatur Nama Perusahaan (Site Name).
-- Mengatur Logo Perusahaan.
-- Mengatur *Tagline* yang muncul di beranda publik (Portal Lowongan).
+
+| Pengaturan | Fungsi |
+|-----------|--------|
+| **Nama Perusahaan (Site Name)** | Nama yang muncul di halaman publik dan email |
+| **Logo Perusahaan** | Unggah logo instansi (format JPG/PNG) |
+| **Tagline** | Kalimat singkat yang muncul di portal lowongan publik |
+
+**Cara mengubah:** Klik pada kolom yang ingin diubah → ketik nilai baru → klik **"Simpan"**.
+
+---
 
 ### Tab "Data Candidate & HR"
-- Mengatur Alamat Email HR (Pusat penerimaan notifikasi).
-- **Custom HR Greeting Text**: Anda dapat menuliskan teks atau kalimat khusus (misal: "Halo Pak HRD, mohon ditinjau lamaran berikut ini dari sistem ATS kami."). Kalimat ini akan disuntikkan secara dinamis ke dalam setiap *Email Alert* yang dikirim oleh sistem.
-- Panel **Opsi 2** untuk pengiriman ZIP terkurasi.
+
+| Pengaturan | Fungsi |
+|-----------|--------|
+| **Alamat Email HR** | Semua notifikasi masuk ke email ini |
+| **Kalimat Pembuka Email** | Teks khusus di awal email notifikasi ke HR |
+| **Opsi 2: Kirim ZIP ke HR** | Unggah file ZIP seleksi dan kirim ke HR pusat |
+
+**Cara mengirim ZIP ke HR (Opsi 2):**
+
+**Langkah 1.** Gulir ke bawah di tab ini hingga menemukan panel hitam **"Opsi 2: Upload & Kirim ZIP Terkurasi ke HR"**.
+
+**Langkah 2.** Klik **"Choose File"** → pilih file ZIP dari komputer Anda.
+
+**Langkah 3.** Klik **"Kirim Email beserta Lampiran ZIP"**.
+
+**Langkah 4.** Konfirmasi di jendela pop-up yang muncul.
+
+**Langkah 5.** ✅ Email otomatis terkirim ke alamat HR yang sudah didaftarkan.
+
+> ⚠️ Ukuran file ZIP maksimal **25 MB**. Jika melebihi, hapus beberapa CV/berkas besar dari ZIP Anda sebelum dikirim.
+
+---
+---
+
+## 9. Cadangkan Data (Backup)
+
+> 🎯 **Tujuan:** Membuat salinan cadangan seluruh data sistem (database + semua berkas) untuk berjaga-jaga.
 
 ---
 
-## 9. Manajemen Pencadangan Data (Local Backup)
-
-Kami meyakini bahwa data kandidat adalah aset vital perusahaan. Oleh karena itu, modul pencadangan data disediakan di menu **Backup Data** (`/admin/backup`).
-
-Sistem backup pada RC3ID telah disempurnakan dari sebelumnya (*Cloud-based* yang rentan isu koneksi token Google Drive) menjadi **Sistem Pencadangan Server Lokal** menggunakan pustaka andalan industri, `spatie/laravel-backup`.
-
-### Apa yang Dicadangkan?
-1. **Database SQL Server:** Seluruh teks formulir, konfigurasi, struktur akun pengguna, pengaturan.
-2. **File Storage:** Semua file fisik berupa foto kandidat, dokumen CV format PDF, gambar Ijazah, dan logo perusahaan.
-
-### Cara Menjalankan Backup
-1. Pada panel hijau di sebelah kanan layar, klik tombol **Mulai Backup Sekarang**.
-2. Aplikasi akan menginstruksikan server latar belakang (Background Process) untuk mulai mengemas data.
-3. Proses ini memakan waktu beberapa detik (atau menit, tergantung besaran CV). 
-4. Saat halaman diperbarui (*refresh*), Anda akan melihat riwayat backup di tabel bagian bawah.
-
-Tabel daftar Backup memungkinkan Anda untuk men-*download* keseluruhan sistem ATS secara instan menjadi 1 (satu) file ZIP utuh, atau menghapusnya secara permanen untuk membebaskan ruang disk server.
+**📸 Tampilan:** Klik ikon **💾 Backup Data** di menu kiri.
 
 ---
 
-## 10. Sistem Permohonan Akses (Permission Requests)
+### Cara Membuat Backup
 
-Aplikasi ATS ini tidak secara kaku memberikan semua akses kepada Admin biasa demi mencegah kebocoran konfigurasi.
+**Langkah 1.** Di halaman Backup, cari panel hijau di sisi kanan bertuliskan **"Mulai Backup Sekarang"**.
 
-**Bagaimana Admin Biasa Meminta Akses?**
-1. Admin Biasa yang menemukan menu terkunci (Gembok) di navigasi kiri, dapat mengakses menu **My Requests**.
-2. Klik tombol "Add Request", lalu pilih fitur apa yang diinginkan (misal: "Akses Settings"). Beri alasan pada kolom teks jika diperlukan.
-3. Status permohonan akan menjadi *Pending*.
+**Langkah 2.** Klik tombol tersebut.
 
-**Bagaimana Super Admin Merespons?**
-1. Super Admin mengakses menu **Permission Requests** (`/admin/permission-requests`).
-2. Semua daftar antrean permintaan tampil secara urut.
-3. Super Admin memiliki 3 pilihan tindakan yang dikemas menggunakan Pop-up beranimasi manis (SweetAlert):
-   - **Approve (Setujui):** Secara otomatis mengaktifkan gerbang akses (*permission*) di *database* ke Admin terkait. Status berubah menjadi "Approved".
-   - **Reject (Tolak):** Permintaan ditolak, gerbang tetap ditutup.
-   - **Revoke (Cabut Akses):** Tombol merah ikon coret kunci ini dapat ditekan untuk membatalkan izin yang *sebelumnya sudah disetujui* dengan instan!
+**Langkah 3.** Tunggu beberapa detik (atau menit jika data sangat banyak). Jangan tutup halaman.
 
-Sistem hak akses ini memastikan kebebasan fungsional dan keamanan operasional (Role-Based Access Control / RBAC) yang terukur.
+**Langkah 4.** Perbarui halaman (tekan **F5** atau klik tombol refresh browser).
+
+**Langkah 5.** ✅ Backup baru muncul di tabel daftar backup di bawah halaman, lengkap dengan tanggal dan ukuran file.
 
 ---
 
-## 11. FAQ & Penanganan Masalah (Troubleshooting)
+### Mengunduh File Backup
 
-**Q: Saya baru saja mengupdate fitur melalui "git pull" (Misal menambahkan Ekspor ZIP PDF atau Migrasi Role HR), namun terjadi *Error 500* atau fitur tidak bekerja. Apa solusinya?**
-A: Fitur-fitur baru kadang membawa dependensi atau perubahan pada arsitektur database. Sangat diwajibkan untuk menjalankan perintah instalasi paket PHP atau migrasi database. Pada server Hostinger, jika Anda kesulitan menggunakan Terminal SSH, cukup jalankan tautan rahasia ini melalui Browser Anda:
-`https://palegreen-lapwing-313339.hostingersite.com/run-migrations`
-Tautan tersebut otomatis memerintahkan server Anda mengeksekusi sinkronisasi database secara aman.
+**Langkah 1.** Di tabel daftar backup, temukan backup yang ingin diunduh.
 
-**Q: Bagaimana cara memulihkan atau memunculkan akun demo HR yang tidak sengaja terhapus di server live tanpa harus repot mengakses SSH Terminal?**
-A: Sistem ini telah dilengkapi tautan konfigurasi rahasia (*zero-touch setup*). Cukup kunjungi tautan `https://[domain-anda]/setup-hr` melalui browser (contoh: `https://palegreen-lapwing-313339.hostingersite.com/setup-hr`). Sistem akan secara otomatis mendaftarkan ulang kredensial HR Anda di database.
+**Langkah 2.** Klik tombol **"Download"** di sebelah kanan barisnya.
 
-**Q: ZIP Opsi 2 selalu gagal saat dikirim, dengan keterangan "File too large".**
-A: Terdapat pembatasan keras sebesar **25 Megabytes (MB)** di seluruh dunia untuk lampiran *Email SMTP Protocol* (seperti Gmail atau Google Workspace). Sistem tidak akan membiarkan Anda mengirim ZIP lebih besar dari ukuran ini. Harap ekstrak ZIP Anda dan hapus CV/dokumen yang ukuran PDF-nya terlalu bengkak, lalu ZIP kembali hingga total ukurannya di bawah 25 MB.
-
-**Q: Mengapa *hyperlink* PDF Ekspor ZIP Opsi 1 saat saya klik tidak otomatis membuka CV kandidat?**
-A: Sistem tautan PDF tersebut menggunakan teknik navigasi *Relative Path URL* yang bergantung sepenuhnya kepada kebijakan aplikasi pembaca (*PDF Reader*) di komputer/HP Anda. Beberapa PDF Reader klasik memblokir *link* file lokal demi alasan keamanan. Solusi terbaik adalah membuka PDF tersebut melalui Browser Web (Seperti Google Chrome atau Microsoft Edge), karena mesin peramban secara alami mengizinkan tautan navigasi ke file lain di dalam struktur folder yang sama.
-
-**Q: Saya tidak sengaja menghapus Lowongan yang sudah memiliki pelamar.**
-A: Sistem RC3ID ATS kami memberlakukan *Cascading Delete*. Jika sebuah Lowongan Pekerjaan (Job) Anda hapus permanen, maka SELURUH berkas pelamar (Candidate Submissions) dan CV/Media terkait lamaran tersebut **akan ikut musnah** guna memastikan tidak ada file yatim-piatu (*orphan files*) yang menumpuk di server Hostinger. Harap gunakan fitur edit status menjadi "Draft" (disembunyikan) alih-alih menghapusnya jika masih memerlukan histori pelamar.
-
-**Q: Fitur Google Sheets tidak muncul / tombol Google Sheets berwarna abu-abu dan tidak bisa diklik.**
-A: Kemungkinan besar akun Google belum diotorisasi. Minta Super Admin untuk membuka halaman **Settings** dan klik **Connect to Google** untuk menghubungkan akun Google terlebih dahulu. Setelah berhasil terotorisasi, tombol akan aktif kembali.
-
-**Q: Spreadsheet sudah dibuat tapi datanya tidak lengkap / kolom berantakan.**
-A: Ini terjadi jika form lowongan telah diubah (pertanyaan ditambah/dihapus) setelah Spreadsheet pertama kali dibuat. Lakukan **Sinkronisasi Ulang** dari halaman Submissions atau Jobs untuk memperbarui header kolom sesuai form terbaru.
+**Langkah 3.** ✅ File backup (format `.zip`) akan terunduh ke komputer Anda. Simpan di tempat yang aman.
 
 ---
 
-### *Akhir dari Dokumen*
-Panduan ini dirancang eksklusif untuk staf operasional internal pengguna **RC3ID ATS**. Segala pembaruan sistem akan segera dilampirkan (*rolling-release*) ke dalam perihal revisi dokumentasi ini. Selamat melakukan perekrutan dengan mudah, modern, dan canggih! 🚀
+> 💡 **Disarankan:** Lakukan backup minimal **1 kali seminggu**, terutama setelah ada banyak pelamar baru masuk.
+
+---
+---
+
+## 10. Permintaan Akses Menu
+
+> 🎯 **Tujuan:** Admin yang belum bisa membuka menu tertentu dapat meminta izin akses kepada Super Admin.
+
+---
+
+### Jika Anda adalah Admin dan ingin mengakses menu yang terkunci:
+
+**Langkah 1.** Di menu kiri, klik **"My Requests"**.
+
+**Langkah 2.** Klik tombol **"Add Request"** (Tambah Permintaan).
+
+**Langkah 3.** Pilih fitur/menu mana yang Anda minta aksesnya (contoh: "Akses Settings").
+
+**Langkah 4.** Ketik alasan singkat mengapa Anda memerlukan akses ini.
+
+**Langkah 5.** Klik **"Kirim Permintaan"**.
+
+**Langkah 6.** Status permintaan Anda akan menjadi **"Menunggu (Pending)"** sampai disetujui oleh Super Admin.
+
+---
+
+### Jika Anda adalah Super Admin dan ingin merespons permintaan:
+
+**Langkah 1.** Klik menu **"Permission Requests"** di menu kiri.
+
+**Langkah 2.** Lihat daftar semua permintaan yang masuk.
+
+**Langkah 3.** Di setiap permintaan, Anda memiliki 3 pilihan:
+- ✅ **Approve (Setujui)** → Admin langsung mendapatkan akses.
+- ❌ **Reject (Tolak)** → Permintaan ditolak.
+- 🚫 **Revoke (Cabut)** → Mencabut akses yang sebelumnya sudah disetujui.
+
+---
+---
+
+## 11. Pertanyaan yang Sering Ditanya (FAQ)
+
+---
+
+**❓ Saya tidak bisa login padahal kata sandi sudah benar.**
+> Pastikan email yang diketik sudah benar (termasuk huruf besar/kecil tidak berpengaruh, tapi simbol seperti + dan . harus tepat). Coba tekan "Forgot Password?" untuk reset kata sandi. Jika masih gagal, hubungi tim IT.
+
+---
+
+**❓ Saya sudah login tapi tidak melihat menu tertentu.**
+> Akses menu bergantung pada peran (role) akun Anda. Minta Super Admin untuk memeriksa atau tambahkan izin akses melalui menu Permission Requests.
+
+---
+
+**❓ Tombol Export Google Sheets berwarna abu-abu / tidak bisa diklik.**
+> Akun Google belum dihubungkan. Minta Super Admin untuk melakukan otorisasi di halaman Settings → Connect to Google (lihat langkah di Bagian 7A).
+
+---
+
+**❓ Data di Spreadsheet Google tidak terupdate padahal ada pelamar baru.**
+> Sistem tidak memperbarui Spreadsheet secara otomatis. Anda perlu menekan tombol **"Export Google Sheets"** atau **"Sinkronisasi Ulang"** setiap kali ingin mendapatkan data terbaru.
+
+---
+
+**❓ Saya tidak sengaja menghapus lowongan. Apakah data pelamar bisa dikembalikan?**
+> Sayangnya **tidak bisa**. Jika lowongan dihapus, seluruh data pelamar untuk posisi itu ikut hilang permanen. Ke depannya, gunakan **"Draft"** (sembunyikan dari publik) alih-alih menghapus lowongan.
+
+---
+
+**❓ File ZIP yang saya kirim ke HR ditolak karena "terlalu besar".**
+> Batas maksimal lampiran email adalah 25 MB. Ekstrak ZIP Anda, hapus beberapa file CV yang ukurannya besar, lalu kompres ulang hingga total ukurannya di bawah 25 MB.
+
+---
+
+**❓ Fitur atau tampilan tidak berjalan dengan benar setelah pembaruan sistem.**
+> Coba kunjungi tautan ini melalui browser untuk memperbarui database sistem:
+> `https://palegreen-lapwing-313339.hostingersite.com/run-migrations`
+
+---
+
+**❓ Akun HR terhapus atau tidak bisa digunakan.**
+> Kunjungi tautan berikut melalui browser untuk memulihkan akun HR secara otomatis:
+> `https://palegreen-lapwing-313339.hostingersite.com/setup-hr`
+
+---
+
+*Jika pertanyaan Anda tidak ada di sini, silakan hubungi tim IT di:* **cl.rc3id+it@unpad.ac.id**
+
+---
+
+---
+*📅 Dokumen ini terakhir diperbarui: Agustus 2026*
+*✍️ Disusun oleh Tim IT & Technical Support RC3ID*
+*🔄 Panduan ini akan terus diperbarui seiring perkembangan sistem.*
