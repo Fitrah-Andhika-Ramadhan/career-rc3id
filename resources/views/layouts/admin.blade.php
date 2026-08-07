@@ -95,33 +95,18 @@
                 <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center {{ request()->routeIs('dashboard') ? 'text-primary' : 'text-secondary group-hover:text-primary' }}" data-icon="dashboard">dashboard</span>
                 <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Dashboard</span>
             </a>
-            @else
-            <button type="button" @click="$dispatch('open-permission-modal', { permissionName: 'access dashboard', permissionLabel: 'Dashboard' })" class="w-full text-left flex items-center px-3 py-3 rounded-xl transition-all duration-200 group opacity-90 text-secondary hover:bg-surface-container-lowest hover:text-on-surface">
-                <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center text-secondary group-hover:text-primary">lock</span>
-                <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Dashboard</span>
-            </button>
             @endcan
             @can('access jobs')
             <a class="{{ request()->routeIs('admin.jobs*') ? 'bg-primary/10 text-primary font-semibold' : 'text-secondary hover:bg-surface-container-lowest hover:text-on-surface' }} flex items-center px-3 py-3 rounded-xl transition-all duration-200 group mt-1" href="{{ route('admin.jobs.index') ?? '#' }}" wire:navigate>
                 <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center {{ request()->routeIs('admin.jobs*') ? 'text-primary' : 'text-secondary group-hover:text-primary' }}" data-icon="work">work</span>
                 <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Jobs</span>
             </a>
-            @else
-            <button type="button" @click="$dispatch('open-permission-modal', { permissionName: 'access jobs', permissionLabel: 'Jobs Management' })" class="w-full text-left flex items-center px-3 py-3 rounded-xl transition-all duration-200 group mt-1 opacity-90 text-secondary hover:bg-surface-container-lowest hover:text-on-surface">
-                <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center text-secondary group-hover:text-primary">lock</span>
-                <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Jobs</span>
-            </button>
             @endcan
             @can('access submissions')
             <a class="{{ request()->routeIs('admin.submissions*') ? 'bg-primary/10 text-primary font-semibold' : 'text-secondary hover:bg-surface-container-lowest hover:text-on-surface' }} flex items-center px-3 py-3 rounded-xl transition-all duration-200 group mt-1" href="{{ route('admin.submissions.index') }}" wire:navigate>
                 <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center {{ request()->routeIs('admin.submissions*') ? 'text-primary' : 'text-secondary group-hover:text-primary' }}" data-icon="group">group</span>
                 <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Submissions</span>
             </a>
-            @else
-            <button type="button" @click="$dispatch('open-permission-modal', { permissionName: 'access submissions', permissionLabel: 'Submissions' })" class="w-full text-left flex items-center px-3 py-3 rounded-xl transition-all duration-200 group mt-1 opacity-90 text-secondary hover:bg-surface-container-lowest hover:text-on-surface">
-                <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center text-secondary group-hover:text-primary">lock</span>
-                <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Submissions</span>
-            </button>
             @endcan
         </nav>
         <div class="mt-auto border-t border-surface-border p-3"
@@ -141,11 +126,6 @@
                     <span class="material-symbols-outlined text-[20px] flex-shrink-0 w-8 text-center">tune</span>
                     <span class="ml-3">System Settings</span>
                 </a>
-                @else
-                <button type="button" @click="$dispatch('open-permission-modal', { permissionName: 'access settings', permissionLabel: 'System Settings' })" class="w-full text-left flex items-center px-3 py-2 text-sm rounded-lg text-secondary hover:bg-surface-container opacity-90 transition-colors group">
-                    <span class="material-symbols-outlined text-[20px] flex-shrink-0 w-8 text-center">lock</span>
-                    <span class="ml-3">System Settings</span>
-                </button>
                 @endcan
 
                 @if(auth()->user()->hasRole('Super Admin'))
@@ -173,11 +153,6 @@
                     <span class="material-symbols-outlined text-[20px] flex-shrink-0 w-8 text-center">backup</span>
                     <span class="ml-3">Backup Data</span>
                 </a>
-                @else
-                <button type="button" @click="$dispatch('open-permission-modal', { permissionName: 'access backup', permissionLabel: 'Backup Data' })" class="w-full text-left flex items-center px-3 py-2 text-sm rounded-lg text-secondary hover:bg-surface-container opacity-90 transition-colors group">
-                    <span class="material-symbols-outlined text-[20px] flex-shrink-0 w-8 text-center">lock</span>
-                    <span class="ml-3">Backup Data</span>
-                </button>
                 @endcan
 
                 <a class="flex items-center px-3 py-2 text-sm rounded-lg {{ request()->routeIs('profile.edit') ? 'bg-primary/10 text-primary font-semibold' : 'text-secondary hover:bg-surface-container' }}" href="{{ route('profile.edit') }}">
