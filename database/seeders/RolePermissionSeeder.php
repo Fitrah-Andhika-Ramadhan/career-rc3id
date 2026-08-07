@@ -35,7 +35,6 @@ class RolePermissionSeeder extends Seeder
         $adminRole->syncPermissions([
             'access dashboard',
             'access jobs',
-            'access submissions',
             'access custom form',
         ]);
 

@@ -47,6 +47,11 @@
             --color-primary: #{{ $primaryHex }};
             --color-primary-rgb: {{ $r }} {{ $g }} {{ $b }};
         }
+        /* Restore list styles that Tailwind resets */
+        [contenteditable="true"] ul, .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        [contenteditable="true"] ol, .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        [contenteditable="true"] li, .prose li { margin-bottom: 0.25rem; }
+        
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             display: inline-block;
@@ -106,6 +111,11 @@
             <a class="{{ request()->routeIs('admin.submissions*') ? 'bg-primary/10 text-primary font-semibold' : 'text-secondary hover:bg-surface-container-lowest hover:text-on-surface' }} flex items-center px-3 py-3 rounded-xl transition-all duration-200 group mt-1" href="{{ route('admin.submissions.index') }}" wire:navigate>
                 <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center {{ request()->routeIs('admin.submissions*') ? 'text-primary' : 'text-secondary group-hover:text-primary' }}" data-icon="group">group</span>
                 <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Submissions</span>
+            </a>
+            
+            <a class="{{ request()->routeIs('admin.screening*') ? 'bg-primary/10 text-primary font-semibold' : 'text-secondary hover:bg-surface-container-lowest hover:text-on-surface' }} flex items-center px-3 py-3 rounded-xl transition-all duration-200 group mt-1" href="{{ route('admin.screening.index') }}" wire:navigate>
+                <span class="material-symbols-outlined text-[24px] flex-shrink-0 w-8 text-center {{ request()->routeIs('admin.screening*') ? 'text-primary' : 'text-secondary group-hover:text-primary' }}" data-icon="view_kanban">view_kanban</span>
+                <span class="text-sm ml-3 opacity-100 md:opacity-0 md:group-hover/aside:opacity-100 transition-opacity duration-300">Screening</span>
             </a>
             @endcan
         </nav>
@@ -405,7 +415,7 @@
                     </div>
                     <div>
                         <h2 class="font-headline-md text-[20px] md:text-[22px] font-bold text-on-surface leading-tight tracking-tight">
-                            Buku Panduan ATS
+                            Buku Panduan
                         </h2>
                         <p class="text-[13px] text-secondary font-medium mt-0.5">Dokumentasi Resmi & Prosedur Sistem</p>
                     </div>

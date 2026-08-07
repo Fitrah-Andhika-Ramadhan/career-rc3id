@@ -106,6 +106,11 @@
         }
         input:focus, textarea:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--color-primary-rgb) / 0.5); border-radius: 10px; }
+        
+        /* Restore list styles that Tailwind resets */
+        [contenteditable="true"] ul, .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        [contenteditable="true"] ol, .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        [contenteditable="true"] li, .prose li { margin-bottom: 0.25rem; }
     </style>
     @livewireStyles
 </head>
@@ -141,13 +146,11 @@
         {{ $slot }}
     </main>
 
-    <!-- Footer (Shared Component) -->
     <footer class="bg-surface-container-low border-t border-surface-border">
         <div class="flex flex-col md:flex-row justify-between items-center px-margin py-stack-lg w-full max-w-container-max mx-auto gap-stack-md">
-            <div class="flex flex-col items-center md:items-start">
+            <div class="flex flex-col items-center md:items-start text-center md:text-left">
                 <div class="font-headline-sm text-headline-sm text-on-surface font-bold mb-1">{{ env('APP_NAME', 'CareerRC3ID') }}</div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">© {{ date('Y') }} {{ env('APP_NAME', 'CareerRC3ID') }} {{ env('FOOTER_TEXT', 'recruitment portal. All rights reserved.') }}</p>
-            </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">© {{ date('Y') }} CareerRC3ID -Fitt Solutions. All rights reserved.</p>
             </div>
         </div>
     </footer>

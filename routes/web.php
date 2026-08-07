@@ -15,6 +15,15 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/sync-roles', function () {
+    try {
+        Artisan::call('db:seed', ['--class' => 'RolePermissionSeeder', '--force' => true]);
+        return "Roles & Permissions berhasil disinkronkan! Output: <br><pre>" . Artisan::output() . "</pre><br><a href='/admin/jobs'>Kembali ke Dashboard</a>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 Route::get('/install-google', function () {
     try {
         $output = "";
@@ -122,6 +131,7 @@ Route::get('/magic-login', function() {
 Volt::route('/dashboard', 'admin.dashboard')->middleware(['auth', 'verified'])->name('dashboard');
 Volt::route('/admin/jobs', 'admin.job-management')->middleware(['auth', 'verified', 'can:access jobs'])->name('admin.jobs.index');
 Volt::route('/admin/submissions', 'admin.submissions')->middleware(['auth', 'verified', 'can:access submissions'])->name('admin.submissions.index');
+Volt::route('/admin/screening', 'admin.screening')->middleware(['auth', 'verified', 'can:access submissions'])->name('admin.screening.index');
 Volt::route('/admin/users', 'admin.users')->middleware(['auth', 'verified', 'can:access users'])->name('admin.users.index');
 Volt::route('/admin/roles', 'admin.roles')->middleware(['auth', 'verified', 'can:access roles'])->name('admin.roles.index');
 Volt::route('/admin/settings', 'admin.settings')->middleware(['auth', 'verified', 'can:access settings'])->name('admin.settings');
