@@ -678,8 +678,6 @@ class extends Component
         </div>
     </div>
     @endif
-    @endif
-
             {{-- Google Sheets Integration Modal --}}
     @if($showSheetsModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
