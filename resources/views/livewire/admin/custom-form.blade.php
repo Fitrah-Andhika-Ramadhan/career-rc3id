@@ -996,6 +996,10 @@ Example output format:
                             <button @mousedown.prevent="format('italic')" class="p-1.5 hover:bg-surface-container rounded italic w-8 h-8 flex items-center justify-center text-sm">I</button>
                             <button @mousedown.prevent="format('underline')" class="p-1.5 hover:bg-surface-container rounded underline w-8 h-8 flex items-center justify-center text-sm">U</button>
                             <button @mousedown.prevent="let url = prompt('Enter URL:'); if(url) format('createLink', url);" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">link</span></button>
+                            <div class="w-px h-4 bg-surface-border mx-1"></div>
+                            <button @mousedown.prevent="format('insertOrderedList')" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_list_numbered</span></button>
+                            <button @mousedown.prevent="format('insertUnorderedList')" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+                            <div class="w-px h-4 bg-surface-border mx-1"></div>
                             <button @mousedown.prevent="removeFormat()" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_clear</span></button>
                         </div>
                     </div>
@@ -1038,22 +1042,44 @@ Example output format:
 
                             <div class="flex flex-col md:flex-row items-start gap-4 mb-4 mt-4">
                                 <div class="flex-1 w-full bg-surface-container-lowest border-b border-surface-border focus-within:border-primary focus-within:border-b-2 transition-all p-4 rounded-t-md group relative">
-                                    <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.label" placeholder="Pertanyaan" class="w-full font-body-lg text-body-lg bg-transparent border-none focus:ring-0 p-0 mb-1">
+                                    {{-- Title --}}
+                                    <div x-data="{ val: @entangle('fields.'.$i.'.label').live }">
+                                        <div contenteditable="true"
+                                             @input="val = $event.target.innerHTML"
+                                             x-init="$el.innerHTML = val || ''; $watch('val', v => { if(document.activeElement !== $el) $el.innerHTML = v || ''; })"
+                                             class="w-full font-body-lg text-body-lg bg-transparent border-none focus:ring-0 p-0 mb-1 outline-none min-h-[28px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50"
+                                             placeholder="Pertanyaan"></div>
+                                    </div>
                                     
                                     @if(in_array(($fields[$i]['type'] ?? 'text'), ['title', 'section']) || ($fields[$i]['has_description'] ?? false))
-                                        <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.description" placeholder="Deskripsi (opsional)" class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 mt-2 text-secondary border-b border-dashed border-surface-border/50 pb-1 focus:border-b-solid focus:border-primary transition-colors">
+                                    {{-- Description --}}
+                                        <div x-data="{ val: @entangle('fields.'.$i.'.description').live }" class="mt-2">
+                                            <div contenteditable="true"
+                                                 @input="val = $event.target.innerHTML"
+                                                 x-init="$el.innerHTML = val || ''; $watch('val', v => { if(document.activeElement !== $el) $el.innerHTML = v || ''; })"
+                                                 class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 text-secondary border-b border-dashed border-surface-border/50 pb-1 focus:border-b-solid focus:border-primary outline-none transition-colors min-h-[24px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50"
+                                                 placeholder="Deskripsi (opsional)"></div>
+                                        </div>
                                     @endif
+                                    
                                     @if(in_array(($fields[$i]['type'] ?? 'text'), ['image', 'video']))
                                         <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.url" placeholder="Masukkan URL {{ ($fields[$i]['type'] == 'image') ? 'Gambar' : 'YouTube Video' }}" class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 mt-2 text-primary font-mono bg-surface-container-low px-2 py-1 rounded">
                                     @endif
                                     
-                                    {{-- Mock formatting toolbar --}}
-                                    <div class="hidden group-focus-within:flex items-center gap-2 text-secondary border-t border-surface-border pt-3 mt-2">
-                                        <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1 hover:bg-surface-container rounded font-bold w-6 h-6 flex items-center justify-center">B</button>
-                                        <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1 hover:bg-surface-container rounded italic w-6 h-6 flex items-center justify-center">I</button>
-                                        <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1 hover:bg-surface-container rounded underline w-6 h-6 flex items-center justify-center">U</button>
-                                        <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1 hover:bg-surface-container rounded w-6 h-6 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">link</span></button>
-                                        <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1 hover:bg-surface-container rounded w-6 h-6 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_clear</span></button>
+                                    {{-- Functional formatting toolbar --}}
+                                    <div class="hidden group-focus-within:flex items-center gap-1 text-secondary border-t border-surface-border pt-2 mt-2" x-data="{
+                                        format(cmd, value = null) { document.execCommand(cmd, false, value); },
+                                        removeFormat() { document.execCommand('removeFormat', false, null); }
+                                    }">
+                                        <button @mousedown.prevent="format('bold')" class="p-1 hover:bg-surface-container rounded font-bold w-7 h-7 flex items-center justify-center text-xs">B</button>
+                                        <button @mousedown.prevent="format('italic')" class="p-1 hover:bg-surface-container rounded italic w-7 h-7 flex items-center justify-center text-xs">I</button>
+                                        <button @mousedown.prevent="format('underline')" class="p-1 hover:bg-surface-container rounded underline w-7 h-7 flex items-center justify-center text-xs">U</button>
+                                        <button @mousedown.prevent="let url = prompt('Enter URL:'); if(url) format('createLink', url);" class="p-1 hover:bg-surface-container rounded w-7 h-7 flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">link</span></button>
+                                        <div class="w-px h-4 bg-surface-border mx-1"></div>
+                                        <button @mousedown.prevent="format('insertOrderedList')" class="p-1 hover:bg-surface-container rounded w-7 h-7 flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">format_list_numbered</span></button>
+                                        <button @mousedown.prevent="format('insertUnorderedList')" class="p-1 hover:bg-surface-container rounded w-7 h-7 flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">format_list_bulleted</span></button>
+                                        <div class="w-px h-4 bg-surface-border mx-1"></div>
+                                        <button @mousedown.prevent="removeFormat()" class="p-1 hover:bg-surface-container rounded w-7 h-7 flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">format_clear</span></button>
                                     </div>
                                     
                                     {{-- Image icon --}}
