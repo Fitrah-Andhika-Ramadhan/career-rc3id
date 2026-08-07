@@ -90,20 +90,20 @@ class extends Component
     </div>
 
     {{-- Kanban Board Full Page --}}
-    <div class="flex-1 overflow-x-auto bg-[#f8fafc] flex gap-4 h-[calc(100vh-220px)] rounded-xl border border-surface-border p-4">
+    <div class="bg-[#f8fafc] flex gap-4 overflow-x-auto overflow-y-hidden rounded-xl border border-surface-border p-4" style="height: calc(100vh - 180px); min-height: 500px;">
         @php
             $stages = \App\Models\PipelineStage::orderBy('order')->get();
         @endphp
         @foreach($stages as $stage)
         <div class="w-[300px] flex-shrink-0 flex flex-col bg-surface-container-lowest rounded-xl shadow-sm border border-surface-border overflow-hidden h-full">
-            <div class="p-3 bg-surface-container border-b border-surface-border flex justify-between items-center">
+            <div class="p-3 bg-surface-container border-b border-surface-border flex justify-between items-center shrink-0">
                 <h3 class="font-bold text-sm text-on-surface">{{ $stage->name }}</h3>
                 <span class="bg-surface-variant text-on-surface-variant text-xs px-2 py-0.5 rounded-full font-semibold">
                     {{ $applications->where('pipeline_stage_id', $stage->id)->count() }}
                 </span>
             </div>
             
-            <div class="p-3 flex-1 overflow-y-auto space-y-3">
+            <div class="p-3 flex-1 overflow-y-auto space-y-3 custom-scrollbar">
                 @foreach($applications->where('pipeline_stage_id', $stage->id) as $app)
                 <div class="bg-surface-bg border border-surface-border p-3 rounded-lg shadow-sm hover:shadow-md transition-all group">
                     <div class="flex justify-between items-start mb-2">
