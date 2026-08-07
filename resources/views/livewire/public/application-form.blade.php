@@ -197,6 +197,51 @@ class extends Component
         }
     }
 
+    /**
+     * Tangkap email, nama, telepon dari step saat ini dan simpan ke properti dedicated.
+     * Dipanggil setiap kali user pindah step agar tidak hilang saat file upload terjadi.
+     */
+    private function captureIdentityFromCurrentStep(): void
+    {
+        $excludeNamePatterns = ['perusahaan', 'institusi', 'organisasi', 'company', 'domain', 'user', 'sekolah', 'instansi', 'referensi', 'kantor'];
+
+        foreach ($this->pages[$this->currentStep]['fields'] ?? [] as $field) {
+            $id  = $field['id'] ?? null;
+            if (!$id) continue;
+            $val = $this->customAnswers[$id] ?? null;
+            if (!$val || !is_string($val) || trim($val) === '') continue;
+            $val = trim($val);
+            $nl  = preg_replace('/[^a-z0-9]/', '', strtolower($field['label'] ?? ''));
+
+            // Email
+            if (!$this->email && (str_contains($nl, 'email') || str_contains($nl, 'surel'))) {
+                if (filter_var($val, FILTER_VALIDATE_EMAIL)) $this->email = $val;
+            }
+            // Nama
+            if (!$this->full_name) {
+                $isExcluded = false;
+                foreach ($excludeNamePatterns as $p) { if (str_contains($nl, $p)) { $isExcluded = true; break; } }
+                if (!$isExcluded && (str_contains($nl, 'namalengkap') || str_contains($nl, 'fullname') || str_contains($nl, 'namakandida') || str_contains($nl, 'namapelamar') || $nl === 'nama')) {
+                    $this->full_name = $val;
+                }
+            }
+            // Nama fallback (label hanya mengandung "nama")
+            if (!$this->full_name) {
+                $isExcluded = false;
+                foreach ($excludeNamePatterns as $p) { if (str_contains($nl, $p)) { $isExcluded = true; break; } }
+                if (!$isExcluded && str_contains($nl, 'nama')) $this->full_name = $val;
+            }
+            // Telepon
+            if (!$this->phone && (str_contains($nl, 'telepon') || str_contains($nl, 'phone') || str_contains($nl, 'nomorhp') || str_contains($nl, 'nomortelepon'))) {
+                $this->phone = $val;
+            }
+            // DOB
+            if (!$this->dob && (str_contains($nl, 'tanggallahir') || str_contains($nl, 'dob') || str_contains($nl, 'birthdate'))) {
+                $this->dob = $val;
+            }
+        }
+    }
+
     public function nextStep()
     {
         $rules = [];
@@ -299,6 +344,10 @@ class extends Component
         }
 
         if ($this->currentStep < $this->totalPages - 1) {
+            // Tangkap identitas setiap kali user maju ke step berikutnya
+            // agar $this->email, $this->full_name, $this->phone tersimpan aman
+            // sebagai properti string terpisah, tidak bergantung pada customAnswers saat submit
+            $this->captureIdentityFromCurrentStep();
             $this->currentStep++;
             $this->dispatch('scroll-to-top');
         }
