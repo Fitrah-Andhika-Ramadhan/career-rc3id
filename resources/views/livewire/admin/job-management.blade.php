@@ -250,6 +250,66 @@ class extends Component
         $this->loadJobs();
         session()->flash('message', '10 Dummy Candidates generated successfully!');
     }
+
+    public function exportExcelData($id)
+    {
+        if (!class_exists(\OpenSpout\Writer\XLSX\Writer::class)) {
+            $this->dispatch('notify', ['message' => 'Library Excel belum siap.', 'type' => 'warning']);
+            return;
+        }
+
+        $job = Job::findOrFail($id);
+        $fileName = 'kandidat-' . Str::slug($job->title) . '-' . date('Y-m-d') . '.xlsx';
+        
+        $options = new \OpenSpout\Writer\XLSX\Options();
+        $writer = new \OpenSpout\Writer\XLSX\Writer($options);
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'export');
+        $writer->openToFile($tempFile);
+        
+        $googleService = new \App\Services\GoogleSheetsService();
+        $sheet = $writer->getCurrentSheet();
+        $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet1';
+        $sheet->setName($sheetName);
+        
+        $csvHeaders = $googleService->getHeaders($job);
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge(['ID', 'Departemen'], $csvHeaders)));
+        
+        $applications = Application::with(['candidate', 'job', 'stage', 'media', 'notes'])->where('job_id', $job->id)->get();
+        foreach ($applications as $app) {
+            $row = $googleService->getApplicationRow($app, $job, $csvHeaders);
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(array_merge([$app->id, $app->job->department ?? '-'], $row)));
+        }
+
+        $writer->close();
+        
+        return response()->download($tempFile, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportGoogleSheetsData($id)
+    {
+        try {
+            $service = new \App\Services\GoogleSheetsService();
+            $job = Job::findOrFail($id);
+            
+            if (!$job->google_spreadsheet_id) {
+                $service->createSpreadsheetForJob($job);
+                $job->refresh();
+            } else {
+                $service->syncAllCandidatesToSheet($job);
+            }
+            
+            $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+            
+            $this->dispatch('show-sheets-sweetalert-job', [
+                'url' => $url
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['message' => 'Gagal sinkronisasi Sheets: ' . $e->getMessage(), 'type' => 'error']);
+        }
+    }
 };
 ?>
 
@@ -364,6 +424,16 @@ class extends Component
                             <a href="{{ route('admin.custom-form') }}?selectedJobId={{ $job->id }}" wire:navigate class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">dynamic_form</span> Form Builder
                             </a>
+                            <button type="button" @click="open = false" wire:click="exportExcelData({{ $job->id }})" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <span wire:loading.remove wire:target="exportExcelData({{ $job->id }})" class="material-symbols-outlined text-[16px]">table_chart</span>
+                                <span wire:loading wire:target="exportExcelData({{ $job->id }})" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                Export Excel
+                            </button>
+                            <button type="button" @click="open = false" wire:click="exportGoogleSheetsData({{ $job->id }})" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                <span wire:loading.remove wire:target="exportGoogleSheetsData({{ $job->id }})" class="material-symbols-outlined text-[16px]">table_view</span>
+                                <span wire:loading wire:target="exportGoogleSheetsData({{ $job->id }})" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                                Export Google Sheets
+                            </button>
                             <button type="button" @click="open = false" wire:click="exportJobData({{ $job->id }})" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                                 <span wire:loading.remove wire:target="exportJobData({{ $job->id }})" class="material-symbols-outlined text-[16px]">folder_zip</span>
                                 <span wire:loading wire:target="exportJobData({{ $job->id }})" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
@@ -486,6 +556,23 @@ class extends Component
 
     @script
     <script>
+        $wire.on('show-sheets-sweetalert-job', (data) => {
+            const url = data[0].url;
+            Swal.fire({
+                title: '✅ Google Sheets Berhasil Dibuat/Disinkronisasi!',
+                text: 'Data pelamar untuk lowongan ini telah diekspor dan siap dilihat.',
+                icon: 'success',
+                confirmButtonColor: '#1a73e8',
+                confirmButtonText: '📊 Buka Spreadsheet',
+                showCancelButton: true,
+                cancelButtonText: 'Tutup'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open(url, '_blank');
+                }
+            });
+        });
+
         $wire.on('job-saved', (event) => {
             // Livewire 3 event data is usually the first item in the array if dispatched as an array
             let jobId = event[0].jobId;
