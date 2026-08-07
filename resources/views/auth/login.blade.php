@@ -26,8 +26,24 @@
         }
     </style>
 </head>
-<body class="login-mesh min-h-screen flex flex-col justify-between items-center px-margin" x-data="{ showForgotModal: {{ old('is_forgot') ? 'true' : 'false' }} }">
-    <div class="h-16"></div>
+<body class="min-h-screen flex bg-surface-bg" x-data="{ showForgotModal: {{ old('is_forgot') ? 'true' : 'false' }} }">
+    <!-- Left Panel: Branding / Visuals -->
+    <div class="hidden lg:flex lg:w-1/2 relative bg-[#FDFDFC] items-center justify-center overflow-hidden border-r border-surface-border">
+        <!-- Soft red/orange mesh matching Laravel default -->
+        <div class="absolute inset-0" style="background-image: radial-gradient(at 0% 0%, rgba(245, 48, 3, 0.08) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(245, 48, 3, 0.05) 0px, transparent 50%);"></div>
+        
+        <div class="relative z-10 p-12 text-[#1b1b18] flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-1000">
+            <div class="w-20 h-20 bg-white/60 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 shadow-xl border border-surface-border">
+                <span class="material-symbols-outlined text-[40px] text-[#F53003]" data-icon="rocket_launch">rocket_launch</span>
+            </div>
+            <h1 class="font-headline-lg text-4xl font-bold tracking-tight mb-4">Elevate Your Talent</h1>
+            <p class="font-body-lg text-lg text-[#706f6c] max-w-md leading-relaxed">Streamline your hiring process, discover top talent, and build your dream team with Precision Talent HR Portal.</p>
+        </div>
+    </div>
+
+    <!-- Right Panel: Login Form -->
+    <div class="w-full lg:w-1/2 flex flex-col justify-between items-center px-4 sm:px-8 lg:px-16 py-8 relative bg-white">
+        <div class="h-12 w-full"></div> <!-- Spacer -->
     <main class="w-full max-w-[440px] animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div class="bg-surface-container-lowest border border-surface-border rounded-xl p-10 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
             <div class="text-center mb-10">
@@ -138,39 +154,15 @@
             </form>
         </div>
     </div>
-    <footer class="w-full max-w-screen-xl py-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-label-md text-label-md text-outline">
-        <div class="flex items-center gap-6">
+    <footer class="w-full mt-auto py-8 flex flex-col items-center justify-center gap-2 font-label-sm text-xs text-outline text-center">
+        <div class="flex items-center gap-4">
             <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
             <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
             <a class="hover:text-primary transition-colors" href="#">Help Center</a>
         </div>
-        <div class="flex items-center gap-2">
-            <span>© 2026 CareerRC3ID HR Solutions. All rights reserved.</span>
-        </div>
+        <span>© 2026 CareerRC3ID HR Solutions. All rights reserved.</span>
     </footer>
-    <script>
-        document.addEventListener('mousemove', (e) => {
-            const card = document.querySelector('main');
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            
-            const rotateX = (y / rect.height) * -2;
-            const rotateY = (x / rect.width) * 2;
-            
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        });
-
-        document.querySelector('main').addEventListener('mouseleave', () => {
-            const card = document.querySelector('main');
-            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
-            card.style.transition = 'transform 0.5s ease';
-        });
-
-        document.querySelector('main').addEventListener('mouseenter', () => {
-            const card = document.querySelector('main');
-            card.style.transition = 'none';
-        });
-    </script>
+    </div>
+    <!-- Animation scripts removed per user request -->
 </body>
 </html>
