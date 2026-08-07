@@ -31,14 +31,16 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         // Dynamic redirection based on role
-        if ($user->hasRole('Super Admin') || $user->can('access dashboard')) {
+        if ($user->hasRole('Super Admin')) {
             return redirect()->intended(route('dashboard', absolute: false));
+        } elseif ($user->hasRole('Admin')) {
+            // CNL Admin langsung ke halaman Jobs
+            return redirect()->intended(route('admin.jobs.index', absolute: false));
         } elseif ($user->hasRole('HR') || $user->can('access submissions')) {
-            // HR typically focuses on submissions/kanban first
             return redirect()->intended(route('admin.submissions.index', absolute: false));
         }
-        
-        // Default fallback (e.g. for CNL Admin who only has 'access jobs')
+
+        // Default fallback
         return redirect()->intended(route('admin.jobs.index', absolute: false));
     }
 
