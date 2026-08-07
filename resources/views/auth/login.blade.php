@@ -12,157 +12,126 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        .login-mesh {
-            background-color: #f7f9ff;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(0, 91, 191, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(26, 115, 232, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(0, 91, 191, 0.03) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(26, 115, 232, 0.03) 0px, transparent 50%);
-        }
-        .input-focus-ring:focus {
-            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #005bbf;
-            outline: none;
-        }
     </style>
 </head>
-<body class="min-h-screen flex bg-surface-bg" x-data="{ showForgotModal: {{ old('is_forgot') ? 'true' : 'false' }} }">
-    <!-- Left Panel: Branding / Visuals -->
-    <div class="hidden lg:flex lg:w-1/2 relative bg-[#FDFDFC] items-center justify-center overflow-hidden border-r border-surface-border">
-        <!-- Soft red/orange mesh matching Laravel default -->
-        <div class="absolute inset-0" style="background-image: radial-gradient(at 0% 0%, rgba(245, 48, 3, 0.08) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(245, 48, 3, 0.05) 0px, transparent 50%);"></div>
-        
-        <div class="relative z-10 p-12 text-[#1b1b18] flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-1000">
-            <div class="w-20 h-20 bg-white/60 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 shadow-xl border border-surface-border">
-                <span class="material-symbols-outlined text-[40px] text-[#F53003]" data-icon="rocket_launch">rocket_launch</span>
+<body class="min-h-screen flex flex-col bg-[#f9fafb]" x-data="{ showForgotModal: {{ old('is_forgot') ? 'true' : 'false' }} }">
+    
+    <!-- Main Content Area -->
+    <div class="flex flex-1">
+        <!-- Left Panel: Branding / Visuals -->
+        <div class="hidden lg:flex lg:w-1/2 relative bg-[#1c1c1c] items-center justify-center overflow-hidden">
+            <!-- Subtle bottom glow effect matching the screenshot -->
+            <div class="absolute bottom-[-10%] left-1/2 transform -translate-x-1/2 w-full h-[500px]" style="background: radial-gradient(ellipse at bottom, rgba(160, 150, 110, 0.15) 0%, transparent 60%);"></div>
+            
+            <div class="relative z-10 p-12 text-white flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-[#2d2d2d] rounded-full flex items-center justify-center mb-10 shadow-lg">
+                    <span class="material-symbols-outlined text-[32px] text-[#e63946]" data-icon="rocket_launch">rocket_launch</span>
+                </div>
+                <h1 class="text-[40px] font-bold tracking-tight mb-4 text-white">Elevate Your Talent</h1>
+                <p class="text-[17px] text-[#a0a0a0] max-w-md leading-relaxed">Streamline your hiring process, discover top talent, and build your dream team with Precision Talent HR Portal.</p>
             </div>
-            <h1 class="font-headline-lg text-4xl font-bold tracking-tight mb-4">Elevate Your Talent</h1>
-            <p class="font-body-lg text-lg text-[#706f6c] max-w-md leading-relaxed">Streamline your hiring process, discover top talent, and build your dream team with Precision Talent HR Portal.</p>
+        </div>
+
+        <!-- Right Panel: Login Form -->
+        <div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-4 py-12 relative bg-[#f9fafb]">
+            <main class="w-full max-w-[420px]">
+                <div class="bg-white rounded-xl p-10 sm:p-12 shadow-sm border border-gray-100">
+                    <div class="text-center mb-8">
+                        <h1 class="font-bold text-[28px] text-gray-900 tracking-tight mb-2">CareerRC3ID</h1>
+                        <p class="text-[11px] font-bold tracking-widest text-[#8b4545] uppercase">Precision Talent HR Portal</p>
+                    </div>
+
+                    <!-- Session Status -->
+                    <x-auth-session-status class="mb-4 text-green-600 text-sm text-center" :status="session('status')" />
+
+                    <form action="{{ route('login') }}" class="space-y-6" method="POST">
+                        @csrf
+                        <!-- Email Field -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 mb-2" for="email">Email Address</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-[20px]" data-icon="mail">mail</span>
+                                <input class="w-full pl-11 pr-4 py-3 bg-[#f3f4f6] border border-gray-200 rounded-md text-sm text-gray-900 focus:bg-white focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all outline-none" id="email" name="email" value="{{ old('is_forgot') ? '' : old('email') }}" required autofocus autocomplete="username" type="email"/>
+                            </div>
+                            @if(!old('is_forgot'))
+                                <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-600 text-sm" />
+                            @endif
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 mb-2" for="password">Password</label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-[20px]" data-icon="lock">lock</span>
+                                <input class="w-full pl-11 pr-12 py-3 bg-[#f3f4f6] border border-gray-200 rounded-md text-sm text-gray-900 focus:bg-white focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all outline-none" id="password" name="password" placeholder="••••••••••••" required autocomplete="current-password" type="password"/>
+                            </div>
+                            <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-600 text-sm" />
+                        </div>
+                        
+                        <!-- Remember & Forgot -->
+                        <div class="flex items-center justify-between pt-1 pb-2">
+                            <label class="flex items-center group cursor-pointer" for="remember_me">
+                                <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-[#b71c1c] focus:ring-[#b71c1c]" {{ old('remember') ? 'checked' : '' }}/>
+                                <span class="ml-2 text-sm text-gray-600 font-medium group-hover:text-gray-900 transition-colors">Remember Me</span>
+                            </label>
+                            @if (Route::has('password.request'))
+                                <a class="text-sm font-bold text-gray-900 hover:text-[#b71c1c] transition-colors cursor-pointer" @click="showForgotModal = true">Forgot Password?</a>
+                            @endif
+                        </div>
+                        
+                        <!-- Sign In Button -->
+                        <button class="w-full py-3.5 px-4 bg-[#b71c1c] text-white font-bold text-[15px] rounded-md shadow-sm hover:bg-[#9b1818] active:scale-[0.99] transition-all text-center" type="submit">
+                            Login
+                        </button>
+                    </form>
+                </div>
+            </main>
         </div>
     </div>
 
-    <!-- Right Panel: Login Form -->
-    <div class="w-full lg:w-1/2 flex flex-col justify-between items-center px-4 sm:px-8 lg:px-16 py-8 relative bg-white">
-        <div class="h-12 w-full"></div> <!-- Spacer -->
-    <main class="w-full max-w-[440px] animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div class="bg-surface-container-lowest border border-surface-border rounded-xl p-10 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
-            <div class="text-center mb-10">
-                <div class="flex justify-center mb-4">
-                    <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                        <span class="material-symbols-outlined text-on-primary text-[28px]" data-icon="rocket_launch">rocket_launch</span>
-                    </div>
-                </div>
-                <h1 class="font-headline-lg text-headline-lg text-on-background tracking-tight">CareerRC3ID</h1>
-                <p class="font-body-md text-body-md text-on-surface-variant mt-1">Precision Talent HR Portal</p>
-            </div>
-
-            <!-- Session Status -->
-            <x-auth-session-status class="mb-4 text-success" :status="session('status')" />
-
-            <form action="{{ route('login') }}" class="space-y-6" method="POST">
-                @csrf
-                <!-- Email Field -->
-                <div class="space-y-2">
-                    <label class="block font-label-md text-label-md text-on-surface-variant" for="email">Email Address</label>
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]" data-icon="mail">mail</span>
-                        <input class="w-full pl-10 pr-4 py-3 bg-white border border-surface-border rounded-lg font-body-md text-body-md text-on-background placeholder:text-outline/60 focus:border-primary transition-all input-focus-ring" id="email" name="email" value="{{ old('is_forgot') ? '' : old('email') }}" placeholder="name@company.com" required autofocus autocomplete="username" type="email"/>
-                    </div>
-                    @if(!old('is_forgot'))
-                        <x-input-error :messages="$errors->get('email')" class="mt-2 text-error" />
-                    @endif
-                </div>
-                <!-- Password Field -->
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="block font-label-md text-label-md text-on-surface-variant" for="password">Password</label>
-                    </div>
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]" data-icon="lock">lock</span>
-                        <input class="w-full pl-10 pr-12 py-3 bg-white border border-surface-border rounded-lg font-body-md text-body-md text-on-background placeholder:text-outline/60 focus:border-primary transition-all input-focus-ring" id="password" name="password" placeholder="••••••••" required autocomplete="current-password" type="password"/>
-                    </div>
-                    <x-input-error :messages="$errors->get('password')" class="mt-2 text-error" />
-                </div>
-                <!-- Remember & Forgot -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center group cursor-pointer" for="remember_me">
-                        <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 rounded border-surface-border text-primary focus:ring-primary focus:ring-offset-2 transition-all" {{ old('remember') ? 'checked' : '' }}/>
-                        <span class="ml-2 font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-background transition-colors">Remember Me</span>
-                    </label>
-                    @if (Route::has('password.request'))
-                        <a class="font-label-md text-label-md text-primary hover:text-on-primary-fixed-variant transition-colors cursor-pointer" @click="showForgotModal = true">Forgot Password?</a>
-                    @endif
-                </div>
-                <!-- Sign In Button -->
-                <button class="w-full py-3.5 px-4 bg-primary text-on-primary font-headline-md text-headline-md rounded-lg shadow-sm hover:bg-on-primary-fixed-variant active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
-                    Sign In
-                    <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
-                </button>
-                
-                <!-- Demo Login Buttons (Hidden per user request) -->
-                {{--
-                <div class="mt-6 pt-5 border-t border-surface-border space-y-3">
-                    <p class="text-xs text-center text-secondary font-medium tracking-wider">-- DEMO LOGIN (UJICOBA) --</p>
-                    <button type="button" onclick="let code = prompt('Masukkan Kode Akses Demo Super Admin:'); if(code === 'Fitrahwp5') { document.getElementById('email').value='cl.rc3id+it@unpad.ac.id'; document.getElementById('password').value='Rc31d@IT2026!'; document.forms[0].submit(); } else if(code !== null) { alert('Kode akses salah!'); }" class="w-full py-2.5 px-4 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 border border-surface-border shadow-sm">
-                        <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                        Login sebagai Super Admin (IT)
-                    </button>
-                    <button type="button" onclick="document.getElementById('email').value='cl.rc3id+admin@unpad.ac.id'; document.getElementById('password').value='Rc31d@CML2026!'; document.forms[0].submit();" class="w-full py-2.5 px-4 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 border border-surface-border shadow-sm">
-                        <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
-                        Login sebagai Admin (CNL)
-                    </button>
-                    <button type="button" onclick="document.getElementById('email').value='cl.rc3id+hr@unpad.ac.id'; document.getElementById('password').value='Rc31d@HR2026!'; document.forms[0].submit();" class="w-full py-2.5 px-4 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 border border-surface-border shadow-sm">
-                        <span class="material-symbols-outlined text-[18px]">engineering</span>
-                        Login sebagai HR
-                    </button>
-                </div>
-                --}}
-            </form>
+    <!-- Full width Footer -->
+    <footer class="w-full bg-[#f9fafb] border-t border-gray-200 py-6 px-8 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500">
+        <div class="font-black text-black mb-4 md:mb-0 text-[13px] tracking-tight">CareerRC3ID</div>
+        <div class="flex items-center gap-8 mb-4 md:mb-0 font-semibold text-gray-600">
+            <a class="hover:text-black transition-colors" href="#">Terms of Service</a>
+            <a class="hover:text-black transition-colors" href="#">Privacy Policy</a>
+            <a class="hover:text-black transition-colors" href="#">Help Center</a>
         </div>
-    </main>
+        <div>© 2026 CareerRC3ID -Fitt Solutions. All rights reserved.</div>
+    </footer>
 
     <!-- Forgot Password Modal -->
     <div x-show="showForgotModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" style="display: none;" x-transition>
-        <div @click.away="showForgotModal = false" class="bg-white border border-surface-border rounded-xl shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95 duration-200">
-            <button @click="showForgotModal = false" class="absolute top-4 right-4 text-secondary hover:text-error transition-colors">
+        <div @click.away="showForgotModal = false" class="bg-white border border-gray-200 rounded-xl shadow-2xl w-full max-w-md p-8 relative">
+            <button @click="showForgotModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
             <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span class="material-symbols-outlined text-[24px]">key</span>
                 </div>
-                <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Forgot Password?</h2>
-                <p class="text-sm text-secondary mt-2">No worries. Enter your email address and we'll send you a link to reset your password.</p>
+                <h2 class="text-xl font-bold text-gray-900">Forgot Password?</h2>
+                <p class="text-sm text-gray-500 mt-2">No worries. Enter your email address and we'll send you a link to reset your password.</p>
             </div>
             
             <form method="POST" action="{{ route('password.email') }}" class="space-y-6">
                 @csrf
                 <input type="hidden" name="is_forgot" value="1">
-                <div class="space-y-2">
-                    <label class="block font-label-md text-label-md text-on-surface-variant" for="forgot_email">Email Address</label>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-900 mb-2" for="forgot_email">Email Address</label>
                     <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">mail</span>
-                        <input class="w-full pl-10 pr-4 py-3 bg-white border border-surface-border rounded-lg font-body-md text-body-md text-on-background focus:border-primary transition-all input-focus-ring" id="forgot_email" name="email" value="{{ old('is_forgot') ? old('email') : '' }}" placeholder="name@company.com" required type="email"/>
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-[20px]">mail</span>
+                        <input class="w-full pl-11 pr-4 py-3 bg-[#f3f4f6] border border-gray-200 rounded-md text-sm text-gray-900 focus:bg-white focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all outline-none" id="forgot_email" name="email" value="{{ old('is_forgot') ? old('email') : '' }}" required type="email"/>
                     </div>
                     @if(old('is_forgot'))
-                        <x-input-error :messages="$errors->get('email')" class="mt-2 text-error" />
+                        <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-600 text-sm" />
                     @endif
                 </div>
-                <button type="submit" class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+                <button type="submit" class="w-full py-3.5 bg-[#b71c1c] text-white font-bold text-[15px] rounded-md hover:bg-[#9b1818] transition-colors shadow-sm">
                     Send Reset Link
                 </button>
             </form>
         </div>
     </div>
-    <footer class="w-full mt-auto py-8 flex flex-col items-center justify-center gap-2 font-label-sm text-xs text-outline text-center">
-        <div class="flex items-center gap-4">
-            <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-            <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a class="hover:text-primary transition-colors" href="#">Help Center</a>
-        </div>
-        <span>© 2026 CareerRC3ID -Fitt Solutions. All rights reserved.</span>
-    </footer>
-    </div>
-    <!-- Animation scripts removed per user request -->
 </body>
 </html>
