@@ -795,21 +795,21 @@ class extends Component
                                 @foreach($pages[$currentStep]['fields'] as $field)
                                     @if(($field['type'] ?? 'text') === 'title')
                                         <div class="border-l-4 border-primary pl-4 py-2 my-2 bg-primary/5 rounded-r-lg">
-                                            <h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">{{ $field['label'] }}</h4>
+                                            <h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">{!! $field['label'] !!}</h4>
                                             @if(!empty($field['description']))
-                                                <p class="text-sm text-secondary mt-1">{{ $field['description'] }}</p>
+                                                <div class="text-sm text-secondary mt-1 prose prose-sm max-w-none">{!! $field['description'] !!}</div>
                                             @endif
                                         </div>
                                     @elseif(($field['type'] ?? 'text') === 'image')
                                         <div class="my-4">
-                                            <label class="font-label-lg text-label-lg text-on-surface block mb-3 font-semibold">{{ $field['label'] }}</label>
+                                            <label class="font-label-lg text-label-lg text-on-surface block mb-3 font-semibold">{!! $field['label'] !!}</label>
                                             @if(!empty($field['url']))
                                                 <img src="{{ $field['url'] }}" class="max-w-full rounded-xl border border-surface-border shadow-sm" alt="{{ $field['label'] }}">
                                             @endif
                                         </div>
                                     @elseif(($field['type'] ?? 'text') === 'video')
                                         <div class="my-4">
-                                            <label class="font-label-lg text-label-lg text-on-surface block mb-3 font-semibold">{{ $field['label'] }}</label>
+                                            <label class="font-label-lg text-label-lg text-on-surface block mb-3 font-semibold">{!! $field['label'] !!}</label>
                                             @if(!empty($field['url']))
                                                 <div class="w-full aspect-video rounded-xl overflow-hidden border border-surface-border shadow-sm">
                                                     <iframe class="w-full h-full" src="{{ str_replace('watch?v=', 'embed/', $field['url']) }}" frameborder="0" allowfullscreen></iframe>
@@ -820,8 +820,11 @@ class extends Component
                                         {{-- Modern Input Group --}}
                                         <div class="group mb-8">
                                             <label class="font-label-md text-label-md text-on-surface block mb-3 font-semibold">
-                                                {{ $field['label'] }} @if($field['required']) <span class="text-error">*</span> @endif
+                                                {!! $field['label'] !!} @if($field['required']) <span class="text-error">*</span> @endif
                                             </label>
+                                            @if(!empty($field['description']))
+                                                <div class="text-sm text-secondary mb-3 prose prose-sm max-w-none">{!! $field['description'] !!}</div>
+                                            @endif
 
                                             @if($field['type'] === 'text' || $field['type'] === 'number' || $field['type'] === 'date')
                                                 <div class="relative">
