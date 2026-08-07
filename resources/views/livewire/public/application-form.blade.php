@@ -97,6 +97,32 @@ class extends Component
             }
         }
         $this->totalPages = count($this->pages);
+
+        // Restore draft dari session jika ada (ketika halaman di-refresh)
+        $draftKey = 'form_draft_' . $job->id;
+        $draft = session($draftKey);
+        if ($draft && is_array($draft)) {
+            // Restore hanya nilai string/array (bukan file)
+            foreach ($draft['customAnswers'] ?? [] as $fieldId => $val) {
+                if (array_key_exists($fieldId, $this->customAnswers)) {
+                    if (is_string($val) || is_array($val)) {
+                        $this->customAnswers[$fieldId] = $val;
+                    }
+                }
+            }
+            foreach ($draft['otherAnswers'] ?? [] as $fieldId => $val) {
+                if (is_string($val)) $this->otherAnswers[$fieldId] = $val;
+            }
+            // Restore step (jangan restore ke step file-upload karena file sudah hilang)
+            $safeStep = min($draft['currentStep'] ?? 0, max(0, $this->totalPages - 2));
+            $this->currentStep = $safeStep;
+            // Restore identity
+            $this->email      = $draft['email'] ?? '';
+            $this->full_name  = $draft['full_name'] ?? '';
+            $this->phone      = $draft['phone'] ?? '';
+            // Flag agar UI menampilkan notif draft dipulihkan
+            $this->dispatch('draft-restored');
+        }
     }
 
     public function extractIdentityVariables()
@@ -200,6 +226,7 @@ class extends Component
     /**
      * Tangkap email, nama, telepon dari step saat ini dan simpan ke properti dedicated.
      * Dipanggil setiap kali user pindah step agar tidak hilang saat file upload terjadi.
+     * Juga menyimpan draft ke session agar data tidak hilang saat refresh.
      */
     private function captureIdentityFromCurrentStep(): void
     {
@@ -240,6 +267,20 @@ class extends Component
                 $this->dob = $val;
             }
         }
+
+        // Simpan draft ke session (hanya nilai string/array, bukan file)
+        $safeAnswers = [];
+        foreach ($this->customAnswers as $k => $v) {
+            if (is_string($v) || is_array($v)) $safeAnswers[$k] = $v;
+        }
+        session()->put('form_draft_' . $this->job->id, [
+            'customAnswers' => $safeAnswers,
+            'otherAnswers'  => $this->otherAnswers,
+            'currentStep'   => $this->currentStep,
+            'email'         => $this->email,
+            'full_name'     => $this->full_name,
+            'phone'         => $this->phone,
+        ]);
     }
 
     public function nextStep()
@@ -514,97 +555,90 @@ class extends Component
             }
         }
 
-        // ── Send emails AFTER transaction committed ──────────────────
-        try {
-            Mail::to($candidate->email)->send(new ApplicationSubmitted($candidate, $this->job));
-        } catch (\Exception $e) {
-            \Log::warning('[EMAIL] Failed to queue applicant confirmation: ' . $e->getMessage());
-        }
+        // ── Tampilkan halaman sukses DULU, baru kirim email & sync di background ──
+        $this->isSubmitted = true;
 
-        $notificationEmailsStr = env('MAIL_NOTIFICATION_ADDRESSES', 'cl.rc3id@unpad.ac.id');
-        
-        if ($notificationEmailsStr) {
-            $emails = array_filter(array_map('trim', explode(',', $notificationEmailsStr)), function($email) {
-                return filter_var($email, FILTER_VALIDATE_EMAIL);
-            });
-            
-            $validEmails = array_values($emails);
-            
-            if (count($validEmails) > 0) {
+        // Simpan data yang dibutuhkan agar bisa dipakai di closure afterResponse
+        $candidateId    = $candidate->id;
+        $candidateName  = $candidate->name;
+        $candidateEmail = $candidate->email;
+        $candidatePhone = $candidate->phone;
+        $jobId          = $this->job->id;
+        $applicationId  = $application->id;
+
+        // Kirim email + sync Google Sheets SETELAH response dikirim ke browser
+        // Sehingga halaman sukses muncul INSTAN tanpa menunggu SMTP
+        dispatch(function () use ($candidateId, $candidateName, $candidateEmail, $candidatePhone, $jobId, $applicationId) {
+            $candidate   = \App\Models\Candidate::find($candidateId);
+            $job         = \App\Models\Job::find($jobId);
+            $application = \App\Models\Application::find($applicationId);
+
+            if (!$candidate || !$job || !$application) return;
+
+            // Email ke kandidat
+            try {
+                \Illuminate\Support\Facades\Mail::to($candidateEmail)
+                    ->send(new \App\Mail\ApplicationSubmitted($candidate, $job));
+            } catch (\Exception $e) {
+                \Log::warning('[EMAIL] Gagal kirim ke kandidat: ' . $e->getMessage());
+            }
+
+            // Email ke HR/Admin
+            $notificationEmailsStr = env('MAIL_NOTIFICATION_ADDRESSES', 'cl.rc3id@unpad.ac.id');
+            if ($notificationEmailsStr) {
+                $validEmails = array_values(array_filter(
+                    array_map('trim', explode(',', $notificationEmailsStr)),
+                    fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL)
+                ));
                 foreach ($validEmails as $email) {
                     try {
-                        Mail::to($email)->send(new NewApplicationNotification($candidate, $this->job, $application));
+                        \Illuminate\Support\Facades\Mail::to($email)
+                            ->send(new \App\Mail\NewApplicationNotification($candidate, $job, $application));
                     } catch (\Exception $e) {
-                        \Log::error("[EMAIL] Failed to send HR notification to {$email}: " . $e->getMessage());
+                        \Log::error("[EMAIL] Gagal kirim HR ke {$email}: " . $e->getMessage());
                     }
                 }
             }
-        }
 
-        try {
-            $admins = \App\Models\User::role(['Super Admin', 'Admin'])->get();
-            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewApplicationNotification($application));
-        } catch (\Exception $e) {
-            \Log::error('[NOTIFICATION] Failed to send database notification: ' . $e->getMessage());
-        }
-
-        // Google Sheets Integration (Native API)
-        try {
-            $spreadsheetId = $this->job->google_spreadsheet_id;
-            $tokenStr = \App\Models\Setting::where('key', 'google_oauth_token')->value('value');
-            
-            if ($spreadsheetId && $tokenStr) {
-                $client = new \Google\Client();
-                $client->setClientId(env('GOOGLE_CLIENT_ID'));
-                $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
-                $client->setAccessToken(json_decode($tokenStr, true));
-                
-                // Refresh token if expired
-                if ($client->isAccessTokenExpired()) {
-                    $refreshToken = $client->getRefreshToken();
-                    if ($refreshToken) {
-                        $client->fetchAccessTokenWithRefreshToken($refreshToken);
-                        \App\Models\Setting::updateOrCreate(
-                            ['key' => 'google_oauth_token'],
-                            ['value' => json_encode($client->getAccessToken())]
-                        );
-                    }
-                }
-                
-                $service = new \Google\Service\Sheets($client);
-                
-                $row = [
-                    $application->id,
-                    $candidate->name,
-                    $candidate->email,
-                    $candidate->phone,
-                    $candidate->linkedin_url ?? '-',
-                    $candidate->portfolio_url ?? '-',
-                    $application->created_at->format('Y-m-d H:i:s')
-                ];
-                
-                // We are only inserting the basic fields into the sheet right now since the header created in submissions.blade.php only has these basic fields.
-                // In the future, we could dynamically update the header and rows if custom fields exist.
-                
-                $body = new \Google\Service\Sheets\ValueRange([
-                    'values' => [$row]
-                ]);
-                $params = [
-                    'valueInputOption' => 'RAW'
-                ];
-                
-                $service->spreadsheets_values->append(
-                    $spreadsheetId,
-                    'Sheet1!A1',
-                    $body,
-                    $params
-                );
+            // Notifikasi in-app ke admin
+            try {
+                $admins = \App\Models\User::role(['Super Admin', 'Admin'])->get();
+                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewApplicationNotification($application));
+            } catch (\Exception $e) {
+                \Log::error('[NOTIFICATION] ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            \Log::error('[GOOGLE SHEETS] Failed to append row: ' . $e->getMessage());
-        }
 
-        $this->isSubmitted = true;
+            // Google Sheets sync
+            try {
+                $spreadsheetId = $job->google_spreadsheet_id;
+                $tokenStr = \App\Models\Setting::where('key', 'google_oauth_token')->value('value');
+                if ($spreadsheetId && $tokenStr) {
+                    $client = new \Google\Client();
+                    $client->setClientId(env('GOOGLE_CLIENT_ID'));
+                    $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+                    $client->setAccessToken(json_decode($tokenStr, true));
+                    if ($client->isAccessTokenExpired() && $client->getRefreshToken()) {
+                        $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                        \App\Models\Setting::updateOrCreate(['key' => 'google_oauth_token'], ['value' => json_encode($client->getAccessToken())]);
+                    }
+                    $service = new \Google\Service\Sheets($client);
+                    $body    = new \Google\Service\Sheets\ValueRange(['values' => [[
+                        $application->id, $candidate->name, $candidate->email,
+                        $candidate->phone, '-', '-',
+                        $application->created_at->format('Y-m-d H:i:s')
+                    ]]]);
+                    $service->spreadsheets_values->append($spreadsheetId, 'Sheet1!A1', $body, ['valueInputOption' => 'RAW']);
+                }
+
+                // GoogleSheetsService sync
+                if ($job->google_spreadsheet_id) {
+                    $sheetsService = new \App\Services\GoogleSheetsService();
+                    $sheetsService->syncCandidateToSheet($job, $application);
+                }
+            } catch (\Exception $e) {
+                \Log::error('[GOOGLE SHEETS] ' . $e->getMessage());
+            }
+        })->afterResponse();
     }
 };
 ?>
