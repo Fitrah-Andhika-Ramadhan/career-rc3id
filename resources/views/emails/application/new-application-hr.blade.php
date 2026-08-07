@@ -55,7 +55,11 @@ Halo **Tim HR**,
 **📁 File Lampiran Kandidat**
 
 @foreach($application->getMedia('documents') as $media)
+@if($media->hasCustomProperty('gdrive_url'))
+- [📄 {{ $media->file_name }} (Google Drive)]({{ $media->getCustomProperty('gdrive_url') }})
+@else
 - [📄 {{ $media->file_name }}]({{ url('/download/media/' . $media->uuid) }})
+@endif
 @endforeach
 
 > ⚠️ Jika link di atas tidak bisa dibuka, silakan login ke Dasbor Admin untuk mengunduh langsung.

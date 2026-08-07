@@ -289,4 +289,39 @@ class GoogleSheetsService
             throw $e;
         }
     }
+
+    /**
+     * Upload a file to Google Drive and return the public webViewLink.
+     */
+    public function uploadFileToDrive($filePath, $fileName, $mimeType)
+    {
+        try {
+            $client = $this->getClient();
+            $driveService = new \Google\Service\Drive($client);
+            
+            $fileMetadata = new \Google\Service\Drive\DriveFile([
+                'name' => $fileName
+            ]);
+            
+            $content = file_get_contents($filePath);
+            $file = $driveService->files->create($fileMetadata, [
+                'data' => $content,
+                'mimeType' => $mimeType,
+                'uploadType' => 'multipart',
+                'fields' => 'id, webViewLink'
+            ]);
+            
+            // Set permission to anyone with link can view
+            $permission = new \Google\Service\Drive\Permission([
+                'type' => 'anyone',
+                'role' => 'reader',
+            ]);
+            $driveService->permissions->create($file->id, $permission);
+            
+            return $file->webViewLink;
+        } catch (\Exception $e) {
+            Log::error('Failed to upload file to Google Drive: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }

@@ -517,11 +517,35 @@ class extends Component
                             try {
                                 $realPath = $answer->getRealPath();
                                 if ($realPath && file_exists($realPath)) {
-                                    $application->addMedia($realPath)
+                                    $driveUrl = null;
+                                    try {
+                                        // Attempt Google Drive Upload if Google integration is active
+                                        $sheetsService = new \App\Services\GoogleSheetsService();
+                                        $driveUrl = $sheetsService->uploadFileToDrive(
+                                            $realPath,
+                                            $answer->getClientOriginalName(),
+                                            $answer->getMimeType()
+                                        );
+                                    } catch (\Exception $e) {
+                                        \Log::warning('[GDRIVE] Failed to upload file to Google Drive: ' . $e->getMessage());
+                                    }
+
+                                    // Save to local storage (Spatie MediaLibrary) as backup
+                                    $mediaBuilder = $application->addMedia($realPath)
                                                ->usingName($answer->getClientOriginalName())
-                                               ->usingFileName($answer->getClientOriginalName())
-                                               ->toMediaCollection('documents');
-                                    $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
+                                               ->usingFileName($answer->getClientOriginalName());
+                                               
+                                    if ($driveUrl) {
+                                        $mediaBuilder->withCustomProperties(['gdrive_url' => $driveUrl]);
+                                    }
+                                    
+                                    $mediaBuilder->toMediaCollection('documents');
+                                               
+                                    if ($driveUrl) {
+                                        $answer = $driveUrl; // Langsung simpan link Google Drive
+                                    } else {
+                                        $answer = "Berkas dilampirkan: " . $answer->getClientOriginalName();
+                                    }
                                 } else {
                                     $answer = "(Berkas tidak tersimpan — sesi habis)";
                                 }
