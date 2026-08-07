@@ -150,23 +150,30 @@ Route::get('/download/media/{uuid}', function ($uuid) {
     $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('uuid', $uuid)->firstOrFail();
     $path = $media->getPath();
     
+    // Set headers to view inline in browser
+    $headers = [
+        'Content-Type' => $media->mime_type,
+        'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+    ];
+    
     if (!file_exists($path)) {
         // Fallback 1: Coba baca pakai Storage disk secara fallback (Flysystem)
         $storagePath = $media->id . '/' . $media->file_name;
         if (\Illuminate\Support\Facades\Storage::disk($media->disk)->exists($storagePath)) {
-            return \Illuminate\Support\Facades\Storage::disk($media->disk)->download($storagePath, $media->file_name);
+            // Storage::response uses inline disposition by default
+            return \Illuminate\Support\Facades\Storage::disk($media->disk)->response($storagePath, $media->file_name, $headers);
         }
         
         // Fallback 2: Coba cari di storage/app/public/... manual
         $manualPath = storage_path('app/public/' . $media->id . '/' . $media->file_name);
         if (file_exists($manualPath)) {
-            return response()->download($manualPath, $media->file_name);
+            return response()->file($manualPath, $headers);
         }
         
         abort(404, 'Berkas fisik tidak ditemukan di server.');
     }
     
-    return response()->download($path, $media->file_name);
+    return response()->file($path, $headers);
 })->name('media.download');
 
 // Fallback to serve logo directly via Laravel (fixes PHP built-in server caching 404 on Windows)

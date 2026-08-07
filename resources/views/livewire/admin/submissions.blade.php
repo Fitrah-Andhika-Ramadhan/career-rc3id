@@ -58,22 +58,26 @@ class extends Component
 
     public function createSpreadsheetForJob()
     {
-        if (!$this->jobId) return;
-        
-        $job = Job::find($this->jobId);
-        if (!$job || $job->google_spreadsheet_id) return;
-
         try {
             $service = new \App\Services\GoogleSheetsService();
-            $service->createSpreadsheetForJob($job);
             
-            // Re-fetch job to get the updated ID
-            $job = Job::find($this->jobId);
+            if ($this->jobId) {
+                $job = Job::find($this->jobId);
+                if (!$job) return;
+                
+                if (!$job->google_spreadsheet_id) {
+                    $service->createSpreadsheetForJob($job);
+                    $job = Job::find($this->jobId);
+                }
+                $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+            } else {
+                $spreadsheetId = $service->createAndSyncMasterSpreadsheet();
+                $url = 'https://docs.google.com/spreadsheets/d/' . $spreadsheetId;
+            }
             
-            // Close modal and show sweetalert with options
             $this->showSheetsModal = false;
             $this->dispatch('show-sheets-sweetalert', [
-                'url' => 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id,
+                'url' => $url,
             ]);
         } catch (\Exception $e) {
             $this->dispatch('notify', ['message' => 'Gagal membuat Spreadsheet: ' . $e->getMessage(), 'type' => 'error']);
@@ -82,20 +86,25 @@ class extends Component
 
     public function syncToGoogleSheets()
     {
-        if (!$this->jobId) return;
-        $job = Job::find($this->jobId);
-        if (!$job || !$job->google_spreadsheet_id) return;
-        
         try {
             $service = new \App\Services\GoogleSheetsService();
-            $service->syncAllCandidatesToSheet($job);
-            // After sync, redispatch sweetalert so user can open or re-sync
+            
+            if ($this->jobId) {
+                $job = Job::find($this->jobId);
+                if (!$job || !$job->google_spreadsheet_id) return;
+                
+                $service->syncAllCandidatesToSheet($job);
+                $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+            } else {
+                $spreadsheetId = $service->createAndSyncMasterSpreadsheet();
+                $url = 'https://docs.google.com/spreadsheets/d/' . $spreadsheetId;
+            }
+            
             $this->dispatch('show-sheets-sweetalert', [
-                'url' => 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id,
+                'url' => $url,
                 'syncSuccess' => true,
             ]);
         } catch (\Exception $e) {
-            // Dispatch sync-complete to close the loading dialog, then notify error
             $this->dispatch('sync-complete');
             $this->dispatch('notify', ['message' => 'Gagal sinkronisasi: ' . $e->getMessage(), 'type' => 'error']);
         }
@@ -107,6 +116,13 @@ class extends Component
             $job = Job::find($this->jobId);
             if ($job && $job->google_spreadsheet_id) {
                 $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+                $this->dispatch('show-sheets-sweetalert', ['url' => $url]);
+                return;
+            }
+        } else {
+            $masterId = \App\Models\Setting::where('key', 'master_google_spreadsheet_id')->value('value');
+            if ($masterId) {
+                $url = 'https://docs.google.com/spreadsheets/d/' . $masterId;
                 $this->dispatch('show-sheets-sweetalert', ['url' => $url]);
                 return;
             }
@@ -779,8 +795,7 @@ class extends Component
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                                        <span class="text-sm" style="color: #202124;">Create a new spreadsheet</span>
-                                        <input type="text" readonly value="{{ $currentJob ? $currentJob->title . ' (Responses)' : 'Job Application (Responses)' }}" class="border-b outline-none px-0 py-1 text-sm w-full sm:w-[220px] bg-transparent" style="border-color: #dadce0; color: #202124; ">
+                                        <input type="text" readonly value="{{ $currentJob ? $currentJob->title . ' (Responses)' : 'ATS Master Export (All Jobs)' }}" class="border-b outline-none px-0 py-1 text-sm w-full sm:w-[220px] bg-transparent" style="border-color: #dadce0; color: #202124; ">
                                     </div>
                                 </div>
                             </label>

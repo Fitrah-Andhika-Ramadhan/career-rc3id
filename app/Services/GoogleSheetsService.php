@@ -324,4 +324,97 @@ class GoogleSheetsService
             throw $e;
         }
     }
+
+    /**
+     * Create a master Google Spreadsheet for ALL Jobs with multiple tabs.
+     */
+    public function createAndSyncMasterSpreadsheet()
+    {
+        $client = $this->getClient();
+        $service = new Sheets($client);
+        
+        $jobs = Job::whereHas('applications')->get();
+        if ($jobs->isEmpty()) {
+            throw new \Exception('Belum ada data pelamar untuk diekspor.');
+        }
+
+        $spreadsheet = new Sheets\Spreadsheet([
+            'properties' => [
+                'title' => 'ATS Master Export - ' . date('Y-m-d H:i')
+            ]
+        ]);
+        $spreadsheet = $service->spreadsheets->create($spreadsheet);
+        $spreadsheetId = $spreadsheet->spreadsheetId;
+
+        try {
+            $driveService = new \Google\Service\Drive($client);
+            $permission = new \Google\Service\Drive\Permission([
+                'type' => 'anyone',
+                'role' => 'writer',
+            ]);
+            $driveService->permissions->create($spreadsheetId, $permission);
+        } catch (\Exception $e) {
+            Log::error('Failed to share master spreadsheet: ' . $e->getMessage());
+        }
+
+        $requests = [];
+        $first = true;
+        foreach ($jobs as $index => $job) {
+            $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet' . ($index + 1);
+            if ($first) {
+                $requests[] = new Sheets\Request([
+                    'updateSheetProperties' => [
+                        'properties' => ['sheetId' => 0, 'title' => $sheetName],
+                        'fields' => 'title'
+                    ]
+                ]);
+                $first = false;
+            } else {
+                $requests[] = new Sheets\Request([
+                    'addSheet' => [
+                        'properties' => ['title' => $sheetName]
+                    ]
+                ]);
+            }
+        }
+
+        if (!empty($requests)) {
+            $batchUpdateRequest = new Sheets\BatchUpdateSpreadsheetRequest([
+                'requests' => $requests
+            ]);
+            $service->spreadsheets->batchUpdate($spreadsheetId, $batchUpdateRequest);
+        }
+
+        foreach ($jobs as $index => $job) {
+            $sheetName = substr(preg_replace('/[^a-zA-Z0-9\s]/', '', $job->title), 0, 31) ?: 'Sheet' . ($index + 1);
+            $headers = $this->getHeaders($job);
+            
+            $applications = $job->applications()->with('candidate', 'stage', 'media', 'notes')->orderBy('created_at', 'asc')->get();
+            
+            // Add 'Departemen' column header explicitly to match Excel Export
+            $headerRow = array_merge(['ID', 'Departemen'], array_slice($headers, 1));
+            
+            $values = [$headerRow];
+            foreach ($applications as $app) {
+                $row = $this->getApplicationRow($app, $job, $headers);
+                // Insert departemen into row array
+                $values[] = array_merge([$app->id, $app->job->department ?? '-'], array_slice($row, 1));
+            }
+
+            $body = new Sheets\ValueRange(['values' => $values]);
+            $service->spreadsheets_values->update(
+                $spreadsheetId,
+                "'" . $sheetName . "'!A1",
+                $body,
+                ['valueInputOption' => 'USER_ENTERED']
+            );
+        }
+
+        Setting::updateOrCreate(
+            ['key' => 'master_google_spreadsheet_id'],
+            ['value' => $spreadsheetId]
+        );
+
+        return $spreadsheetId;
+    }
 }
