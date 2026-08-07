@@ -481,6 +481,33 @@ Example output format:
         }
     }
 
+    public function toggleDescription($index)
+    {
+        $current = $this->fields[$index]['has_description'] ?? false;
+        $this->fields[$index]['has_description'] = !$current;
+        if ($current) {
+            $this->fields[$index]['description'] = '';
+        }
+        $this->pushHistory();
+    }
+
+    public function toggleValidation($index)
+    {
+        $current = $this->fields[$index]['has_validation'] ?? false;
+        $this->fields[$index]['has_validation'] = !$current;
+        if ($current) {
+            unset($this->fields[$index]['validation']);
+        } else {
+            $this->fields[$index]['validation'] = [
+                'type' => 'length',
+                'min' => '',
+                'max' => '',
+                'error_text' => ''
+            ];
+        }
+        $this->pushHistory();
+    }
+
     // ── Move field up/down/reorder ─────────────────────────────────
     public function moveUp($index)
     {
@@ -936,11 +963,34 @@ Example output format:
         {{-- TAB: QUESTIONS (Main Canvas) --}}
         <div class="flex-1 max-w-3xl w-full mt-4 space-y-6 relative pb-24">
 
-            {{-- Form Header (Editable) - Modern ATS Card Style --}}
-            <div class="bg-white border border-surface-border rounded-xl shadow-sm overflow-hidden mb-6 relative">
-                <div class="p-8">
-                    <input type="text" wire:model.blur="jobTitle" class="w-full font-headline-md text-headline-md font-bold text-on-surface mb-3 bg-transparent border-none focus:ring-0 p-0 focus:outline-none" placeholder="Job Title / Form Name">
-                    <textarea wire:model.blur="jobDescription" class="w-full text-on-surface-variant bg-transparent border-none focus:ring-0 p-0 resize-none focus:outline-none leading-relaxed" rows="3" placeholder="Add a description for this application form..."></textarea>
+            {{-- Form Header (Editable) - Google Forms Style --}}
+            <div x-data="{ focused: false }" class="bg-white rounded-lg shadow-sm mb-6 relative transition-all border border-surface-border"
+                 :class="focused ? 'border-l-4 border-l-primary' : 'border-l border-l-surface-border'"
+                 style="border-top: 8px solid {{ $primaryColor }}; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                 
+                <div class="p-6">
+                    <div class="group relative">
+                        <input type="text" wire:model.blur="jobTitle" 
+                               @focus="focused = true" @blur="focused = false"
+                               class="w-full text-3xl font-normal text-on-surface mb-1 bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 focus:outline-none transition-colors pb-1" 
+                               placeholder="Form title">
+                        
+                        {{-- Mock formatting toolbar --}}
+                        <div x-show="focused" class="flex items-center gap-1 text-secondary pt-1 transition-opacity">
+                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded font-bold w-8 h-8 flex items-center justify-center text-sm">B</button>
+                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded italic w-8 h-8 flex items-center justify-center text-sm">I</button>
+                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded underline w-8 h-8 flex items-center justify-center text-sm">U</button>
+                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">link</span></button>
+                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_clear</span></button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 group relative">
+                        <textarea wire:model.blur="jobDescription" 
+                                  @focus="focused = true" @blur="focused = false"
+                                  class="w-full text-sm text-on-surface-variant bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 resize-none focus:outline-none leading-relaxed transition-colors pb-1" 
+                                  rows="2" placeholder="Form description"></textarea>
+                    </div>
                 </div>
             </div>
 
@@ -973,8 +1023,8 @@ Example output format:
                                 <div class="flex-1 w-full bg-surface-container-lowest border-b border-surface-border focus-within:border-primary focus-within:border-b-2 transition-all p-4 rounded-t-md group relative">
                                     <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.label" placeholder="Pertanyaan" class="w-full font-body-lg text-body-lg bg-transparent border-none focus:ring-0 p-0 mb-1">
                                     
-                                    @if(in_array(($fields[$i]['type'] ?? 'text'), ['title', 'section']))
-                                        <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.description" placeholder="Deskripsi (opsional)" class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 mt-2 text-secondary">
+                                    @if(in_array(($fields[$i]['type'] ?? 'text'), ['title', 'section']) || ($fields[$i]['has_description'] ?? false))
+                                        <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.description" placeholder="Deskripsi (opsional)" class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 mt-2 text-secondary border-b border-dashed border-surface-border/50 pb-1 focus:border-b-solid focus:border-primary transition-colors">
                                     @endif
                                     @if(in_array(($fields[$i]['type'] ?? 'text'), ['image', 'video']))
                                         <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.url" placeholder="Masukkan URL {{ ($fields[$i]['type'] == 'image') ? 'Gambar' : 'YouTube Video' }}" class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 mt-2 text-primary font-mono bg-surface-container-low px-2 py-1 rounded">
@@ -1145,6 +1195,41 @@ Example output format:
                                     <p class="text-secondary text-sm border-b border-surface-border border-dotted inline-block pb-1">
                                         {{ ($fields[$i]['type'] ?? 'text') === 'textarea' ? 'Long answer text' : 'Short answer text' }}
                                     </p>
+
+                                    {{-- Response Validation Options --}}
+                                    @if($fields[$i]['has_validation'] ?? false)
+                                        <div class="mt-4 p-4 bg-surface-container-lowest border border-surface-border rounded-lg flex flex-wrap items-end gap-4 w-full max-w-3xl text-sm transition-all shadow-sm">
+                                            <div class="flex flex-col gap-1">
+                                                <label class="text-[11px] font-bold text-secondary uppercase tracking-wider">Validation Type</label>
+                                                <select wire:model.live="fields.{{ $i }}.validation.type" class="bg-transparent border-b border-surface-border focus:ring-0 px-2 py-1 h-8 rounded-none text-on-surface font-medium cursor-pointer">
+                                                    <option value="length">Length</option>
+                                                    <option value="regex">Regular Expression</option>
+                                                </select>
+                                            </div>
+                                            @if(($fields[$i]['validation']['type'] ?? 'length') === 'length')
+                                                <div class="flex flex-col gap-1 w-24">
+                                                    <label class="text-[11px] font-bold text-secondary uppercase tracking-wider">Min Chars</label>
+                                                    <input type="number" wire:model.live.debounce.300="fields.{{ $i }}.validation.min" placeholder="e.g. 5" class="bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-2 py-1 h-8">
+                                                </div>
+                                                <div class="flex flex-col gap-1 w-24">
+                                                    <label class="text-[11px] font-bold text-secondary uppercase tracking-wider">Max Chars</label>
+                                                    <input type="number" wire:model.live.debounce.300="fields.{{ $i }}.validation.max" placeholder="e.g. 200" class="bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-2 py-1 h-8">
+                                                </div>
+                                            @else
+                                                <div class="flex flex-col gap-1 flex-1 min-w-[150px]">
+                                                    <label class="text-[11px] font-bold text-secondary uppercase tracking-wider">Pattern (Regex)</label>
+                                                    <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.validation.regex" placeholder="e.g. ^[0-9]+$" class="bg-transparent border-b border-surface-border focus:border-primary focus:ring-0 px-2 py-1 h-8 font-mono text-primary">
+                                                </div>
+                                            @endif
+                                            <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+                                                <label class="text-[11px] font-bold text-secondary uppercase tracking-wider">Custom Error Text</label>
+                                                <input type="text" wire:model.live.debounce.300="fields.{{ $i }}.validation.error_text" placeholder="e.g. Harus minimal 5 karakter" class="bg-transparent border-b border-surface-border focus:border-error focus:ring-0 px-2 py-1 h-8 text-error placeholder:text-error/40">
+                                            </div>
+                                            <button wire:click="toggleValidation({{ $i }})" class="text-secondary hover:text-error hover:bg-error/10 p-1 rounded-full transition-colors self-center ml-auto" title="Remove validation">
+                                                <span class="material-symbols-outlined text-[20px]">close</span>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
 
@@ -1174,12 +1259,24 @@ Example output format:
                                     </button>
                                     <div x-show="cardMenuOpen" x-transition.opacity.duration.200ms style="display: none;"
                                         class="absolute right-0 bottom-full mb-2 w-56 bg-surface-bg border border-surface-border rounded-lg shadow-lg py-2 z-50">
-                                        <button type="button" onclick="alert('Fitur deskripsi sedang dalam pengembangan.')" class="w-full text-left px-4 py-2 hover:bg-surface-container-low text-sm flex items-center gap-3 text-on-surface">
-                                            <span class="material-symbols-outlined text-secondary text-[20px]">description</span> Description
+                                        <button type="button" wire:click="toggleDescription({{ $i }}); cardMenuOpen = false" class="w-full text-left px-4 py-2 hover:bg-surface-container-low text-sm flex items-center gap-3 text-on-surface">
+                                            @if($fields[$i]['has_description'] ?? false)
+                                                <span class="material-symbols-outlined text-[18px]">check</span>
+                                            @else
+                                                <span class="w-[18px] inline-block"></span>
+                                            @endif
+                                            Description
                                         </button>
-                                        <button type="button" onclick="alert('Fitur validasi respons sedang dalam pengembangan.')" class="w-full text-left px-4 py-2 hover:bg-surface-container-low text-sm flex items-center gap-3 text-on-surface">
-                                            <span class="material-symbols-outlined text-secondary text-[20px]">rule</span> Response validation
-                                        </button>
+                                        @if(!in_array(($fields[$i]['type'] ?? 'text'), ['title', 'image', 'video', 'section', 'radio', 'checkbox', 'select']))
+                                            <button type="button" wire:click="toggleValidation({{ $i }}); cardMenuOpen = false" class="w-full text-left px-4 py-2 hover:bg-surface-container-low text-sm flex items-center gap-3 text-on-surface">
+                                                @if($fields[$i]['has_validation'] ?? false)
+                                                    <span class="material-symbols-outlined text-[18px]">check</span>
+                                                @else
+                                                    <span class="w-[18px] inline-block"></span>
+                                                @endif
+                                                Response validation
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
