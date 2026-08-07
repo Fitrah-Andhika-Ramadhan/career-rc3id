@@ -93,7 +93,7 @@ class extends Component
 
     <div class="grid gap-stack-md sm:grid-cols-2 lg:grid-cols-3">
         @foreach($roles as $role)
-            <div class="bg-surface-bg border border-surface-border rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div wire:key="role-{{ $role->id }}" class="bg-surface-bg border border-surface-border rounded-xl p-6 shadow-sm flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
@@ -128,7 +128,7 @@ class extends Component
                     </div>
                 </div>
                 
-                <button wire:click="editPermissions({{ $role->id }})" class="w-full py-2.5 px-4 bg-surface-container-low hover:bg-surface-container text-on-surface font-semibold rounded-lg border border-surface-border transition-colors flex items-center justify-center gap-2">
+                <button type="button" wire:click="editPermissions({{ $role->id }})" class="w-full py-2.5 px-4 bg-surface-container-low hover:bg-surface-container text-on-surface font-semibold rounded-lg border border-surface-border transition-colors flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-[20px]">edit</span>
                     Edit Permissions
                 </button>
@@ -152,7 +152,7 @@ class extends Component
                     @php
                         $cleanName = str_replace(['access ', 'manage '], '', $permission->name);
                     @endphp
-                    <label class="flex items-center p-3 rounded-lg border {{ in_array($permission->name, $selectedPermissions) ? 'border-primary bg-primary/5' : 'border-surface-border bg-surface-container-lowest' }} cursor-pointer transition-colors hover:border-primary/50">
+                    <label wire:key="perm-{{ $permission->id }}" class="flex items-center p-3 rounded-lg border {{ in_array($permission->name, $selectedPermissions) ? 'border-primary bg-primary/5' : 'border-surface-border bg-surface-container-lowest' }} cursor-pointer transition-colors hover:border-primary/50">
                         <input type="checkbox" wire:model="selectedPermissions" value="{{ $permission->name }}" class="w-5 h-5 rounded border-surface-border text-primary focus:ring-primary focus:ring-offset-0 mr-3">
                         <div class="flex flex-col">
                             <span class="font-semibold text-on-surface capitalize">{{ $cleanName }} Menu</span>
