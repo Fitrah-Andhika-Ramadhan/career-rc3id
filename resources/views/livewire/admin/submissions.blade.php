@@ -358,13 +358,11 @@ class extends Component
             <p class="text-on-surface-variant mt-1">Manage and screen all incoming applications from active job vacancies.</p>
         </div>
         <div class="flex items-center gap-stack-sm flex-wrap">
-            @can('access settings')
             <button wire:click="openGoogleSheets"
                 class="px-4 py-2 bg-success/10 text-success border border-success/20 rounded-lg font-label-md flex items-center gap-2 hover:bg-success/20 shadow-sm transition-all">
                 <span class="material-symbols-outlined text-[18px]">table_view</span>
                 <span>Google Sheets</span>
             </button>
-            @endcan
             <button wire:click="exportExcel" wire:loading.attr="disabled" wire:target="exportExcel"
                 class="inline-flex items-center gap-2 px-4 py-2 border border-surface-border text-on-surface hover:bg-surface-container rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
                 <span wire:loading.remove wire:target="exportExcel" class="material-symbols-outlined text-[18px]">table_chart</span>

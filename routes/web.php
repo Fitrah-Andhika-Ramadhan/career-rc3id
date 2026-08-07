@@ -198,4 +198,8 @@ Route::get('/clear-cache', function() {
     return '✅ Cache berhasil dibersihkan! Route, Config, View, dan Application Cache sudah di-clear.';
 });
 
+Route::get('/setup-hr', function() {
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'RolePermissionSeeder', '--force' => true]);
+    return '✅ Akun HR berhasil disiapkan di database! <a href="/login" style="color: blue; text-decoration: underline;">Kembali ke Login</a>';
+});
 Volt::route('/{job}', 'public.application-form')->name('jobs.apply');
