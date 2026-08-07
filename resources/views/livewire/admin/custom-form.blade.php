@@ -994,12 +994,18 @@ User prompt: " . $this->aiPrompt;
             {{-- Form Header (Editable) - Google Forms Style --}}
             <div x-data="{ 
                 focused: false,
-                desc: @entangle('jobDescription').live,
+                desc: @entangle('jobDescription'),
                 format(cmd, value = null) {
                     document.execCommand(cmd, false, value);
+                    if (document.activeElement && document.activeElement.hasAttribute('contenteditable')) {
+                        document.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
                 },
                 removeFormat() {
                     document.execCommand('removeFormat', false, null);
+                    if (document.activeElement && document.activeElement.hasAttribute('contenteditable')) {
+                        document.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
                 }
             }" 
             class="bg-white rounded-lg shadow-sm mb-6 relative transition-all border border-surface-border"
@@ -1007,8 +1013,9 @@ User prompt: " . $this->aiPrompt;
                  style="border-top: 8px solid {{ $primaryColor }}; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                  
                 <div class="p-6">
-                    <div class="group relative" x-data="{ titleVal: @entangle('jobTitle').live }">
+                    <div class="group relative" x-data="{ titleVal: @entangle('jobTitle') }">
                         <div contenteditable="true"
+                             wire:ignore
                              @input="titleVal = $event.target.innerHTML"
                              @focus="focused = true" @blur="focused = false"
                              x-init="$el.innerHTML = titleVal || ''; $watch('titleVal', v => { if(document.activeElement !== $el) $el.innerHTML = v || ''; })"
@@ -1032,6 +1039,7 @@ User prompt: " . $this->aiPrompt;
                     <div class="mt-4 group relative" x-init="$refs.editor.innerHTML = desc || ''; $watch('desc', val => { if(document.activeElement !== $refs.editor) $refs.editor.innerHTML = val || ''; })">
                         <div x-ref="editor" 
                              contenteditable="true"
+                             wire:ignore
                              @focus="focused = true" @blur="focused = false"
                              @input="desc = $refs.editor.innerHTML"
                              class="w-full text-sm text-on-surface-variant bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 focus:outline-none leading-relaxed transition-colors pb-1 min-h-[40px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50" 
@@ -1068,8 +1076,9 @@ User prompt: " . $this->aiPrompt;
                             <div class="flex flex-col md:flex-row items-start gap-4 mb-4 mt-4">
                                 <div class="flex-1 w-full bg-surface-container-lowest border-b border-surface-border focus-within:border-primary focus-within:border-b-2 transition-all p-4 rounded-t-md group relative">
                                     {{-- Title --}}
-                                    <div x-data="{ val: @entangle('fields.'.$i.'.label').live }">
+                                    <div x-data="{ val: @entangle('fields.'.$i.'.label') }">
                                         <div contenteditable="true"
+                                             wire:ignore
                                              @input="val = $event.target.innerHTML"
                                              x-init="$el.innerHTML = val || ''; $watch('val', v => { if(document.activeElement !== $el) $el.innerHTML = v || ''; })"
                                              class="w-full font-body-lg text-body-lg bg-transparent border-none focus:ring-0 p-0 mb-1 outline-none min-h-[28px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50"
@@ -1078,8 +1087,9 @@ User prompt: " . $this->aiPrompt;
                                     
                                     @if(in_array(($fields[$i]['type'] ?? 'text'), ['title', 'section']) || ($fields[$i]['has_description'] ?? false))
                                     {{-- Description --}}
-                                        <div x-data="{ val: @entangle('fields.'.$i.'.description').live }" class="mt-2">
+                                        <div x-data="{ val: @entangle('fields.'.$i.'.description') }" class="mt-2">
                                             <div contenteditable="true"
+                                                 wire:ignore
                                                  @input="val = $event.target.innerHTML"
                                                  x-init="$el.innerHTML = val || ''; $watch('val', v => { if(document.activeElement !== $el) $el.innerHTML = v || ''; })"
                                                  class="w-full text-sm bg-transparent border-none focus:ring-0 p-0 text-secondary border-b border-dashed border-surface-border/50 pb-1 focus:border-b-solid focus:border-primary outline-none transition-colors min-h-[24px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50"
@@ -1093,8 +1103,18 @@ User prompt: " . $this->aiPrompt;
                                     
                                     {{-- Functional formatting toolbar --}}
                                     <div class="hidden group-focus-within:flex items-center gap-1 text-secondary border-t border-surface-border pt-2 mt-2" x-data="{
-                                        format(cmd, value = null) { document.execCommand(cmd, false, value); },
-                                        removeFormat() { document.execCommand('removeFormat', false, null); }
+                                        format(cmd, value = null) { 
+                                            document.execCommand(cmd, false, value); 
+                                            if (document.activeElement && document.activeElement.hasAttribute('contenteditable')) {
+                                                document.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                                            }
+                                        },
+                                        removeFormat() { 
+                                            document.execCommand('removeFormat', false, null); 
+                                            if (document.activeElement && document.activeElement.hasAttribute('contenteditable')) {
+                                                document.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                                            }
+                                        }
                                     }">
                                         <button @mousedown.prevent="format('bold')" class="p-1 hover:bg-surface-container rounded font-bold w-7 h-7 flex items-center justify-center text-xs">B</button>
                                         <button @mousedown.prevent="format('italic')" class="p-1 hover:bg-surface-container rounded italic w-7 h-7 flex items-center justify-center text-xs">I</button>
