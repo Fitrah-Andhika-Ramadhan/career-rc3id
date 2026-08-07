@@ -96,21 +96,48 @@ Jika perusahaan Anda sedang membuka rekrutmen besar-besaran (misalnya program *M
 3. Ketikkan atau tempel (*Paste*) daftar posisi pekerjaan yang ingin dibuka (pisahkan 1 posisi per baris).
 4. Klik **Simpan**. Sistem akan secara instan menciptakan seluruh lowongan tersebut dalam mode **Draft**. Anda tinggal mengedit detail masing-masing lowongan (seperti departemen dan deskripsi) secara bertahap.
 
-## 4.1. Pembuatan Formulir dengan Template Standar (Template Umum)
+## 4.1. Pembuatan Formulir dengan Template Standar & AI Generator
 
-Alih-alih menyusun pertanyaan untuk formulir pelamar dari nol (kosong), sistem ATS ini telah menyediakan fitur **Template Standar** yang siap pakai dan disesuaikan dengan standar HR umum!
-
-**Cara Menggunakan Template Standar:**
-1. Masuk ke halaman **Custom Form** (melalui sidebar menu atau tombol form di halaman *Jobs*).
-2. Perhatikan *toolbar* melayang di sisi sebelah kanan layar Anda.
-3. Klik tombol berlogo sihir/bintang (✨) bernama **AI Template Generator**.
-4. Saat *pop-up* terbuka, **hiraukan kotak teks AI** dan langsung klik tombol **"Template Standar"** berwarna putih di sudut kiri bawah.
-5. **Selesai!** Sistem akan secara instan menghasilkan puluhan pertanyaan standar HR (Mulai dari *Identitas Diri, Pendidikan, Pengalaman Kerja,* hingga *Upload CV & Ijazah*).
-6. Anda bebas mengedit, menghapus, atau menggeser urutan pertanyaan tersebut sesuai kebutuhan sebelum mengklik **Simpan Form**.
-
-*Tips: Template standar ini sangat menghemat waktu Anda, terutama jika Anda sedang terburu-buru membuka lowongan baru tanpa perlu repot memikirkan susunan pertanyaan.*
+Alih-alih menyusun pertanyaan formulir pelamar dari nol (kosong), sistem ATS ini menyediakan **dua fitur pintasan** yang langsung terlihat di panel kiri (*sidebar*) halaman **Custom Form Builder**:
 
 ---
+
+### 🗂️ Fitur 1: Standard Template (Template Standar Siap Pakai)
+
+Tombol **Standard Template** menghasilkan susunan pertanyaan standar HR dalam hitungan detik — tanpa perlu koneksi internet atau API.
+
+**Cara Menggunakan:**
+1. Buka halaman **Custom Form** (melalui sidebar menu, atau klik **Form Builder** dari menu titik tiga (**⋮**) di kartu lowongan pada halaman *Jobs*).
+2. Pada panel **Form Elements** di sisi kiri, cari dan klik tombol **Standard Template** (berlabel seperti ikon dokumen).
+3. **Selesai!** Sistem langsung mengisi form dengan puluhan pertanyaan standar HR yang mencakup:
+   - **Identitas Diri** (Nama Lengkap, Email, Tanggal Lahir, Nomor Telepon)
+   - **Pendidikan** (Jenjang, Jurusan, Universitas, Tahun Lulus)
+   - **Pengalaman Kerja** (Riwayat Pekerjaan, Deskripsi Pengalaman)
+   - **Unggah Berkas** (CV & Ijazah)
+4. Anda bebas **mengedit, menghapus, atau menggeser urutan** pertanyaan tersebut sebelum mengklik **Simpan Form**.
+
+*💡 Tips: Fitur ini sangat menghemat waktu, terutama saat Anda sedang terburu-buru membuka lowongan baru.*
+
+---
+
+### 🤖 Fitur 2: Generate with AI (Buat dengan Kecerdasan Buatan)
+
+Tombol **Generate with AI** (berwarna ungu) menggunakan kecerdasan buatan untuk membuat pertanyaan formulir yang **disesuaikan secara cerdas** dengan deskripsi lowongan pekerjaan Anda.
+
+**Cara Menggunakan:**
+1. Buka halaman **Custom Form** pada lowongan yang sudah memiliki deskripsi jabatan.
+2. Pada panel **Form Elements** di sisi kiri, klik tombol **Generate with AI** (tombol berwarna ungu di bagian bawah panel).
+3. Sebuah *pop-up* akan muncul dengan kotak teks AI.
+4. Ketikkan atau tempel deskripsi singkat posisi yang ingin diisi (misalnya: *"Staf Administrasi yang bertugas mengelola berkas penelitian, laporan keuangan, dan koordinasi tim"*).
+5. Klik **Generate** dan tunggu beberapa detik.
+6. AI akan menghasilkan daftar pertanyaan yang relevan secara kontekstual dengan posisi tersebut.
+7. Tinjau hasilnya, lalu klik **Simpan Form**.
+
+*💡 Tips: Fitur AI ini sangat berguna saat Anda membuka posisi unik/teknis yang tidak tercakup oleh template standar, misalnya posisi Peneliti, Analis Data, atau Teknisi Laboratorium.*
+
+---
+
+
 
 ## 5. Sistem Pembuatan Formulir (Custom Form Builder)
 
