@@ -178,6 +178,80 @@ class extends Component
 
     // ── Inline Edit Helpers ────────────────────────────────────────
     
+    public function generateAITemplate()
+    {
+        $this->validate([
+            'aiPrompt' => 'required|string|min:5'
+        ]);
+
+        $apiKey = env('GEMINI_API_KEY');
+        if (!$apiKey) {
+            $this->addError('aiPrompt', 'GEMINI_API_KEY belum dikonfigurasi di file .env');
+            return;
+        }
+
+        $systemPrompt = "You are a professional HR assistant. The user wants to generate a job application form questionnaire. 
+Respond ONLY with a valid JSON array of objects representing the form fields. 
+Available field types: 'section', 'text', 'textarea', 'radio', 'checkbox', 'date', 'number', 'file'.
+Each field object must have:
+- 'id': a unique string starting with 'field_' (e.g. 'field_' + uniqueid)
+- 'type': one of the types above
+- 'label': the question text or section title
+- 'description': (optional) string
+- 'required': boolean
+- 'options': array of strings (ONLY if type is 'radio' or 'checkbox')
+
+Do not use markdown blocks like ```json ... ```. Just return the raw JSON array.
+User prompt: " . $this->aiPrompt;
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $apiKey, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $systemPrompt]
+                        ]
+                    ]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+                
+                if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+                    $jsonText = $result['candidates'][0]['content']['parts'][0]['text'];
+                    // Clean up markdown if any
+                    $jsonText = preg_replace('/```json\s*/', '', $jsonText);
+                    $jsonText = preg_replace('/```\s*/', '', $jsonText);
+                    $jsonText = trim($jsonText);
+                    
+                    $fields = json_decode($jsonText, true);
+                    
+                    if (is_array($fields) && !empty($fields)) {
+                        $this->fields = $fields;
+                        $this->editingIndex = null;
+                        $this->pushHistory();
+                        $this->saveForm();
+                        $this->aiModalOpen = false;
+                        $this->aiPrompt = '';
+                        $this->dispatch('notify', 'Form berhasil dibuat oleh AI!');
+                    } else {
+                        $this->addError('aiPrompt', 'AI mengembalikan format yang tidak valid. Coba lagi.');
+                    }
+                } else {
+                    $this->addError('aiPrompt', 'Respons AI tidak sesuai format (kosong). Coba lagi.');
+                }
+            } else {
+                $errorMsg = $response->json('error.message') ?? 'Gagal menghubungi API Google Gemini.';
+                $this->addError('aiPrompt', 'API Error: ' . $errorMsg);
+            }
+        } catch (\Exception $e) {
+            $this->addError('aiPrompt', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
     public function loadStandardTemplate()
     {
         $this->fields = [
@@ -1850,7 +1924,7 @@ Example output format:
             </div>
             
             <div class="p-6">
-                <div class="hidden">
+                <div>
                     <p class="text-sm text-secondary mb-4">
                         Ketikkan instruksi Anda, dan biarkan AI merancang kuesioner form secara otomatis. <br/>
                         <span class="text-error font-semibold text-xs mt-1 block">PERHATIAN: Membuat form via AI akan menggantikan/menimpa semua pertanyaan Anda saat ini!</span>
@@ -1870,7 +1944,7 @@ Example output format:
                         <button wire:click="$set('aiModalOpen', false)" class="px-4 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors text-sm border border-surface-border">
                             Batal
                         </button>
-                        <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="hidden px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button wire:click="generateAITemplate" wire:loading.attr="disabled" class="px-5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-lg font-semibold text-sm transition-opacity shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="generateAITemplate" class="material-symbols-outlined text-[18px]">auto_awesome</span>
                             <span wire:loading wire:target="generateAITemplate" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                             <span wire:loading.remove wire:target="generateAITemplate">Generate (AI)</span>
