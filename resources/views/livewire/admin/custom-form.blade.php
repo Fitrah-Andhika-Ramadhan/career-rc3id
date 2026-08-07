@@ -715,7 +715,7 @@ User prompt: " . $this->aiPrompt;
             
             // Dispatch event to open the preview in a new tab
             $jobInstance = Job::find($this->selectedJobId);
-            $this->dispatch('form-saved', route('jobs.apply', $jobInstance ?: $this->selectedJobId));
+            $this->dispatch('form-saved', $jobInstance ? route('jobs.apply', $jobInstance) : ($this->selectedJob ? route('jobs.apply', $this->selectedJob) : '#'));
         }
     }
 
@@ -771,7 +771,7 @@ User prompt: " . $this->aiPrompt;
                 <button @click="themeModalOpen = true" class="p-2 text-secondary hover:bg-surface-container hover:text-on-surface rounded-full transition-colors flex items-center justify-center" title="Customize Theme">
                     <span class="material-symbols-outlined text-[20px]">palette</span>
                 </button>
-                <a href="{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}" target="_blank" title="Preview"
+                <a href="{{ $selectedJob ? route('jobs.apply', $selectedJob) : '#' }}" target="_blank" title="Preview"
                    class="p-2 text-secondary hover:bg-surface-container hover:text-on-surface rounded-full transition-colors flex items-center justify-center">
                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                 </a>
@@ -781,7 +781,7 @@ User prompt: " . $this->aiPrompt;
                 <button wire:click="redo" @if($historyIndex >= count($historyFields) - 1) disabled @endif class="p-2 text-secondary hover:bg-surface-container hover:text-on-surface rounded-full transition-colors flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed" title="Redo">
                     <span class="material-symbols-outlined text-[20px]">redo</span>
                 </button>
-                <button @click="Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'})" 
+                <button @click="Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ $selectedJob ? route('jobs.apply', $selectedJob) : '#' }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'})" 
                    class="p-2 text-secondary hover:bg-surface-container hover:text-on-surface rounded-full transition-colors flex items-center justify-center" title="Get link">
                     <span class="material-symbols-outlined text-[20px]">link</span>
                 </button>
@@ -840,7 +840,7 @@ User prompt: " . $this->aiPrompt;
                             <button @click="publishModalOpen = false" class="px-4 py-2 text-primary hover:bg-surface-container rounded-md font-medium text-sm transition-colors">
                                 Dismiss
                             </button>
-                            <button @click="Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ route('jobs.apply', \App\Models\Job::find($selectedJobId)) }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'}); publishModalOpen = false;" class="px-6 py-2 bg-[#007b5e] hover:bg-[#00664d] text-white rounded-md font-medium text-sm transition-colors">
+                            <button @click="Swal.fire({title: 'Link Form Pendaftaran', input: 'text', inputValue: '{{ $selectedJob ? route('jobs.apply', $selectedJob) : '#' }}', customClass: {input: 'bg-surface-container-low border-surface-border text-on-surface'}, confirmButtonText: 'Tutup', confirmButtonColor: 'var(--color-primary, #005bbf)'}); publishModalOpen = false;" class="px-6 py-2 bg-[#007b5e] hover:bg-[#00664d] text-white rounded-md font-medium text-sm transition-colors">
                                 Publish
                             </button>
                         </div>
