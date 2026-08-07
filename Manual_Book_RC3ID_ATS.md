@@ -13,6 +13,7 @@ Buku panduan ini merupakan dokumentasi lengkap mengenai penggunaan aplikasi **RC
 5. [Sistem Pembuatan Formulir (Custom Form Builder)](#5-sistem-pembuatan-formulir-custom-form-builder)
 6. [Manajemen Pelamar (Candidate Submissions)](#6-manajemen-pelamar-candidate-submissions)
 7. [Manajemen Data Ekspor & Alur ATS (Opsi 1 & 2)](#7-manajemen-data-ekspor--alur-ats-opsi-1--2)
+   - 7.1 [Integrasi Google Sheets (Connect Spreadsheet)](#71-integrasi-google-sheets-connect-spreadsheet)
 8. [Pengaturan Sistem (Settings) & Integrasi Email](#8-pengaturan-sistem-settings--integrasi-email)
 9. [Manajemen Pencadangan Data (Local Backup)](#9-manajemen-pencadangan-data-local-backup)
 10. [Sistem Permohonan Akses (Permission Requests)](#10-sistem-permohonan-akses-permission-requests)
@@ -64,7 +65,7 @@ Setelah berhasil login, Anda akan disambut oleh halaman **Dashboard**.
 - **Daftar Pekerjaan Terbaru:** Jalan pintas untuk melihat lowongan mana yang sedang ramai pendaftar.
 
 ### Sidebar Navigasi:
-Sidebar (Menu Samping) dirancang menggunakan ikon *Google Material Symbols*. Beberapa menu akan tampak terkunci (ditandai dengan ikon gembok kecil 🔒) jika pengguna Anda saat ini belum diberikan izin akses (*Permission*) untuk membuka halaman tersebut.
+Sidebar (Menu Samping) dirancang menggunakan ikon *Google Material Symbols*. Sistem menampilkan menu yang sesuai dengan izin pengguna — menu yang tidak memiliki izin akses akan **disembunyikan otomatis** agar tampilan *dashboard* selalu bersih dan terfokus sesuai peran (Role) masing-masing pengguna.
 
 ---
 
@@ -141,18 +142,34 @@ Tombol **Generate with AI** (berwarna ungu) menggunakan kecerdasan buatan untuk 
 
 ## 5. Sistem Pembuatan Formulir (Custom Form Builder)
 
-Aplikasi ATS ini sangat canggih karena tidak mengandalkan formulir statis. Anda dapat merancang formulir Anda sendiri untuk setiap lowongan!
+Aplikasi ATS ini sangat canggih karena tidak mengandalkan formulir statis. Setiap lowongan pekerjaan dapat memiliki desain form-nya sendiri yang unik, sehingga pertanyaan yang dijawab pelamar *Staff Administrasi* akan berbeda strukturnya dari pelamar *Software Engineer*.
 
-1. Buka halaman **Custom Form** (`/admin/custom-form`).
-2. Di sebelah kiri, pilih Lowongan (Job) mana yang ingin Anda buatkan formulirnya.
-3. Di tengah halaman, terdapat **Form Builder**. Anda dapat:
-   - Menambahkan Teks Pendek (Short Text).
-   - Menambahkan Area Teks Panjang (Long Text).
-   - Menambahkan Pilihan Ganda (Dropdown / Radio Buttons).
-   - Menentukan apakah pertanyaan tersebut **Wajib Diisi (Required)** atau opsional.
-4. Di sisi kanan layar, Anda dapat melihat **Live Preview** (Pratinjau Langsung) bagaimana bentuk formulir tersebut saat dilihat oleh pelamar.
+### Cara Membuka Form Builder:
+1. Buka halaman **Custom Form** (`/admin/custom-form`), atau
+2. Dari halaman **Jobs**, klik ikon titik tiga (**⋮**) di pojok kanan bawah kartu lowongan → pilih **Form Builder**.
+3. Pilih Lowongan mana yang ingin Anda buatkan formulirnya dari *dropdown* di bagian atas.
 
-Sistem *Builder* menggunakan fungsionalitas tarik-dan-lepas (*Drag-and-Drop*), sehingga Anda dapat menyusun urutan pertanyaan dengan mudah.
+### Panel Form Elements (Kiri):
+Di panel sebelah kiri, terdapat komponen-komponen yang bisa Anda tambahkan:
+- **Add Question** — Menambahkan pertanyaan dengan tipe: Teks Singkat, Teks Panjang, Dropdown, Radio, Checkbox, hingga Upload Berkas.
+- **Add Text Block** — Menyisipkan blok teks keterangan/instruksi bagi pelamar (non-pertanyaan).
+- **Add Section** — Membagi form menjadi beberapa bagian bertema (misal: "Identitas Diri", "Riwayat Pendidikan").
+- **Import Fields** — Mengimpor pertanyaan dari lowongan lain yang sudah ada (duplikasi cerdas).
+- **Standard Template** — Lihat **Bagian 4.1** di atas.
+- **Generate with AI** — Lihat **Bagian 4.1** di atas.
+
+### Area Form Builder (Tengah):
+Setelah menambahkan elemen, mereka muncul di kanvas tengah. Anda dapat:
+- **Menggeser urutan** pertanyaan dengan *Drag-and-Drop* (seret-dan-lepas).
+- **Mengedit label** pertanyaan dengan klik langsung pada teksnya.
+- **Menandai wajib diisi** (*Required*) dengan mengaktifkan *toggle* di kartu pertanyaan.
+- **Menghapus** pertanyaan yang tidak relevan.
+
+### Live Preview (Kanan):
+Di sisi kanan layar, tersedia **Live Preview** (Pratinjau Langsung). Setiap perubahan yang Anda lakukan di Builder akan langsung terpantul di sini, persis seperti yang akan dilihat oleh pelamar nantinya.
+
+### Menyimpan Form:
+Klik tombol hijau **Simpan Form** di pojok kanan bawah. Formulir langsung aktif dan siap diisi pelamar melalui URL publik lowongan tersebut.
 
 ---
 
@@ -182,10 +199,21 @@ Aplikasi ini memiliki sistem *Kanban-style Pipeline* (meski ditampilkan dalam ta
 
 ## 7. Manajemen Data Ekspor & Alur ATS (Opsi 1 & Opsi 2)
 
-Bagian ini merupakan fitur eksklusif terpenting untuk integrasi alur kerja (Workflow) dengan tim penyeleksi / HRD pusat. Terdapat dua langkah atau opsi utama dalam siklus distribusi berkas:
+Bagian ini merupakan fitur eksklusif terpenting untuk integrasi alur kerja (Workflow) dengan tim penyeleksi / HRD pusat. Terdapat berbagai cara ekspor data yang tersedia:
 
-### Langkah Awal: Ekspor Data Mentah
-Anda dapat melakukan ekspor data secara massal melalui format CSV (untuk *spreadsheet* / Excel) atau melalui Export ZIP canggih.
+### Ekspor Cepat (Per Lowongan) — Dari Halaman Jobs
+Untuk mengekspor data satu lowongan spesifik secara langsung tanpa harus masuk ke halaman Submissions:
+1. Buka halaman **Jobs** (`/admin/jobs`).
+2. Klik ikon titik tiga (**⋮**) di pojok kartu lowongan yang ingin diekspor.
+3. Pilih salah satu opsi:
+   - **Export Excel** — Unduh data pelamar dalam format `.xlsx`. Struktur kolomnya **disesuaikan otomatis** dengan pertanyaan (*custom fields*) yang ada di form lowongan tersebut.
+   - **Export Google Sheets** — Sinkronisasi data langsung ke Google Spreadsheet yang terhubung. Sistem akan membuat *spreadsheet* baru jika belum ada, atau memperbarui (*sync*) yang sudah ada.
+   - **Export ZIP Data** — Unduh seluruh berkas (PDF Profil + CV + Ijazah) dalam satu file `.zip` terorganisir.
+
+> 💡 **Mengapa Ekspor Per Lowongan Lebih Akurat?** Setiap form lowongan bisa memiliki pertanyaan (*custom fields*) yang berbeda-beda. Saat diekspor "All" (semua lowongan), struktur kolomnya dipaksakan seragam yang bisa membingungkan. Ekspor per lowongan memastikan setiap kolom Excel/Sheets **persis mewakili** pertanyaan yang ada di form-nya.
+
+### Ekspor Massal (Semua Lowongan) — Dari Halaman Submissions
+Anda juga dapat melakukan ekspor data secara massal melalui halaman Candidate Submissions:
 
 ### OPSI 1: UNDUH ATS (Advanced ZIP Export)
 Jika Anda memiliki ratusan kandidat dan ingin membukanya tanpa harus terkoneksi internet (Offline), Anda dapat menekan tombol **"Export ZIP (ATS)"**. Fitur ini berjalan sangat ringan, diciptakan langsung di memori (*on-the-fly*), dan otomatis musnah dari server begitu unduhan selesai (sehingga tidak membebani kapasitas *disk space* server Anda).
@@ -225,6 +253,83 @@ Untuk mengirimkan file ZIP terkurasi (hasil seleksi final) tersebut ke manajer H
 
 Sistem akan mengunggah file Anda dan langsung membungkusnya ke dalam email resmi untuk dikirimkan kepada alamat HR Pusat yang Anda daftarkan di Opsi 1.
 *Catatan: Pastikan file ZIP Anda tidak melebihi 25 MB, karena server email global rata-rata menolak lampiran yang melebihi ukuran 25 MB.*
+
+---
+
+## 7.1. Integrasi Google Sheets (Connect Spreadsheet)
+
+Sistem RC3ID ATS memiliki fitur **integrasi langsung dengan Google Sheets** — data pelamar dapat diekspor secara otomatis dan real-time ke sebuah Google Spreadsheet yang terhubung ke akun Google Anda.
+
+> ⚠️ **Prasyarat:** Fitur ini membutuhkan satu kali *otorisasi* (izin akses) ke akun Google. Otorisasi ini hanya perlu dilakukan **sekali** oleh Super Admin, dan hasilnya tersimpan permanen di sistem.
+
+---
+
+### Langkah 1: Otorisasi Akun Google (Hanya Sekali)
+
+1. Masuk ke halaman **Settings** (`/admin/settings`).
+2. Cari bagian **Google Sheets Integration** atau **Connect to Google**.
+3. Klik tombol **Connect to Google** / **Authorize Google Sheets**.
+4. Browser Anda akan diarahkan ke halaman login Google. Pilih akun Google yang ingin digunakan sebagai pemilik Spreadsheet.
+5. Klik **Allow / Izinkan** untuk memberikan akses kepada sistem ATS.
+6. Anda akan diarahkan kembali ke aplikasi dan mendapat konfirmasi bahwa akun Google berhasil terhubung ✅.
+
+*Setelah langkah ini selesai, seluruh pengguna (HR dan Admin) dapat menggunakan fitur ekspor Google Sheets tanpa perlu login Google lagi.*
+
+---
+
+### Langkah 2: Membuat & Menyambungkan Spreadsheet ke Lowongan
+
+Ada **dua cara** untuk menghubungkan Spreadsheet ke sistem:
+
+#### 📋 Cara A: Dari Halaman Jobs (Per Lowongan)
+1. Buka halaman **Jobs** (`/admin/jobs`).
+2. Klik ikon titik tiga (**⋮**) di pojok kartu lowongan yang diinginkan.
+3. Pilih **Export Google Sheets**.
+4. Jika lowongan ini belum memiliki Spreadsheet:
+   - Sistem otomatis **membuat Spreadsheet baru** di Google Drive akun yang terhubung.
+   - Nama Spreadsheet: `ATS Responses - [Nama Lowongan]`.
+   - Header kolom akan disesuaikan **persis dengan pertanyaan** (*custom fields*) form lowongan tersebut.
+5. Jika Spreadsheet sudah ada sebelumnya: Sistem akan melakukan **sinkronisasi ulang** (overwrite) seluruh data terbaru.
+6. Setelah selesai, akan muncul *pop-up* konfirmasi dengan tautan langsung ke Spreadsheet. Klik **"Buka Spreadsheet"** untuk membukanya.
+
+#### 🌐 Cara B: Dari Halaman Candidate Submissions (Semua Lowongan)
+1. Buka halaman **Candidate Submissions** (`/admin/submissions`).
+2. Di bagian atas kanan, klik tombol hijau **Google Sheets**.
+3. Pilih dari dua opsi yang muncul:
+   - **Buat Spreadsheet Baru** — Sistem membuat 1 *Master Spreadsheet* berisi banyak *tab* (satu tab per lowongan).
+   - **Sinkronisasi Ulang** — Memperbarui data di Spreadsheet yang sudah ada.
+4. Klik **"Buka Spreadsheet"** pada notifikasi yang muncul.
+
+---
+
+### Struktur Kolom Spreadsheet
+
+| Kolom | Keterangan |
+|---|---|
+| **ID** | Nomor urut lamaran di database |
+| **Nama Kandidat** | Nama lengkap pelamar |
+| **Email** | Alamat email pelamar |
+| **Telepon** | Nomor HP pelamar |
+| **Posisi Dilamar** | Nama lowongan pekerjaan |
+| **Departemen** | Departemen/divisi lowongan |
+| **Status** | Status Pipeline (Applied, Screening, Interview, Hired, Rejected) |
+| **Tanggal Melamar** | Waktu pengiriman formulir |
+| *[Kolom Custom]* | Jawaban atas pertanyaan khusus sesuai form masing-masing lowongan |
+
+> 💡 **Poin Penting:** Kolom pada baris terakhir tabel di atas (*Kolom Custom*) akan berbeda-beda tergantung lowongannya. Inilah mengapa **Ekspor Per Lowongan** menghasilkan format yang lebih rapi dibanding ekspor massal.
+
+---
+
+### FAQ Google Sheets
+
+**Q: Apakah Spreadsheet otomatis terupdate saat ada pelamar baru masuk?**
+A: Tidak secara *real-time* otomatis. Anda perlu menekan tombol **Sinkronisasi Ulang** (🔄) secara manual setiap kali ingin mendapatkan data terbaru di Spreadsheet.
+
+**Q: Akun Google mana yang sebaiknya digunakan untuk otorisasi?**
+A: Gunakan akun Google yang dimiliki oleh instansi/organisasi (misalnya akun `@unpad.ac.id` atau `@kemenkes.go.id`), agar Spreadsheet tersimpan di Google Drive instansi dan dapat diakses bersama tim.
+
+**Q: Apakah Spreadsheet yang dibuat bisa dibagikan ke orang lain?**
+A: Ya. Spreadsheet yang dibuat oleh sistem secara otomatis sudah diatur sebagai *anyone with the link can write*, sehingga siapa saja yang memegang tautannya dapat melihat dan mengedit data tersebut.
 
 ---
 
@@ -303,6 +408,12 @@ A: Sistem tautan PDF tersebut menggunakan teknik navigasi *Relative Path URL* ya
 
 **Q: Saya tidak sengaja menghapus Lowongan yang sudah memiliki pelamar.**
 A: Sistem RC3ID ATS kami memberlakukan *Cascading Delete*. Jika sebuah Lowongan Pekerjaan (Job) Anda hapus permanen, maka SELURUH berkas pelamar (Candidate Submissions) dan CV/Media terkait lamaran tersebut **akan ikut musnah** guna memastikan tidak ada file yatim-piatu (*orphan files*) yang menumpuk di server Hostinger. Harap gunakan fitur edit status menjadi "Draft" (disembunyikan) alih-alih menghapusnya jika masih memerlukan histori pelamar.
+
+**Q: Fitur Google Sheets tidak muncul / tombol Google Sheets berwarna abu-abu dan tidak bisa diklik.**
+A: Kemungkinan besar akun Google belum diotorisasi. Minta Super Admin untuk membuka halaman **Settings** dan klik **Connect to Google** untuk menghubungkan akun Google terlebih dahulu. Setelah berhasil terotorisasi, tombol akan aktif kembali.
+
+**Q: Spreadsheet sudah dibuat tapi datanya tidak lengkap / kolom berantakan.**
+A: Ini terjadi jika form lowongan telah diubah (pertanyaan ditambah/dihapus) setelah Spreadsheet pertama kali dibuat. Lakukan **Sinkronisasi Ulang** dari halaman Submissions atau Jobs untuk memperbarui header kolom sesuai form terbaru.
 
 ---
 
