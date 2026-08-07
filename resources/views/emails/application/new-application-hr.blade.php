@@ -46,16 +46,20 @@ Halo **Tim HR**,
 @endif
 @endforeach
 </x-mail::panel>
+@endif
 
+{{-- File lampiran SELALU tampil (di luar gating MAIL_INCLUDE_FULL_DATA) --}}
+{{-- Link pakai /download/media/{uuid} agar tidak 403 di Hostinger (symlink diblokir) --}}
 @if($application->hasMedia('documents'))
 <x-mail::panel>
-**📁 File Lampiran**
+**📁 File Lampiran Kandidat**
 
 @foreach($application->getMedia('documents') as $media)
-- [{{ $media->file_name }}]({{ $media->getUrl() }})
+- [📄 {{ $media->file_name }}]({{ url('/download/media/' . $media->uuid) }})
 @endforeach
+
+> ⚠️ Jika link di atas tidak bisa dibuka, silakan login ke Dasbor Admin untuk mengunduh langsung.
 </x-mail::panel>
-@endif
 @endif
 
 Silakan klik tombol di bawah ini untuk langsung meninjau lamaran dan dokumen pelamar di Dasbor Admin:
