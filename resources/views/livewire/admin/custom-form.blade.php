@@ -964,7 +964,22 @@ Example output format:
         <div class="flex-1 max-w-3xl w-full mt-4 space-y-6 relative pb-24">
 
             {{-- Form Header (Editable) - Google Forms Style --}}
-            <div x-data="{ focused: false }" class="bg-white rounded-lg shadow-sm mb-6 relative transition-all border border-surface-border"
+            <div x-data="{ 
+                focused: false,
+                desc: @entangle('jobDescription').live,
+                format(cmd, value = null) {
+                    document.execCommand(cmd, false, value);
+                    this.$refs.editor.focus();
+                },
+                removeFormat() {
+                    document.execCommand('removeFormat', false, null);
+                    // Also strip all tags just in case
+                    let text = this.$refs.editor.innerText;
+                    this.$refs.editor.innerHTML = text;
+                    this.desc = text;
+                }
+            }" 
+            class="bg-white rounded-lg shadow-sm mb-6 relative transition-all border border-surface-border"
                  :class="focused ? 'border-l-4 border-l-primary' : 'border-l border-l-surface-border'"
                  style="border-top: 8px solid {{ $primaryColor }}; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                  
@@ -975,21 +990,23 @@ Example output format:
                                class="w-full text-3xl font-normal text-on-surface mb-1 bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 focus:outline-none transition-colors pb-1" 
                                placeholder="Form title">
                         
-                        {{-- Mock formatting toolbar --}}
+                        {{-- Functional formatting toolbar --}}
                         <div x-show="focused" class="flex items-center gap-1 text-secondary pt-1 transition-opacity">
-                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded font-bold w-8 h-8 flex items-center justify-center text-sm">B</button>
-                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded italic w-8 h-8 flex items-center justify-center text-sm">I</button>
-                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded underline w-8 h-8 flex items-center justify-center text-sm">U</button>
-                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">link</span></button>
-                            <button onclick="alert('Fitur format Rich-text sedang dalam pengembangan.')" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_clear</span></button>
+                            <button @mousedown.prevent="format('bold')" class="p-1.5 hover:bg-surface-container rounded font-bold w-8 h-8 flex items-center justify-center text-sm">B</button>
+                            <button @mousedown.prevent="format('italic')" class="p-1.5 hover:bg-surface-container rounded italic w-8 h-8 flex items-center justify-center text-sm">I</button>
+                            <button @mousedown.prevent="format('underline')" class="p-1.5 hover:bg-surface-container rounded underline w-8 h-8 flex items-center justify-center text-sm">U</button>
+                            <button @mousedown.prevent="let url = prompt('Enter URL:'); if(url) format('createLink', url);" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">link</span></button>
+                            <button @mousedown.prevent="removeFormat()" class="p-1.5 hover:bg-surface-container rounded w-8 h-8 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">format_clear</span></button>
                         </div>
                     </div>
                     
-                    <div class="mt-4 group relative">
-                        <textarea wire:model.blur="jobDescription" 
-                                  @focus="focused = true" @blur="focused = false"
-                                  class="w-full text-sm text-on-surface-variant bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 resize-none focus:outline-none leading-relaxed transition-colors pb-1" 
-                                  rows="2" placeholder="Form description"></textarea>
+                    <div class="mt-4 group relative" x-init="$refs.editor.innerHTML = desc || ''; $watch('desc', val => { if(document.activeElement !== $refs.editor) $refs.editor.innerHTML = val || ''; })">
+                        <div x-ref="editor" 
+                             contenteditable="true"
+                             @focus="focused = true" @blur="focused = false"
+                             @input="desc = $refs.editor.innerHTML"
+                             class="w-full text-sm text-on-surface-variant bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 focus:outline-none leading-relaxed transition-colors pb-1 min-h-[40px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50" 
+                             placeholder="Form description"></div>
                     </div>
                 </div>
             </div>

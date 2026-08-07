@@ -149,9 +149,23 @@ Route::get('/google/callback', [\App\Http\Controllers\GoogleIntegrationControlle
 Route::get('/download/media/{uuid}', function ($uuid) {
     $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('uuid', $uuid)->firstOrFail();
     $path = $media->getPath();
+    
     if (!file_exists($path)) {
+        // Fallback 1: Coba baca pakai Storage disk secara fallback (Flysystem)
+        $storagePath = $media->id . '/' . $media->file_name;
+        if (\Illuminate\Support\Facades\Storage::disk($media->disk)->exists($storagePath)) {
+            return \Illuminate\Support\Facades\Storage::disk($media->disk)->download($storagePath, $media->file_name);
+        }
+        
+        // Fallback 2: Coba cari di storage/app/public/... manual
+        $manualPath = storage_path('app/public/' . $media->id . '/' . $media->file_name);
+        if (file_exists($manualPath)) {
+            return response()->download($manualPath, $media->file_name);
+        }
+        
         abort(404, 'Berkas fisik tidak ditemukan di server.');
     }
+    
     return response()->download($path, $media->file_name);
 })->name('media.download');
 
