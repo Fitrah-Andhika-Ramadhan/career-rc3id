@@ -56,5 +56,15 @@ class RolePermissionSeeder extends Seeder
             ]
         );
         $commUser->assignRole('Admin');
+
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'HR']);
+        $hrUser = \App\Models\User::firstOrCreate(
+            ['email' => 'cl.rc3id+hr@unpad.ac.id'],
+            [
+                'name' => 'HR Staff',
+                'password' => \Illuminate\Support\Facades\Hash::make('Rc31d@HR2026!')
+            ]
+        );
+        $hrUser->assignRole('HR');
     }
 }
