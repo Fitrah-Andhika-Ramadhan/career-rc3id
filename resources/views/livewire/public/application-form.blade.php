@@ -710,7 +710,7 @@ class extends Component
                 <span class="material-symbols-outlined text-primary text-[32px]">work</span>
             </div>
             <div>
-                <h1 class="font-headline-xl text-headline-xl text-on-surface mb-3 font-bold">{{ $job->title }}</h1>
+                <h1 class="font-headline-xl text-headline-xl text-on-surface mb-3 font-bold">{!! $job->title !!}</h1>
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-bg border border-surface-border text-secondary text-xs font-semibold shadow-sm">
                         <span class="material-symbols-outlined text-[14px]">domain</span> {{ $job->department }}

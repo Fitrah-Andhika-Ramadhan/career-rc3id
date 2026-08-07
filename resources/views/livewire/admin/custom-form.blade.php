@@ -969,14 +969,9 @@ Example output format:
                 desc: @entangle('jobDescription').live,
                 format(cmd, value = null) {
                     document.execCommand(cmd, false, value);
-                    this.$refs.editor.focus();
                 },
                 removeFormat() {
                     document.execCommand('removeFormat', false, null);
-                    // Also strip all tags just in case
-                    let text = this.$refs.editor.innerText;
-                    this.$refs.editor.innerHTML = text;
-                    this.desc = text;
                 }
             }" 
             class="bg-white rounded-lg shadow-sm mb-6 relative transition-all border border-surface-border"
@@ -984,11 +979,13 @@ Example output format:
                  style="border-top: 8px solid {{ $primaryColor }}; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                  
                 <div class="p-6">
-                    <div class="group relative">
-                        <input type="text" wire:model.blur="jobTitle" 
-                               @focus="focused = true" @blur="focused = false"
-                               class="w-full text-3xl font-normal text-on-surface mb-1 bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 focus:outline-none transition-colors pb-1" 
-                               placeholder="Form title">
+                    <div class="group relative" x-data="{ titleVal: @entangle('jobTitle').live }">
+                        <div contenteditable="true"
+                             @input="titleVal = $event.target.innerHTML"
+                             @focus="focused = true" @blur="focused = false"
+                             x-init="$el.innerHTML = titleVal || ''; $watch('titleVal', v => { if(document.activeElement !== $el) $el.innerHTML = v || ''; })"
+                             class="w-full text-3xl font-normal text-on-surface mb-1 bg-transparent border-b border-transparent focus:border-surface-border focus:border-b focus:ring-0 p-0 focus:outline-none transition-colors pb-1 min-h-[40px] empty:before:content-[attr(placeholder)] empty:before:text-secondary/50" 
+                             placeholder="Form title"></div>
                         
                         {{-- Functional formatting toolbar --}}
                         <div x-show="focused" class="flex items-center gap-1 text-secondary pt-1 transition-opacity">
