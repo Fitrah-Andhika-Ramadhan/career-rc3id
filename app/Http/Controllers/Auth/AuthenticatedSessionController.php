@@ -40,18 +40,15 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         // Dynamic redirection based on role
-        $customRedirectUrl = env('LOGIN_REDIRECT_URL');
-        if (!empty($customRedirectUrl)) {
-            return redirect()->intended($customRedirectUrl);
-        }
-
         if ($user->hasRole('Super Admin')) {
-            return redirect()->intended(route('dashboard', absolute: false));
+            $custom = env('LOGIN_REDIRECT_SUPER_ADMIN');
+            return redirect()->intended(!empty($custom) ? $custom : route('dashboard', absolute: false));
         } elseif ($user->hasRole('Admin')) {
-            // CNL Admin langsung ke halaman Jobs
-            return redirect()->intended(route('admin.jobs.index', absolute: false));
+            $custom = env('LOGIN_REDIRECT_ADMIN');
+            return redirect()->intended(!empty($custom) ? $custom : route('admin.jobs.index', absolute: false));
         } elseif ($user->hasRole('HR') || $user->can('access submissions')) {
-            return redirect()->intended(route('admin.submissions.index', absolute: false));
+            $custom = env('LOGIN_REDIRECT_HR');
+            return redirect()->intended(!empty($custom) ? $custom : route('admin.submissions.index', absolute: false));
         }
 
         // Default fallback

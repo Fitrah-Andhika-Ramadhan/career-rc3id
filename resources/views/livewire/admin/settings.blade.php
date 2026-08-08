@@ -18,10 +18,11 @@ class extends Component
     public $app_subtitle = '';
     public $restrict_one_apply = true;
     public $primary_color = '#005bbf';
-    public $hero_overlay_opacity = '0.8';
     public $super_admin_reset_email = '';
     public $footer_text = '';
-    public $login_redirect_url = '';
+    public $login_redirect_super_admin = '';
+    public $login_redirect_admin = '';
+    public $login_redirect_hr = '';
 
     public $mail_mailer = '';
     public $mail_host = '';
@@ -61,7 +62,9 @@ class extends Component
         $this->hero_overlay_opacity = env('HERO_OVERLAY_OPACITY', '0.8');
         $this->super_admin_reset_email = env('SUPER_ADMIN_RESET_EMAIL', 'fitrahramadhan310@gmail.com');
         $this->footer_text = env('FOOTER_TEXT', 'recruitment portal. All rights reserved.');
-        $this->login_redirect_url = env('LOGIN_REDIRECT_URL', '/admin/dashboard');
+        $this->login_redirect_super_admin = env('LOGIN_REDIRECT_SUPER_ADMIN', '');
+        $this->login_redirect_admin = env('LOGIN_REDIRECT_ADMIN', '');
+        $this->login_redirect_hr = env('LOGIN_REDIRECT_HR', '');
 
         $this->mail_mailer = env('MAIL_MAILER', 'smtp');
         $this->mail_host = env('MAIL_HOST', '127.0.0.1');
@@ -170,10 +173,11 @@ class extends Component
             'restrict_one_apply' => 'boolean',
             'primary_color' => 'required|string|size:7', // expects #RRGGBB
             'hero_overlay_opacity' => 'required|numeric|min:0|max:1',
-            'hero_overlay_opacity' => 'required|numeric|min:0|max:1',
             'super_admin_reset_email' => 'nullable|email',
             'footer_text' => 'required|string|max:255',
-            'login_redirect_url' => 'nullable|string',
+            'login_redirect_super_admin' => 'nullable|string',
+            'login_redirect_admin' => 'nullable|string',
+            'login_redirect_hr' => 'nullable|string',
         ]);
 
         $this->updateEnv([
@@ -184,10 +188,11 @@ class extends Component
             'RESTRICT_ONE_APPLY' => $this->restrict_one_apply ? 'true' : 'false',
             'PRIMARY_COLOR' => $this->primary_color,
             'HERO_OVERLAY_OPACITY' => $this->hero_overlay_opacity,
-            'HERO_OVERLAY_OPACITY' => $this->hero_overlay_opacity,
             'SUPER_ADMIN_RESET_EMAIL' => $this->super_admin_reset_email,
             'FOOTER_TEXT' => $this->footer_text,
-            'LOGIN_REDIRECT_URL' => $this->login_redirect_url,
+            'LOGIN_REDIRECT_SUPER_ADMIN' => $this->login_redirect_super_admin,
+            'LOGIN_REDIRECT_ADMIN' => $this->login_redirect_admin,
+            'LOGIN_REDIRECT_HR' => $this->login_redirect_hr,
         ]);
 
         Artisan::call('config:clear');
@@ -700,10 +705,25 @@ class extends Component
                             @error('super_admin_reset_email') <span class="text-error text-sm">{{ $message }}</span> @enderror
                         </div>
                         <div class="pt-4 mt-stack-md border-t border-surface-border">
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2">Post-Login Redirect URL</label>
-                            <input wire:model="login_redirect_url" type="text" class="w-full md:w-1/2 px-4 py-2 border border-surface-border rounded-lg bg-surface-container-low focus:ring-primary focus:border-primary" placeholder="Contoh: /admin/dashboard atau /admin/jobs">
-                            <p class="text-xs text-secondary mt-1">URL tujuan bagi Super Admin dan Admin setelah berhasil Login (biarkan kosong untuk default).</p>
-                            @error('login_redirect_url') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                            <label class="font-label-md text-label-md text-on-surface-variant block mb-4">Pengaturan Post-Login Redirect URL per Jabatan (Role)</label>
+                            
+                            <div class="space-y-4">
+                                <div class="flex flex-col md:flex-row md:items-center gap-2">
+                                    <span class="w-48 font-semibold text-sm text-secondary">Super Admin Redirect:</span>
+                                    <input wire:model="login_redirect_super_admin" type="text" class="flex-1 px-4 py-2 border border-surface-border rounded-lg bg-surface-container-low focus:ring-primary focus:border-primary" placeholder="Contoh: /admin/dashboard (Biarkan kosong untuk default)">
+                                </div>
+                                <div class="flex flex-col md:flex-row md:items-center gap-2">
+                                    <span class="w-48 font-semibold text-sm text-secondary">Admin (C&L) Redirect:</span>
+                                    <input wire:model="login_redirect_admin" type="text" class="flex-1 px-4 py-2 border border-surface-border rounded-lg bg-surface-container-low focus:ring-primary focus:border-primary" placeholder="Contoh: /admin/jobs (Biarkan kosong untuk default)">
+                                </div>
+                                <div class="flex flex-col md:flex-row md:items-center gap-2">
+                                    <span class="w-48 font-semibold text-sm text-secondary">HR Staff Redirect:</span>
+                                    <input wire:model="login_redirect_hr" type="text" class="flex-1 px-4 py-2 border border-surface-border rounded-lg bg-surface-container-low focus:ring-primary focus:border-primary" placeholder="Contoh: /admin/submissions (Biarkan kosong untuk default)">
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-secondary mt-3">Atur halaman tujuan pertama kali setelah pengguna berhasil login berdasarkan role-nya. Jika dikosongkan, sistem akan mengarahkan ke halaman default bawaan aplikasi.</p>
+                            @error('login_redirect_super_admin') <span class="text-error text-sm">{{ $message }}</span> @enderror
                         </div>
                         <div class="flex justify-end pt-4">
                             <button type="submit" wire:loading.attr="disabled" wire:target="saveGeneral" class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 flex items-center gap-2 transition-all">
