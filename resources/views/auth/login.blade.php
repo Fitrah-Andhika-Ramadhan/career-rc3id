@@ -30,7 +30,7 @@
             width: 50%;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(145deg, #0f0f14 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+            background: #0a0a0a;
             align-items: center;
             justify-content: center;
         }
@@ -39,65 +39,26 @@
             .brand-panel { display: flex; }
         }
 
-        /* Animated orbs */
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.4;
-            animation: orb-float 8s ease-in-out infinite;
-        }
-        .orb-1 {
-            width: 350px; height: 350px;
-            background: radial-gradient(circle, #c0392b, #922b21);
-            top: -80px; left: -80px;
-            animation-delay: 0s;
-        }
-        .orb-2 {
-            width: 280px; height: 280px;
-            background: radial-gradient(circle, #1a5276, #154360);
-            bottom: -60px; right: -60px;
-            animation-delay: -4s;
-        }
-        .orb-3 {
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, #922b21, #7b241c);
-            bottom: 30%; left: 15%;
-            animation-delay: -2s;
-            opacity: 0.25;
-        }
-
-        @keyframes orb-float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(20px, -20px) scale(1.05); }
-            66% { transform: translate(-15px, 15px) scale(0.95); }
-        }
-
-        /* Grid pattern overlay */
+        /* Minimalist Grid & Graphics */
         .grid-overlay {
             position: absolute;
             inset: 0;
             background-image:
                 linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-size: 60px 60px;
         }
 
-        /* Floating geometric shapes */
-        .geo-shape {
+        .abstract-circle {
             position: absolute;
+            border-radius: 50%;
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            animation: geo-rotate 20s linear infinite;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
         }
-        .geo-1 { width: 120px; height: 120px; top: 12%; right: 18%; animation-delay: 0s; }
-        .geo-2 { width: 70px; height: 70px; top: 60%; left: 10%; animation-delay: -7s; transform: rotate(30deg); }
-        .geo-3 { width: 50px; height: 50px; bottom: 18%; right: 25%; animation-delay: -14s; }
-
-        @keyframes geo-rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        .circle-1 { width: 400px; height: 400px; }
+        .circle-2 { width: 600px; height: 600px; border-style: dashed; opacity: 0.5; }
+        .circle-3 { width: 800px; height: 800px; }
 
         .brand-content {
             position: relative;
@@ -110,19 +71,18 @@
         .brand-logo-wrap {
             width: 88px; height: 88px;
             margin: 0 auto 32px;
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
+            background: #111;
             border: 1px solid rgba(255,255,255,0.15);
             border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
 
         .brand-logo-wrap .material-symbols-outlined {
             font-size: 40px;
-            color: #e74c3c;
+            color: #fff;
         }
 
         .brand-title {
@@ -131,15 +91,12 @@
             letter-spacing: -1.5px;
             line-height: 1.1;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff;
         }
 
         .brand-subtitle {
             font-size: 16px;
-            color: rgba(255,255,255,0.5);
+            color: #a3a3a3;
             max-width: 340px;
             margin: 0 auto 40px;
             line-height: 1.7;
@@ -154,11 +111,11 @@
 
         .brand-pill {
             padding: 6px 14px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 100px;
             font-size: 12px;
-            color: rgba(255,255,255,0.6);
+            color: #d4d4d4;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -166,7 +123,7 @@
 
         .brand-pill .material-symbols-outlined {
             font-size: 14px;
-            color: #e74c3c;
+            color: #fff;
         }
 
         /* ─── RIGHT FORM PANEL ─── */
@@ -177,7 +134,7 @@
             align-items: center;
             justify-content: center;
             padding: 40px 24px;
-            background: #f4f5f7;
+            background: #ffffff;
         }
 
         @media (min-width: 1024px) {
@@ -190,10 +147,8 @@
             background: #ffffff;
             border-radius: 20px;
             padding: 44px 40px;
-            box-shadow:
-                0 0 0 1px rgba(0,0,0,0.05),
-                0 4px 6px -1px rgba(0,0,0,0.05),
-                0 20px 40px -10px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
         }
 
         .form-header {
@@ -204,12 +159,12 @@
         .form-logo {
             width: 52px; height: 52px;
             margin: 0 auto 18px;
-            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            background: #111827;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
 
         .form-logo .material-symbols-outlined {
@@ -230,7 +185,7 @@
             font-weight: 700;
             letter-spacing: 2.5px;
             text-transform: uppercase;
-            color: #c0392b;
+            color: #6b7280;
         }
 
         /* ─── Form Fields ─── */
@@ -242,7 +197,7 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #374151;
+            color: #111827;
             margin-bottom: 8px;
         }
 
@@ -263,8 +218,8 @@
         .field-input {
             width: 100%;
             padding: 13px 16px 13px 44px;
-            background: #f9fafb;
-            border: 1.5px solid #e5e7eb;
+            background: #fafafa;
+            border: 1.5px solid #eaeaea;
             border-radius: 10px;
             font-size: 14px;
             font-family: 'Inter', sans-serif;
@@ -275,12 +230,12 @@
 
         .field-input:focus {
             background: #fff;
-            border-color: #c0392b;
-            box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+            border-color: #111827;
+            box-shadow: 0 0 0 3px rgba(17,24,39,0.1);
         }
 
         .field-input::placeholder {
-            color: #d1d5db;
+            color: #a3a3a3;
         }
 
         /* ─── Remember / Forgot ─── */
@@ -297,14 +252,14 @@
             gap: 8px;
             cursor: pointer;
             font-size: 13px;
-            color: #6b7280;
+            color: #4b5563;
             font-weight: 500;
         }
 
         .remember-label input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #c0392b;
+            accent-color: #111827;
             cursor: pointer;
         }
 
@@ -312,18 +267,19 @@
             font-size: 13px;
             font-weight: 700;
             color: #111827;
-            text-decoration: none;
+            text-decoration: underline;
+            text-decoration-color: transparent;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: text-decoration-color 0.2s;
         }
 
-        .forgot-link:hover { color: #c0392b; }
+        .forgot-link:hover { text-decoration-color: #111827; }
 
         /* ─── Submit Button ─── */
         .btn-login {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            background: #111827;
             color: white;
             font-size: 15px;
             font-weight: 700;
@@ -332,14 +288,14 @@
             border-radius: 10px;
             cursor: pointer;
             letter-spacing: 0.3px;
-            box-shadow: 0 4px 14px rgba(192,57,43,0.35);
-            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
         }
 
         .btn-login:hover {
-            opacity: 0.92;
+            background: #000000;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(192,57,43,0.4);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
 
         .btn-login:active {
@@ -349,8 +305,9 @@
         /* Error */
         .field-error {
             font-size: 12px;
-            color: #dc2626;
+            color: #000000;
             margin-top: 6px;
+            font-weight: 600;
         }
 
         /* ─── FOOTER ─── */
@@ -474,21 +431,15 @@
 
         <!-- ═══ LEFT PANEL ═══ -->
         <div class="brand-panel">
-            <div class="orb orb-1"></div>
-            <div class="orb orb-2"></div>
-            <div class="orb orb-3"></div>
             <div class="grid-overlay"></div>
-            <div class="geo-shape geo-1"></div>
-            <div class="geo-shape geo-2"></div>
-            <div class="geo-shape geo-3"></div>
+            <div class="abstract-circle circle-1"></div>
+            <div class="abstract-circle circle-2"></div>
+            <div class="abstract-circle circle-3"></div>
 
             <div class="brand-content">
-                <div class="brand-logo-wrap">
-                    <span class="material-symbols-outlined">rocket_launch</span>
-                </div>
-                <h1 class="brand-title">Elevate Your<br>Talent Pipeline</h1>
-                <p class="brand-subtitle">
-                    Streamline hiring, discover top talent, and build your dream team — all in one precision-built HR portal.
+                <h1 class="brand-title" style="font-size: 56px; font-weight: 900; letter-spacing: -2px; margin-bottom: 24px;">CAREER RC3ID</h1>
+                <p class="brand-subtitle" style="font-size: 18px; color: #d4d4d4; max-width: 400px; margin: 0 auto 40px;">
+                    Precision Talent HR Portal.<br>Modern, secure, and streamlined.
                 </p>
                 <div class="brand-pills">
                     <div class="brand-pill">
@@ -496,12 +447,8 @@
                         Secure Access
                     </div>
                     <div class="brand-pill">
-                        <span class="material-symbols-outlined">group</span>
-                        Team Collaboration
-                    </div>
-                    <div class="brand-pill">
-                        <span class="material-symbols-outlined">analytics</span>
-                        Smart Analytics
+                        <span class="material-symbols-outlined">bolt</span>
+                        Lightning Fast
                     </div>
                 </div>
             </div>
