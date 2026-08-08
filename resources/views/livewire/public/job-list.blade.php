@@ -142,87 +142,97 @@ class extends Component
                                 @php
                                     $isExpired = $job->deadline_date && now()->startOfDay()->gt($job->deadline_date);
                                 @endphp
-                                <!-- Alternative Job Card Design 3 (Minimalist Side-Stripe Style) -->
+                                <!-- Alternative Job Card Design 4 (Dark Mode / Neon Glow Style) -->
                                 <a href="{{ $isExpired ? 'javascript:void(0)' : route('jobs.apply', $job) }}" 
                                    x-data="{ shown: false }" 
                                    x-intersect.once="shown = true"
                                    :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
-                                   class="group cursor-pointer block relative overflow-hidden transition-all duration-300 rounded-2xl bg-white p-6 lg:p-8 {{ $isExpired ? 'opacity-70 cursor-not-allowed border-l-4 border-l-surface-variant' : 'hover:-translate-y-1.5 shadow-sm hover:shadow-[0_15px_35px_rgba(0,0,0,0.06)] border-l-[6px] border-l-primary border-y border-r border-surface-border' }}">
+                                   class="group cursor-pointer block relative overflow-hidden transition-all duration-500 rounded-3xl bg-[#0a0a0a] p-6 lg:p-8 {{ $isExpired ? 'opacity-70 cursor-not-allowed border border-white/10' : 'hover:-translate-y-2 hover:shadow-[0_10px_40px_rgba(var(--color-primary-rgb),0.3)] border border-white/10 hover:border-primary/50' }}">
                                     
-                                    <div class="flex flex-col h-full">
-                                        <!-- Top Header Area -->
-                                        <div class="flex justify-between items-start mb-5 relative z-10">
-                                            <div class="flex flex-wrap gap-2">
-                                                @if($isExpired)
-                                                    <span class="bg-surface-variant text-secondary text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">{{ __('Ditutup') }}</span>
-                                                @else
-                                                    <span class="bg-primary/10 text-primary text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider flex items-center gap-1.5">
-                                                        <span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
-                                                        {{ __('Active') }}
-                                                    </span>
-                                                @endif
-                                                <span class="bg-surface-bg border border-surface-border text-on-surface-variant text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
-                                                    {{ $job->department }}
-                                                </span>
+                                    <!-- Neon Hover Effect Background -->
+                                    <div class="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                                    
+                                    <div class="relative z-10 flex flex-col h-full">
+                                        <div class="flex justify-between items-start mb-6">
+                                            <!-- Dark Icon Container -->
+                                            <div class="bg-white/5 border border-white/10 p-4 rounded-2xl group-hover:bg-primary/20 group-hover:border-primary/50 transition-all duration-300">
+                                                <span class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-[28px]">rocket_launch</span>
                                             </div>
                                             
+                                            <!-- Share Menu -->
                                             <div class="relative" x-data="{ shareOpen: false }" @click.outside="shareOpen = false">
-                                                <button type="button" @click.prevent="shareOpen = !shareOpen" class="text-surface-border hover:text-primary transition-colors">
-                                                    <span class="material-symbols-outlined text-[24px]">more_vert</span>
+                                                <button type="button" @click.prevent="shareOpen = !shareOpen" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all flex items-center justify-center">
+                                                    <span class="material-symbols-outlined text-[18px]">share</span>
                                                 </button>
 
                                                 <!-- Dropdown Menu -->
-                                                <div x-show="shareOpen" class="absolute right-0 top-full mt-2 w-48 bg-surface-bg border border-surface-border rounded-xl shadow-xl py-2 z-20" style="display: none;">
-                                                    <button type="button" @click.prevent="window.open('https://api.whatsapp.com/send?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID: ' . route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
+                                                <div x-show="shareOpen" class="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl py-2 z-20" style="display: none;">
+                                                    <button type="button" @click.prevent="window.open('https://api.whatsapp.com/send?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID: ' . route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA" class="w-4 h-4"> WhatsApp
                                                     </button>
-                                                    <button type="button" @click.prevent="window.open('https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
+                                                    <button type="button" @click.prevent="window.open('https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" class="w-4 h-4"> LinkedIn
                                                     </button>
-                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('Cek lowongan {{ $job->title }} di CareerRC3ID: {{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Teks disalin! Buka IG untuk membagikan.' }); window.open('https://instagram.com', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
+                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('Cek lowongan {{ $job->title }} di CareerRC3ID: {{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Teks disalin! Buka IG untuk membagikan.' }); window.open('https://instagram.com', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-4 h-4"> Instagram
                                                     </button>
-                                                    <button type="button" @click.prevent="window.open('https://twitter.com/intent/tweet?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID!') }}&url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
+                                                    <button type="button" @click.prevent="window.open('https://twitter.com/intent/tweet?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID!') }}&url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" class="w-4 h-4"> X / Twitter
                                                     </button>
-                                                    <div class="h-px bg-surface-border my-1"></div>
-                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('{{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Link lowongan disalin!' }); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
+                                                    <div class="h-px bg-white/10 my-1"></div>
+                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('{{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Link lowongan disalin!' }); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
                                                        <span class="material-symbols-outlined text-[16px]">link</span> Copy Link
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <!-- Title & Metadata -->
-                                        <h3 class="font-headline-md text-xl lg:text-[22px] leading-tight mb-4 font-bold text-on-surface group-hover:text-primary transition-colors flex-1">{{ $job->title }}</h3>
-                                        
-                                        <div class="flex flex-col gap-2 mb-6">
-                                            <span class="inline-flex items-center text-[13px] font-medium text-secondary">
-                                                <span class="material-symbols-outlined text-[16px] mr-2 text-surface-border">location_on</span> {{ $job->location }}
-                                            </span>
-                                            <span class="inline-flex items-center text-[13px] font-medium text-secondary">
-                                                <span class="material-symbols-outlined text-[16px] mr-2 text-surface-border">schedule</span> {{ $job->work_type }}
+                                        <!-- Badges -->
+                                        <div class="flex flex-wrap gap-2 mb-4">
+                                            @if($isExpired)
+                                                <span class="bg-white/5 border border-white/10 text-white/50 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">{{ __('Ditutup') }}</span>
+                                            @else
+                                                <span class="bg-primary/20 border border-primary/30 text-primary-light text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5" style="color: #60a5fa;">
+                                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse shadow-[0_0_8px_#60a5fa]"></span>
+                                                    {{ __('Active') }}
+                                                </span>
+                                            @endif
+                                            <span class="bg-white/5 border border-white/10 text-white/70 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                                {{ $job->department }}
                                             </span>
                                         </div>
                                         
-                                        <p class="font-body-md text-sm text-on-surface-variant mb-8 line-clamp-2 leading-relaxed">
+                                        <!-- Title -->
+                                        <h3 class="font-headline-md text-xl lg:text-[24px] leading-tight mb-4 font-bold text-white group-hover:text-primary transition-colors flex-1">{{ $job->title }}</h3>
+                                        
+                                        <!-- Details -->
+                                        <div class="flex flex-wrap gap-x-4 gap-y-2 mb-6">
+                                            <span class="inline-flex items-center text-[12px] font-medium text-white/60">
+                                                <span class="material-symbols-outlined text-[16px] mr-1 text-white/40">location_on</span> {{ $job->location }}
+                                            </span>
+                                            <span class="inline-flex items-center text-[12px] font-medium text-white/60">
+                                                <span class="material-symbols-outlined text-[16px] mr-1 text-white/40">schedule</span> {{ $job->work_type }}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Description -->
+                                        <p class="font-body-md text-sm text-white/50 mb-8 line-clamp-2 leading-relaxed">
                                             {{ strip_tags($job->description) ?: 'Join our team in the ' . $job->department . ' department.' }}
                                         </p>
                                         
                                         <!-- Footer / Action Area -->
-                                        <div class="pt-5 mt-auto border-t border-surface-border/50 flex items-center justify-between">
-                                            <div class="flex items-center gap-2 text-xs text-secondary font-medium">
-                                                <span class="material-symbols-outlined text-[16px]">domain</span>
-                                                RC3ID
-                                            </div>
-                                            
+                                        <div class="pt-5 mt-auto border-t border-white/10 flex items-center justify-between">
                                             @if($isExpired)
-                                                <span class="text-error font-semibold text-[11px]">
-                                                    {{ __('Ditutup') }} {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
+                                                <span class="text-error font-semibold text-[12px]">
+                                                    {{ __('Tutup pada') }} {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
                                                 </span>
                                             @else
-                                                <div class="w-10 h-10 rounded-full bg-surface-bg border border-surface-border flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                                                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+                                                <span class="text-white/40 text-[12px] group-hover:text-white/70 transition-colors">
+                                                    Gabung bersama RC3ID
+                                                </span>
+                                                <div class="flex items-center gap-2 text-primary font-bold text-sm group-hover:translate-x-2 transition-transform duration-300">
+                                                    {{ __('Lamar') }}
+                                                    <span class="material-symbols-outlined text-[20px]">arrow_right_alt</span>
                                                 </div>
                                             @endif
                                         </div>
