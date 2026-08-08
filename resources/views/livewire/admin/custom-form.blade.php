@@ -738,16 +738,7 @@ User prompt: " . $this->aiPrompt;
         }
     }
 
-    public function openGoogleSheets()
-    {
-        if ($this->selectedJobId) {
-            $job = Job::find($this->selectedJobId);
-            if ($job && $job->google_spreadsheet_id) {
-                $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
-                $this->dispatch('show-sheets-sweetalert', ['url' => $url]);
-            }
-        }
-    }
+
     public function saveForm()
     {
         if ($this->selectedJobId) {
