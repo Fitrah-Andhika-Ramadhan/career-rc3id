@@ -30,9 +30,20 @@
             width: 50%;
             position: relative;
             overflow: hidden;
-            background: #000000;
+            background-color: #000000;
+            background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
             align-items: center;
             justify-content: center;
+        }
+
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 100%);
+            z-index: 0;
         }
 
         @media (min-width: 1024px) {
@@ -43,6 +54,7 @@
         .grid-overlay {
             position: absolute;
             inset: 0;
+            z-index: 1;
             background-image:
                 linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
@@ -57,6 +69,7 @@
 
         .abstract-circle {
             position: absolute;
+            z-index: 1;
             border-radius: 50%;
             border: 1px solid rgba(255,255,255,0.1);
             top: 50%; left: 50%;
