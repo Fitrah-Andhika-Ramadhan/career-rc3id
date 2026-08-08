@@ -5,6 +5,7 @@ use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 use App\Models\Job;
+use App\Models\Application;
 use Illuminate\Support\Facades\DB;
 
 new
