@@ -147,21 +147,24 @@ class extends Component
                                    x-data="{ shown: false }" 
                                    x-intersect.once="shown = true"
                                    :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
-                                   class="bg-white border border-surface-border rounded-[1.5rem] p-6 lg:p-8 {{ $isExpired ? 'opacity-70 cursor-not-allowed' : 'shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(var(--color-primary-rgb),0.12)] hover:border-primary/30 group cursor-pointer' }} transition-all duration-500 block relative overflow-hidden">
+                                   class="group cursor-pointer block relative overflow-hidden transition-all duration-500 rounded-[1.5rem] bg-white p-6 lg:p-8 {{ $isExpired ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(var(--color-primary-rgb),0.15)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-surface-border hover:border-primary/20' }}">
                                     
-                                    <!-- Animated Top Border Glow -->
-                                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-info to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] animate-gradientMove"></div>
+                                    <!-- Animated Background Glow -->
+                                    <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
+                                    <!-- Top Border Glow -->
+                                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-info to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] animate-gradientMove pointer-events-none"></div>
                                     
-                                    <div class="flex justify-between items-start mb-6">
+                                    <div class="flex justify-between items-start mb-6 relative z-10">
                                         <div class="flex items-center gap-4">
-                                            <div class="bg-primary/5 p-3.5 rounded-2xl border border-primary/10 group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-300">
-                                                <span class="material-symbols-outlined text-primary text-[24px]">work</span>
+                                            <div class="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-[1.2rem] border border-primary/20 group-hover:shadow-lg group-hover:shadow-primary/20 group-hover:scale-110 transition-all duration-300">
+                                                <span class="material-symbols-outlined text-primary text-[28px] drop-shadow-sm">work</span>
                                             </div>
                                             <div class="relative" x-data="{ shareOpen: false }" @click.outside="shareOpen = false">
                                                 <button 
                                                     type="button"
                                                     @click.prevent="shareOpen = !shareOpen"
-                                                    class="p-2 rounded-full text-secondary hover:bg-surface-variant hover:text-primary transition-colors"
+                                                    class="p-2.5 rounded-full text-secondary hover:bg-surface-variant hover:text-primary transition-colors hover:shadow-sm"
                                                     title="Bagikan Tautan"
                                                 >
                                                     <span class="material-symbols-outlined text-[20px]">share</span>
@@ -170,7 +173,7 @@ class extends Component
                                                 <!-- Dropdown Menu -->
                                                 <div x-show="shareOpen" 
                                                      x-transition.opacity.duration.200ms
-                                                     class="absolute left-0 top-full mt-2 w-44 bg-surface-bg border border-surface-border rounded-xl shadow-xl py-2 z-20"
+                                                     class="absolute left-0 top-full mt-2 w-48 bg-surface-bg border border-surface-border rounded-xl shadow-xl py-2 z-20"
                                                      style="display: none;"
                                                 >
                                                     <button type="button"
@@ -212,32 +215,41 @@ class extends Component
                                             </div>
                                         </div>
                                         @if($isExpired)
-                                            <span class="bg-surface-variant text-secondary border border-surface-border text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">{{ __('Ditutup') }}</span>
+                                            <span class="bg-surface-variant text-secondary border border-surface-border text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">{{ __('Ditutup') }}</span>
                                         @else
-                                            <span class="bg-success/10 text-success text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">{{ __('Active') }}</span>
+                                            <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5">
+                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                                {{ __('Active') }}
+                                            </span>
                                         @endif
                                     </div>
-                                    <h3 class="font-headline-md text-xl lg:text-2xl mb-3 group-hover:text-primary font-bold transition-colors">{{ $job->title }}</h3>
-                                    <div class="flex flex-wrap gap-2 mb-stack-md">
-                                        <span class="inline-flex items-center text-body-sm text-on-surface-variant">
-                                            <span class="material-symbols-outlined text-[16px] mr-1">location_on</span> {{ $job->location }}
+                                    <h3 class="font-headline-md text-xl lg:text-2xl mb-3 group-hover:text-primary font-bold transition-colors relative z-10">{{ $job->title }}</h3>
+                                    
+                                    <div class="flex flex-wrap gap-2 mb-4 relative z-10">
+                                        <span class="inline-flex items-center text-xs font-semibold text-on-surface-variant bg-surface-container-low px-2.5 py-1 rounded-md border border-surface-border shadow-sm">
+                                            <span class="material-symbols-outlined text-[14px] mr-1 text-primary">location_on</span> {{ $job->location }}
                                         </span>
-                                        <span class="inline-flex items-center text-body-sm text-on-surface-variant">
-                                            <span class="material-symbols-outlined text-[16px] mr-1">schedule</span> {{ $job->work_type }}
+                                        <span class="inline-flex items-center text-xs font-semibold text-on-surface-variant bg-surface-container-low px-2.5 py-1 rounded-md border border-surface-border shadow-sm">
+                                            <span class="material-symbols-outlined text-[14px] mr-1 text-primary">schedule</span> {{ $job->work_type }}
                                         </span>
                                     </div>
-                                    <p class="font-body-md text-body-md text-secondary mb-8 line-clamp-2 leading-relaxed">
+                                    
+                                    <p class="font-body-md text-sm text-secondary mb-8 line-clamp-3 leading-relaxed relative z-10">
                                         {{ strip_tags($job->description) ?: 'Join our team in the ' . $job->department . ' department.' }}
                                     </p>
-                                    <div class="flex items-center justify-between pt-6 border-t border-surface-border/60">
-                                        <span class="font-semibold text-sm text-secondary bg-surface px-3 py-1.5 rounded-lg">{{ $job->department }}</span>
+                                    
+                                    <div class="flex items-center justify-between pt-6 border-t border-surface-border/60 relative z-10">
+                                        <span class="font-bold text-[11px] text-primary/80 bg-primary/5 border border-primary/10 px-3 py-1.5 rounded-lg uppercase tracking-wider">{{ $job->department }}</span>
+                                        
                                         @if($isExpired)
-                                            <span class="text-error font-label-md text-label-md flex items-center">
-                                                {{ __('Telah ditutup pada') }} {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
+                                            <span class="text-error font-semibold text-xs flex items-center bg-error/5 px-3 py-1.5 rounded-lg border border-error/10">
+                                                <span class="material-symbols-outlined text-[14px] mr-1">event_busy</span>
+                                                {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
                                             </span>
                                         @else
-                                            <span class="font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300">
-                                                {{ __('Apply Now') }} <span class="material-symbols-outlined text-[18px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">arrow_forward</span>
+                                            <span class="font-bold text-white bg-primary shadow-md shadow-primary/30 px-5 py-2.5 rounded-xl flex items-center gap-2 group-hover:bg-primary/90 group-hover:-translate-y-0.5 transition-all duration-300">
+                                                {{ __('Apply Now') }} 
+                                                <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
                                             </span>
                                         @endif
                                     </div>
