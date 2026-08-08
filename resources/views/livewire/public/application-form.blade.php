@@ -31,6 +31,9 @@ class extends Component
     // Terms
     public $terms = false;
 
+    // Honeypot (Anti-Spam)
+    public $honeypot = '';
+
     // Custom Fields
     public array $customFields = [];
     public array $customAnswers = [];
@@ -406,6 +409,20 @@ class extends Component
     {
         if ($this->isClosed) return;
 
+        // Anti-Spam: Honeypot check
+        if (!empty($this->honeypot)) {
+            // Silently fail if honeypot is filled (bot)
+            $this->isSubmitted = true;
+            return;
+        }
+
+        // Anti-DDoS / Spam: Rate Limiting
+        $key = 'submit-job-'.$this->job->id.'-'.request()->ip();
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($key, 3)) {
+            $this->addError('submit', 'Anda terlalu sering mengirim lamaran. Silakan coba lagi dalam 10 menit.');
+            return;
+        }
+
         // Validate the final step fields
         $rules = [];
         $messages = [
@@ -457,6 +474,9 @@ class extends Component
         if ($this->getErrorBag()->any()) {
             return;
         }
+
+        // Hit the rate limiter on successful validation
+        \Illuminate\Support\Facades\RateLimiter::hit($key, 600); // 10 minutes timeout
 
         $this->validate(['terms' => 'accepted']);
 
@@ -759,6 +779,12 @@ class extends Component
             @endif
 
             <form wire:submit.prevent="submit">
+                {{-- Anti-Spam Honeypot --}}
+                <div style="display:none !important">
+                    <label>Jangan isi kolom ini jika Anda manusia</label>
+                    <input type="text" wire:model="honeypot" tabindex="-1" autocomplete="off">
+                </div>
+
                 {{-- Main Form Card --}}
                 <div class="bg-surface-bg rounded-2xl shadow-xl shadow-surface-border/50 border border-surface-border overflow-hidden">
                     
