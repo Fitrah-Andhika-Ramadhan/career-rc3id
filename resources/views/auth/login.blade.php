@@ -30,7 +30,7 @@
             width: 50%;
             position: relative;
             overflow: hidden;
-            background: #0a0a0a;
+            background: #000000;
             align-items: center;
             justify-content: center;
         }
@@ -39,26 +39,38 @@
             .brand-panel { display: flex; }
         }
 
-        /* Minimalist Grid & Graphics */
+        /* Dynamic Minimalist Grid & Graphics */
         .grid-overlay {
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
             background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(60px); }
         }
 
         .abstract-circle {
             position: absolute;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
+            animation: pulseCircle 8s infinite alternate ease-in-out;
         }
-        .circle-1 { width: 400px; height: 400px; }
-        .circle-2 { width: 600px; height: 600px; border-style: dashed; opacity: 0.5; }
-        .circle-3 { width: 800px; height: 800px; }
+        .circle-1 { width: 300px; height: 300px; animation-delay: 0s; }
+        .circle-2 { width: 500px; height: 500px; border-style: dashed; opacity: 0.6; animation-delay: 2s; animation-direction: reverse; }
+        .circle-3 { width: 750px; height: 750px; opacity: 0.3; animation-delay: 4s; }
+
+        @keyframes pulseCircle {
+            0% { transform: translate(-50%, -50%) scale(0.95) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) scale(1.05) rotate(15deg); }
+        }
 
         .brand-content {
             position: relative;
@@ -66,6 +78,12 @@
             padding: 48px;
             text-align: center;
             color: white;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .brand-logo-wrap {
@@ -78,6 +96,11 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+        
+        .brand-panel:hover .brand-logo-wrap {
+            transform: rotate(-10deg) scale(1.1);
         }
 
         .brand-logo-wrap .material-symbols-outlined {
@@ -86,18 +109,26 @@
         }
 
         .brand-title {
-            font-size: 42px;
-            font-weight: 800;
-            letter-spacing: -1.5px;
-            line-height: 1.1;
-            margin-bottom: 16px;
+            font-size: 56px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            background: linear-gradient(90deg, #ffffff, #666666, #ffffff);
+            background-size: 200% auto;
             color: #ffffff;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 5s linear infinite;
+        }
+        
+        @keyframes shine {
+            to { background-position: 200% center; }
         }
 
         .brand-subtitle {
-            font-size: 16px;
-            color: #a3a3a3;
-            max-width: 340px;
+            font-size: 18px;
+            color: #d4d4d4;
+            max-width: 400px;
             margin: 0 auto 40px;
             line-height: 1.7;
         }
@@ -437,8 +468,8 @@
             <div class="abstract-circle circle-3"></div>
 
             <div class="brand-content">
-                <h1 class="brand-title" style="font-size: 56px; font-weight: 900; letter-spacing: -2px; margin-bottom: 24px;">CAREER RC3ID</h1>
-                <p class="brand-subtitle" style="font-size: 18px; color: #d4d4d4; max-width: 400px; margin: 0 auto 40px;">
+                <h1 class="brand-title">CAREER RC3ID</h1>
+                <p class="brand-subtitle">
                     Precision Talent HR Portal.<br>Modern, secure, and streamlined.
                 </p>
                 <div class="brand-pills">

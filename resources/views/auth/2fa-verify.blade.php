@@ -12,31 +12,67 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #f4f5f7; }
         .page-wrapper { display: flex; flex: 1; min-height: calc(100vh - 60px); }
-        .brand-panel { display: none; width: 50%; position: relative; overflow: hidden; background: #0a0a0a; align-items: center; justify-content: center; }
+        .brand-panel { display: none; width: 50%; position: relative; overflow: hidden; background: #000000; align-items: center; justify-content: center; }
         @media (min-width: 1024px) { .brand-panel { display: flex; } }
         
-        /* Minimalist Grid & Graphics */
+        /* Dynamic Minimalist Grid & Graphics */
         .grid-overlay {
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
             background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(60px); }
         }
 
         .abstract-circle {
             position: absolute;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
+            animation: pulseCircle 8s infinite alternate ease-in-out;
         }
-        .circle-1 { width: 400px; height: 400px; }
-        .circle-2 { width: 600px; height: 600px; border-style: dashed; opacity: 0.5; }
-        .circle-3 { width: 800px; height: 800px; }
+        .circle-1 { width: 300px; height: 300px; animation-delay: 0s; }
+        .circle-2 { width: 500px; height: 500px; border-style: dashed; opacity: 0.6; animation-delay: 2s; animation-direction: reverse; }
+        .circle-3 { width: 750px; height: 750px; opacity: 0.3; animation-delay: 4s; }
 
-        .brand-content { position: relative; z-index: 10; padding: 48px; text-align: center; color: white; }
+        @keyframes pulseCircle {
+            0% { transform: translate(-50%, -50%) scale(0.95) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) scale(1.05) rotate(15deg); }
+        }
+
+        .brand-content { position: relative; z-index: 10; padding: 48px; text-align: center; color: white; animation: fadeInUp 1s ease-out; }
+        
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-title {
+            font-size: 56px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            background: linear-gradient(90deg, #ffffff, #666666, #ffffff);
+            background-size: 200% auto;
+            color: #ffffff;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 5s linear infinite;
+        }
+        
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        .brand-subtitle { font-size: 18px; color: #d4d4d4; max-width: 400px; margin: 0 auto 40px; line-height: 1.7; }
         
         .brand-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .brand-pill { padding: 6px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; font-size: 12px; color: #d4d4d4; display: flex; align-items: center; gap: 6px; }
@@ -46,7 +82,8 @@
         @media (min-width: 1024px) { .form-panel { width: 50%; } }
         .form-card { width: 100%; max-width: 420px; background: #ffffff; border-radius: 20px; padding: 44px 40px; border: 1px solid #eaeaea; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
         .form-header { text-align: center; margin-bottom: 36px; }
-        .form-logo { width: 52px; height: 52px; margin: 0 auto 18px; background: #111827; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+        .form-logo { width: 52px; height: 52px; margin: 0 auto 18px; background: #111827; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: transform 0.3s ease; }
+        .form-panel:hover .form-logo { transform: rotate(-10deg) scale(1.1); }
         .form-logo .material-symbols-outlined { font-size: 26px; color: white; }
         .form-title { font-size: 26px; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin-bottom: 4px; }
         .form-tagline { font-size: 13px; font-weight: 500; color: #6b7280; }
@@ -82,8 +119,8 @@
             <div class="abstract-circle circle-3"></div>
 
             <div class="brand-content">
-                <h1 class="brand-title" style="font-size: 56px; font-weight: 900; letter-spacing: -2px; margin-bottom: 24px; color: #fff;">CAREER RC3ID</h1>
-                <p class="brand-subtitle" style="font-size: 18px; color: #d4d4d4; max-width: 400px; margin: 0 auto 40px;">
+                <h1 class="brand-title">CAREER RC3ID</h1>
+                <p class="brand-subtitle">
                     Extra Security Required.<br>Please verify your identity.
                 </p>
                 <div class="brand-pills">
