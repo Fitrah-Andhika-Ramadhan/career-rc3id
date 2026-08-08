@@ -142,45 +142,44 @@ class extends Component
                                 @php
                                     $isExpired = $job->deadline_date && now()->startOfDay()->gt($job->deadline_date);
                                 @endphp
-                                <!-- Alternative Job Card Design 4 (Dark Mode / Neon Glow Style) -->
+                                <!-- Job Card Design 5 (Refined Clean Light Mode + Attractive Colors) -->
                                 <a href="{{ $isExpired ? 'javascript:void(0)' : route('jobs.apply', $job) }}" 
                                    x-data="{ shown: false }" 
                                    x-intersect.once="shown = true"
                                    :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
-                                   class="group cursor-pointer block relative overflow-hidden transition-all duration-500 rounded-3xl bg-[#0a0a0a] p-6 lg:p-8 {{ $isExpired ? 'opacity-70 cursor-not-allowed border border-white/10' : 'hover:-translate-y-2 hover:shadow-[0_10px_40px_rgba(var(--color-primary-rgb),0.3)] border border-white/10 hover:border-primary/50' }}">
-                                    
-                                    <!-- Neon Hover Effect Background -->
-                                    <div class="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                                   class="group cursor-pointer block relative overflow-hidden transition-all duration-300 rounded-[1.5rem] bg-white p-6 lg:p-7 {{ $isExpired ? 'opacity-70 cursor-not-allowed border border-surface-variant' : 'hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(var(--color-primary-rgb),0.12)] shadow-sm border border-surface-border hover:border-primary/40' }}">
                                     
                                     <div class="relative z-10 flex flex-col h-full">
-                                        <div class="flex justify-between items-start mb-6">
-                                            <!-- Dark Icon Container -->
-                                            <div class="bg-white/5 border border-white/10 p-4 rounded-2xl group-hover:bg-primary/20 group-hover:border-primary/50 transition-all duration-300">
-                                                <span class="material-symbols-outlined text-white group-hover:text-primary transition-colors text-[28px]">rocket_launch</span>
+                                        
+                                        <!-- Top Section: Icon & Share -->
+                                        <div class="flex justify-between items-start mb-5">
+                                            <!-- Icon Container -->
+                                            <div class="bg-gradient-to-br from-primary/10 to-blue-400/10 border border-primary/20 w-12 h-12 flex items-center justify-center rounded-2xl group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-blue-400/20 group-hover:scale-110 transition-all duration-300 shadow-sm shadow-primary/5">
+                                                <span class="material-symbols-outlined text-primary text-[24px]">rocket_launch</span>
                                             </div>
                                             
                                             <!-- Share Menu -->
                                             <div class="relative" x-data="{ shareOpen: false }" @click.outside="shareOpen = false">
-                                                <button type="button" @click.prevent="shareOpen = !shareOpen" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all flex items-center justify-center">
+                                                <button type="button" @click.prevent="shareOpen = !shareOpen" class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 text-slate-400 hover:text-primary hover:bg-primary/5 hover:border-primary/20 transition-all flex items-center justify-center shadow-sm">
                                                     <span class="material-symbols-outlined text-[18px]">share</span>
                                                 </button>
 
                                                 <!-- Dropdown Menu -->
-                                                <div x-show="shareOpen" class="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl py-2 z-20" style="display: none;">
-                                                    <button type="button" @click.prevent="window.open('https://api.whatsapp.com/send?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID: ' . route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
+                                                <div x-show="shareOpen" class="absolute right-0 top-full mt-2 w-48 bg-white border border-surface-border rounded-xl shadow-xl py-2 z-20" style="display: none;">
+                                                    <button type="button" @click.prevent="window.open('https://api.whatsapp.com/send?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID: ' . route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA" class="w-4 h-4"> WhatsApp
                                                     </button>
-                                                    <button type="button" @click.prevent="window.open('https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
+                                                    <button type="button" @click.prevent="window.open('https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" class="w-4 h-4"> LinkedIn
                                                     </button>
-                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('Cek lowongan {{ $job->title }} di CareerRC3ID: {{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Teks disalin! Buka IG untuk membagikan.' }); window.open('https://instagram.com', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
+                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('Cek lowongan {{ $job->title }} di CareerRC3ID: {{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Teks disalin! Buka IG untuk membagikan.' }); window.open('https://instagram.com', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-4 h-4"> Instagram
                                                     </button>
-                                                    <button type="button" @click.prevent="window.open('https://twitter.com/intent/tweet?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID!') }}&url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
+                                                    <button type="button" @click.prevent="window.open('https://twitter.com/intent/tweet?text={{ urlencode('Cek lowongan ' . $job->title . ' di CareerRC3ID!') }}&url={{ urlencode(route('jobs.apply', $job)) }}', '_blank'); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" class="w-4 h-4"> X / Twitter
                                                     </button>
-                                                    <div class="h-px bg-white/10 my-1"></div>
-                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('{{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Link lowongan disalin!' }); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-white/10 transition-colors text-body-sm text-white/90">
+                                                    <div class="h-px bg-surface-border my-1"></div>
+                                                    <button type="button" @click.prevent="navigator.clipboard.writeText('{{ route('jobs.apply', $job) }}'); $dispatch('notify', { message: 'Link lowongan disalin!' }); shareOpen = false;" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-surface-variant transition-colors text-body-sm text-on-surface">
                                                        <span class="material-symbols-outlined text-[16px]">link</span> Copy Link
                                                     </button>
                                                 </div>
@@ -188,51 +187,51 @@ class extends Component
                                         </div>
                                         
                                         <!-- Badges -->
-                                        <div class="flex flex-wrap gap-2 mb-4">
+                                        <div class="flex flex-wrap items-center gap-2 mb-4">
                                             @if($isExpired)
-                                                <span class="bg-white/5 border border-white/10 text-white/50 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">{{ __('Ditutup') }}</span>
+                                                <span class="bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">{{ __('Ditutup') }}</span>
                                             @else
-                                                <span class="bg-primary/20 border border-primary/30 text-primary-light text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5" style="color: #60a5fa;">
-                                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse shadow-[0_0_8px_#60a5fa]"></span>
+                                                <span class="bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider flex items-center gap-1.5 shadow-sm shadow-emerald-100/50">
+                                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_4px_#10b981]"></span>
                                                     {{ __('Active') }}
                                                 </span>
                                             @endif
-                                            <span class="bg-white/5 border border-white/10 text-white/70 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                            <span class="bg-slate-50 border border-slate-200 text-slate-500 text-[10px] font-bold px-3 py-1 rounded-md uppercase tracking-wider">
                                                 {{ $job->department }}
                                             </span>
                                         </div>
                                         
                                         <!-- Title -->
-                                        <h3 class="font-headline-md text-xl lg:text-[24px] leading-tight mb-4 font-bold text-white group-hover:text-primary transition-colors flex-1">{{ $job->title }}</h3>
+                                        <h3 class="font-headline-md text-xl lg:text-[22px] leading-snug mb-3 font-extrabold text-slate-800 group-hover:text-primary transition-colors">{{ $job->title }}</h3>
                                         
                                         <!-- Details -->
-                                        <div class="flex flex-wrap gap-x-4 gap-y-2 mb-6">
-                                            <span class="inline-flex items-center text-[12px] font-medium text-white/60">
-                                                <span class="material-symbols-outlined text-[16px] mr-1 text-white/40">location_on</span> {{ $job->location }}
+                                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-5">
+                                            <span class="inline-flex items-center text-[12px] font-semibold text-slate-500">
+                                                <span class="material-symbols-outlined text-[16px] mr-1 text-slate-400">location_on</span> {{ $job->location }}
                                             </span>
-                                            <span class="inline-flex items-center text-[12px] font-medium text-white/60">
-                                                <span class="material-symbols-outlined text-[16px] mr-1 text-white/40">schedule</span> {{ $job->work_type }}
+                                            <span class="inline-flex items-center text-[12px] font-semibold text-slate-500">
+                                                <span class="material-symbols-outlined text-[16px] mr-1 text-slate-400">schedule</span> {{ $job->work_type }}
                                             </span>
                                         </div>
                                         
                                         <!-- Description -->
-                                        <p class="font-body-md text-sm text-white/50 mb-8 line-clamp-2 leading-relaxed">
+                                        <p class="font-body-sm text-[13px] text-slate-600 mb-6 line-clamp-2 leading-relaxed flex-1">
                                             {{ strip_tags($job->description) ?: 'Join our team in the ' . $job->department . ' department.' }}
                                         </p>
                                         
                                         <!-- Footer / Action Area -->
-                                        <div class="pt-5 mt-auto border-t border-white/10 flex items-center justify-between">
+                                        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
                                             @if($isExpired)
-                                                <span class="text-error font-semibold text-[12px]">
+                                                <span class="text-red-500 font-semibold text-[12px]">
                                                     {{ __('Tutup pada') }} {{ \Carbon\Carbon::parse($job->deadline_date)->translatedFormat('d M Y') }}
                                                 </span>
                                             @else
-                                                <span class="text-white/40 text-[12px] group-hover:text-white/70 transition-colors">
+                                                <span class="text-slate-400 text-[12px] font-medium group-hover:text-primary/80 transition-colors">
                                                     Gabung bersama RC3ID
                                                 </span>
-                                                <div class="flex items-center gap-2 text-primary font-bold text-sm group-hover:translate-x-2 transition-transform duration-300">
-                                                    {{ __('Lamar') }}
-                                                    <span class="material-symbols-outlined text-[20px]">arrow_right_alt</span>
+                                                <div class="flex items-center gap-1.5 bg-gradient-to-r from-primary to-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-[13px] group-hover:shadow-lg group-hover:shadow-primary/30 transition-all duration-300 transform group-hover:-translate-y-0.5">
+                                                    {{ __('Lamar Sekarang') }}
+                                                    <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_right_alt</span>
                                                 </div>
                                             @endif
                                         </div>
