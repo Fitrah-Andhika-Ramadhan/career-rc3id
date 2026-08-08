@@ -7,6 +7,30 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    
+    {{-- Dynamic Favicon --}}
+    @php
+        $faviconPath = '';
+        foreach (['favicon.svg', 'favicon.ico', 'favicon.png', 'favicon.jpg', 'favicon.jpeg', 'favicon.webp'] as $f) {
+            if (file_exists(public_path($f))) {
+                $faviconPath = $f;
+                break;
+            }
+        }
+        $mime = match(pathinfo($faviconPath, PATHINFO_EXTENSION)) {
+            'svg' => 'image/svg+xml',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            default => 'image/x-icon'
+        };
+    @endphp
+    @if($faviconPath)
+        <link rel="icon" type="{{ $mime }}" href="{{ asset($faviconPath) }}?v={{ filemtime(public_path($faviconPath)) }}">
+    @else
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @endif
+
     <style>
         /* Import basic styles from login page */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
