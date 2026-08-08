@@ -40,6 +40,11 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         // Dynamic redirection based on role
+        $customRedirectUrl = env('LOGIN_REDIRECT_URL');
+        if (!empty($customRedirectUrl)) {
+            return redirect()->intended($customRedirectUrl);
+        }
+
         if ($user->hasRole('Super Admin')) {
             return redirect()->intended(route('dashboard', absolute: false));
         } elseif ($user->hasRole('Admin')) {
