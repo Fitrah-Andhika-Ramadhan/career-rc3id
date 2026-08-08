@@ -571,11 +571,6 @@
     <!-- ═══ FOOTER ═══ -->
     <footer class="site-footer">
         <div class="footer-brand">CareerRC3ID</div>
-        <div class="footer-links">
-            <a href="#">Terms of Service</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Help Center</a>
-        </div>
         <div class="footer-copy">© 2026 CareerRC3ID -Fitt Solutions. All rights reserved.</div>
     </footer>
 
