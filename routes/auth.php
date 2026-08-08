@@ -21,6 +21,11 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('akses-internal-RC3ID', [AuthenticatedSessionController::class, 'store']);
+    
+    // 2FA Verify routes
+    Route::get('2fa-verify', [\App\Http\Controllers\Auth\TwoFactorController::class, 'showVerifyForm'])
+        ->name('2fa.verify');
+    Route::post('2fa-verify', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify']);
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -56,4 +61,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+        
+    // 2FA Setup
+    Route::get('profile/2fa', [\App\Http\Controllers\Auth\TwoFactorController::class, 'showSetup'])->name('2fa.setup');
+    Route::post('profile/2fa/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('2fa.enable');
+    Route::post('profile/2fa/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('2fa.disable');
 });

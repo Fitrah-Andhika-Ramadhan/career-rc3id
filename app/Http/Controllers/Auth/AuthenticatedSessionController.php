@@ -26,6 +26,15 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        if ($user->google2fa_secret) {
+            Auth::logout();
+            $request->session()->put('2fa:user:id', $user->id);
+            $request->session()->put('2fa:user:remember', $request->boolean('remember'));
+            return redirect()->route('2fa.verify');
+        }
+
         $request->session()->regenerate();
         
         $user = Auth::user();
