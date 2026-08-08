@@ -562,13 +562,20 @@ class extends Component
                 title: '✅ Google Sheets Berhasil Dibuat/Disinkronisasi!',
                 text: 'Data pelamar untuk lowongan ini telah diekspor dan siap dilihat.',
                 icon: 'success',
-                confirmButtonColor: '#1a73e8',
-                confirmButtonText: '📊 Buka Spreadsheet',
                 showCancelButton: true,
+                showDenyButton: true,
+                showCloseButton: true,
+                confirmButtonColor: '#1a73e8',
+                denyButtonColor: '#d33',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '📊 Buka Spreadsheet',
+                denyButtonText: '⚙️ Ganti Akun Google',
                 cancelButtonText: 'Tutup'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.open(url, '_blank');
+                } else if (result.isDenied) {
+                    window.location.href = '/google/auth';
                 }
             });
         });

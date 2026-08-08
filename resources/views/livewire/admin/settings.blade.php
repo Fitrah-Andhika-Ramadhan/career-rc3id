@@ -32,6 +32,10 @@ class extends Component
     public $mail_notification_addresses = '';
     public $mail_include_full_data = false;
     public $mail_hr_greeting = '';
+    
+    public $google_client_id = '';
+    public $google_client_secret = '';
+
     public $curated_zip; // For Option 2 Zip Upload
     public $logo; // temp upload
     public string $currentLogo = '';
@@ -69,6 +73,8 @@ class extends Component
         $this->mail_hr_greeting = env('MAIL_HR_GREETING', '');
         $this->hero_title = env('HERO_TITLE', 'Find Your Next Career at CareerRC3ID');
         $this->hero_subtitle = env('HERO_SUBTITLE', 'Join a global team of innovators, engineers, and creatives. We are building the future of precision technology and we need your talent to help us lead the way.');
+        $this->google_client_id = env('GOOGLE_CLIENT_ID', '');
+        $this->google_client_secret = env('GOOGLE_CLIENT_SECRET', '');
 
         // Load current logo
         $this->currentLogo = file_exists(public_path('logo.svg'))
@@ -223,6 +229,22 @@ class extends Component
         Artisan::call('config:clear');
         session()->flash('message', 'Aturan kelola data kandidat berhasil disimpan!');
     }
+    public function saveGoogleApi()
+    {
+        $this->validate([
+            'google_client_id' => 'nullable|string',
+            'google_client_secret' => 'nullable|string',
+        ]);
+
+        $this->updateEnv([
+            'GOOGLE_CLIENT_ID' => $this->google_client_id ?? '',
+            'GOOGLE_CLIENT_SECRET' => $this->google_client_secret ?? '',
+        ]);
+
+        Artisan::call('config:clear');
+        session()->flash('message', 'Google API Credentials berhasil disimpan!');
+    }
+
     public function testEmail()
     {
         $this->validate([
@@ -380,6 +402,11 @@ class extends Component
                     :class="activeTab === 'candidate_data' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-on-surface hover:border-surface-border'"
                     class="px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">contact_mail</span> Data Candidate & HR
+            </button>
+            <button @click="activeTab = 'google'" 
+                    :class="activeTab === 'google' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-on-surface hover:border-surface-border'"
+                    class="px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">key</span> Google Cloud API
             </button>
         </div>
 
@@ -891,6 +918,47 @@ class extends Component
             </form>
             
         </div>
-</div>
-</div>
+        
+        {{-- GOOGLE API TAB --}}
+        <div x-show="activeTab === 'google'" x-cloak class="space-y-stack-lg" style="display: none;">
+            <div class="bg-surface-bg border border-surface-border rounded-xl shadow-sm overflow-hidden">
+                <form wire:submit="saveGoogleApi">
+                    <div class="p-margin border-b border-surface-border">
+                        <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">key</span>
+                            Google Cloud API Credentials
+                        </h3>
+                        <p class="text-sm text-secondary mt-1">Atur kredensial aplikasi Google Cloud Anda sendiri untuk fitur integrasi Google Sheets (Mencegah masalah izin akun pihak ketiga).</p>
+                    </div>
+                    <div class="p-margin space-y-stack-md">
+                        <div class="grid grid-cols-1 gap-stack-md">
+                            <div class="space-y-2">
+                                <label class="font-label-md text-label-md text-on-surface-variant">Google Client ID</label>
+                                <input wire:model="google_client_id" type="text" class="w-full px-4 py-2 border border-surface-border rounded-lg bg-surface-container-low focus:ring-primary focus:border-primary" placeholder="xxxx-yyyy.apps.googleusercontent.com">
+                                @error('google_client_id') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="space-y-2">
+                                <label class="font-label-md text-label-md text-on-surface-variant">Google Client Secret</label>
+                                <input wire:model="google_client_secret" type="password" class="w-full px-4 py-2 border border-surface-border rounded-lg bg-surface-container-low focus:ring-primary focus:border-primary" placeholder="GOCSPX-xxxxxxxxx">
+                                @error('google_client_secret') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="p-4 bg-primary/5 rounded-lg border border-primary/20 mt-4">
+                            <p class="text-sm text-on-surface-variant">
+                                <strong>Catatan:</strong> Setelah mengubah Client ID dan Client Secret, semua pengguna (termasuk Anda) harus mengklik tombol "Ganti Akun Google" pada pop-up integrasi Google Sheets untuk menyinkronkan ulang sesi otorisasi Google dengan kredensial API yang baru.
+                            </p>
+                        </div>
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" wire:loading.attr="disabled" wire:target="saveGoogleApi" class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 flex items-center gap-2 transition-all">
+                                <span wire:loading.remove wire:target="saveGoogleApi" class="material-symbols-outlined text-[18px]">save</span>
+                                <span wire:loading wire:target="saveGoogleApi" class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                                <span>Save API Credentials</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
 </div>

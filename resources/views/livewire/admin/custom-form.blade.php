@@ -2,6 +2,7 @@
 
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 use App\Models\Job;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class extends Component
     public bool $oneResponsePerPerson = false;
     public $deadlineDate = null;
     public string $closedMessage = '';
+    public bool $showSheetsModal = false;
     
     // ── History tracking (Undo/Redo) ───────────────────────────────
     public array $historyFields = [];
@@ -582,6 +584,50 @@ User prompt: " . $this->aiPrompt;
             $msg = $newValue === '1' ? 'Notifikasi email untuk lamaran baru DIAKTIFKAN.' : 'Notifikasi email untuk lamaran baru DINONAKTIFKAN.';
             $this->dispatch('notify', ['message' => $msg, 'type' => 'success']);
         }
+    }
+
+    #[On('open-sheets-modal')]
+    public function openSheetsModal()
+    {
+        $this->showSheetsModal = true;
+    }
+
+    public function createSpreadsheetForJob()
+    {
+        if (!class_exists(\App\Services\GoogleSheetsService::class)) {
+            $this->dispatch('notify', ['message' => 'Layanan Google Sheets belum siap.', 'type' => 'error']);
+            return;
+        }
+        
+        try {
+            $service = new \App\Services\GoogleSheetsService();
+            $job = Job::find($this->selectedJobId);
+            if (!$job) return;
+            
+            if (!$job->google_spreadsheet_id) {
+                $service->createSpreadsheetForJob($job);
+                $job = Job::find($this->selectedJobId);
+            }
+            $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+            
+            $this->showSheetsModal = false;
+            $this->dispatch('show-sheets-sweetalert', [
+                'url' => $url,
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['message' => 'Gagal membuat Spreadsheet: ' . $e->getMessage(), 'type' => 'error']);
+        }
+    }
+
+    public function openGoogleSheets()
+    {
+        $job = Job::find($this->selectedJobId);
+        if ($job && $job->google_spreadsheet_id) {
+            $url = 'https://docs.google.com/spreadsheets/d/' . $job->google_spreadsheet_id;
+            $this->dispatch('show-sheets-sweetalert', ['url' => $url]);
+            return;
+        }
+        $this->showSheetsModal = true;
     }
 
     public function exportExcel()
@@ -1779,6 +1825,98 @@ User prompt: " . $this->aiPrompt;
         </div>
         @endif
         
+        {{-- Google Sheets Destination Modal --}}
+        @if($showSheetsModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" 
+             x-data
+             x-transition:enter="transition ease-out duration-300" 
+             x-transition:enter-start="opacity-0" 
+             x-transition:enter-end="opacity-100" 
+             x-transition:leave="transition ease-in duration-200" 
+             x-transition:leave-start="opacity-100" 
+             x-transition:leave-end="opacity-0">
+            
+            <div class="bg-white rounded-lg shadow-2xl w-full overflow-hidden" style="max-width: 500px;" @click.outside="$wire.set('showSheetsModal', false)">
+                <div class="px-6 py-4 flex justify-between items-center bg-white border-b" style="border-color: #dadce0;">
+                    <h3 class="text-base font-medium" style="color: #202124;">Select destination for responses</h3>
+                    <button wire:click="$set('showSheetsModal', false)" class="p-1.5 rounded-full transition-colors flex items-center justify-center" style="color: #5f6368; ">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+                
+                <div class="px-6 pb-2 pt-2 bg-white">
+                    @php
+                        $isGoogleConnected = \App\Models\Setting::where('key', 'google_oauth_token')->exists();
+                    @endphp
+                    
+                    @if(!$isGoogleConnected)
+                        <div class="mb-6 text-sm flex flex-col gap-4" style="color: #3c4043;">
+                            <p>You need to authorize Google Sheets first before creating a destination.</p>
+                            <a href="{{ route('google.auth') }}" class="px-4 py-2 border rounded-md font-medium text-sm inline-flex items-center w-max transition-colors gap-2" style="border-color: #dadce0; color: #1a73e8; ">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-4 h-4">
+                                Connect to Google
+                            </a>
+                        </div>
+                    @else
+                        @if($selectedJob && $selectedJob->google_spreadsheet_id)
+                            <div class="mb-4 text-sm" style="color: #3c4043;">
+                                <p class="mb-4">Spreadsheet already exists for this form.</p>
+                                <a href="https://docs.google.com/spreadsheets/d/{{ $selectedJob->google_spreadsheet_id }}" target="_blank" class="font-medium hover:underline" style="color: #1a73e8;">
+                                    Open Spreadsheet
+                                </a>
+                            </div>
+                        @else
+                            <!-- Google Forms style radio options -->
+                            <div class="flex flex-col gap-4 mb-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <div class="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center" style="border-color: #007b83;">
+                                        <div class="w-2.5 h-2.5 rounded-full" style="background-color: #007b83;"></div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <span class="text-sm font-medium" style="color: #202124;">Create a new spreadsheet</span>
+                                            <input type="text" readonly value="{{ $jobTitle }} (Responses)" class="border-b outline-none px-0 py-1 text-sm w-full sm:w-[220px] bg-transparent" style="border-color: #dadce0; color: #202124; ">
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-start gap-3 cursor-not-allowed opacity-60" title="Coming soon">
+                                    <div class="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center" style="border-color: #dadce0;">
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="text-sm" style="color: #202124;">Select existing spreadsheet</span>
+                                    </div>
+                                </label>
+                            </div>
+                        @endif
+                    @endif
+                </div>
+                
+                <div class="px-6 py-4 flex justify-between items-center gap-2 border-t" style="border-color: #dadce0;">
+                    <div>
+                        @if($isGoogleConnected)
+                            <a href="{{ route('google.auth') }}" class="text-xs hover:underline flex items-center gap-1" style="color: #5f6368;" title="Ganti akun Google yang tertaut">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">manage_accounts</span> Ganti Akun Google
+                            </a>
+                        @endif
+                    </div>
+                    <div class="flex gap-2">
+                        <button wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-medium rounded-md transition-colors" style="color: #5f6368; ">
+                            Cancel
+                        </button>
+                        @if($isGoogleConnected && (!$selectedJob || !$selectedJob->google_spreadsheet_id))
+                        <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 disabled:opacity-50" style="color: #007b83; ">
+                            <span wire:loading.remove wire:target="createSpreadsheetForJob">Create</span>
+                            <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                            <span wire:loading wire:target="createSpreadsheetForJob">Creating...</span>
+                        </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         @script
         <script>
             $wire.on('theme-updated', (event) => {
@@ -1833,12 +1971,13 @@ User prompt: " . $this->aiPrompt;
                     icon: syncSuccess ? 'success' : 'info',
                     showCancelButton: true,
                     showDenyButton: true,
+                    showCloseButton: true,
                     confirmButtonColor: '#1a73e8',
                     denyButtonColor: '#0f9d58',
-                    cancelButtonColor: '#6b7280',
+                    cancelButtonColor: '#d33',
                     confirmButtonText: '📊 Buka Spreadsheet',
                     denyButtonText: '🔄 Sinkronisasi Ulang',
-                    cancelButtonText: 'Tutup'
+                    cancelButtonText: '⚙️ Ganti Akun Google'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.open(url, '_blank');
@@ -1856,6 +1995,8 @@ User prompt: " . $this->aiPrompt;
                         }).catch(() => {
                             Swal.close();
                         });
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        window.location.href = '/google/auth';
                     }
                 });
             });

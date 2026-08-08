@@ -737,17 +737,26 @@ class extends Component
                 @endif
             </div>
             
-            <div class="px-6 py-4 flex justify-end gap-2">
-                <button wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-medium rounded-md transition-colors" style="color: #5f6368; ">
-                    Cancel
-                </button>
-                @if($isGoogleConnected && (!$currentJob || !$currentJob->google_spreadsheet_id))
-                <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 disabled:opacity-50" style="color: #007b83; ">
-                    <span wire:loading.remove wire:target="createSpreadsheetForJob">Create</span>
-                    <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
-                    <span wire:loading wire:target="createSpreadsheetForJob">Creating...</span>
-                </button>
-                @endif
+            <div class="px-6 py-4 flex justify-between items-center gap-2 border-t" style="border-color: #dadce0;">
+                <div>
+                    @if($isGoogleConnected)
+                        <a href="{{ route('google.auth') }}" class="text-xs hover:underline flex items-center gap-1" style="color: #5f6368;" title="Ganti akun Google yang tertaut">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">manage_accounts</span> Ganti Akun Google
+                        </a>
+                    @endif
+                </div>
+                <div class="flex gap-2">
+                    <button wire:click="$set('showSheetsModal', false)" class="px-4 py-2 text-sm font-medium rounded-md transition-colors" style="color: #5f6368; ">
+                        Cancel
+                    </button>
+                    @if($isGoogleConnected && (!$currentJob || !$currentJob->google_spreadsheet_id))
+                    <button wire:click="createSpreadsheetForJob" wire:loading.attr="disabled" class="px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 disabled:opacity-50" style="color: #007b83; ">
+                        <span wire:loading.remove wire:target="createSpreadsheetForJob">Create</span>
+                        <span wire:loading wire:target="createSpreadsheetForJob" class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                        <span wire:loading wire:target="createSpreadsheetForJob">Creating...</span>
+                    </button>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -772,12 +781,13 @@ class extends Component
                 icon: syncSuccess ? 'success' : 'info',
                 showCancelButton: true,
                 showDenyButton: true,
+                showCloseButton: true,
                 confirmButtonColor: '#1a73e8',
                 denyButtonColor: '#0f9d58',
-                cancelButtonColor: '#6b7280',
+                cancelButtonColor: '#d33',
                 confirmButtonText: '📊 Buka Spreadsheet',
                 denyButtonText: '🔄 Sinkronisasi Ulang',
-                cancelButtonText: 'Tutup'
+                cancelButtonText: '⚙️ Ganti Akun Google'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.open(url, '_blank');
@@ -797,6 +807,8 @@ class extends Component
                     }).catch(() => {
                         Swal.close();
                     });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = '/google/auth';
                 }
             });
         });
