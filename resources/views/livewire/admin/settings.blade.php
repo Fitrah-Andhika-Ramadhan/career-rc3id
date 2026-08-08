@@ -18,6 +18,7 @@ class extends Component
     public $app_subtitle = '';
     public $restrict_one_apply = true;
     public $primary_color = '#005bbf';
+    public $hero_overlay_opacity = '0.8';
     public $super_admin_reset_email = '';
     public $footer_text = '';
     public $login_redirect_super_admin = '';
