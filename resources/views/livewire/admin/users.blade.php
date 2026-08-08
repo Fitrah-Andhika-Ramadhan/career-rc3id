@@ -100,6 +100,15 @@ class extends Component
         User::find($id)->delete();
     }
 
+    public function reset2FA($id)
+    {
+        $user = User::find($id);
+        if ($user) {
+            $user->google2fa_secret = null;
+            $user->save();
+        }
+    }
+
     public function resetForm()
     {
         $this->name = '';
@@ -152,11 +161,16 @@ class extends Component
                             </span>
                         </td>
                         <td class="p-stack-md text-right flex justify-end gap-2">
-                            <button wire:click="edit({{ $user->id }})" class="p-2 hover:bg-surface-container rounded-lg transition-opacity text-primary">
+                            <button wire:click="edit({{ $user->id }})" class="p-2 hover:bg-surface-container rounded-lg transition-opacity text-primary" title="Edit User">
                                 <span class="material-symbols-outlined" data-icon="edit">edit</span>
                             </button>
+                            @if($user->google2fa_secret)
+                            <button type="button" x-on:click="confirmDelete('Reset & hapus perlindungan 2FA untuk user ini?', () => $wire.reset2FA({{ $user->id }}))" class="p-2 hover:bg-surface-container rounded-lg transition-opacity text-orange-500" title="Reset 2FA">
+                                <span class="material-symbols-outlined">key_off</span>
+                            </button>
+                            @endif
                             @if($user->id !== auth()->id())
-                            <button type="button" x-on:click="confirmDelete('Are you sure you want to delete this user?', () => $wire.delete({{ $user->id }}))" class="p-2 hover:bg-surface-container rounded-lg transition-opacity text-error">
+                            <button type="button" x-on:click="confirmDelete('Are you sure you want to delete this user?', () => $wire.delete({{ $user->id }}))" class="p-2 hover:bg-surface-container rounded-lg transition-opacity text-error" title="Delete User">
                                 <span class="material-symbols-outlined" data-icon="delete">delete</span>
                             </button>
                             @endif
